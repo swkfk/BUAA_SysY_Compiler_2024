@@ -30,8 +30,9 @@ def pack(*args):
 
     print("--> \033[32mPacking...\033[0m")
     with ZipFile(str(zipfile), "w") as zpf:
-        for i, (file, relative) in enumerate(filelist):
-            print(f"{str(i * 100 // len(filelist)).zfill(2)}% {relative}")
+        for i, (file, relative) in enumerate(filelist, 1):
+            percent = str(i * 100 // len(filelist))
+            print(f"{' ' * (3 - len(percent))}{percent}% {relative}")
             zpf.write(file, arcname=relative)
             sleep(0.1)
 
