@@ -87,7 +87,7 @@ public class Lexer {
     public Lexer lex() throws IOException {
         int chr;
         while ((chr = reader.read()) != -1) {
-            if (chr == '\n' || Character.isSpaceChar(chr)) {
+            if (Character.isWhitespace(chr)) {
                 continue;
             }
             reader.unread(chr);
