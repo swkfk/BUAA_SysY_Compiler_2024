@@ -190,9 +190,11 @@ public class Lexer {
         } else if (chr == '*') {
             // Multi-line comment
             while ((chr = reader.read()) != -1) {
-                if (chr == '*' && reader.read() == '/') {
+                int nxt = reader.read();
+                if (chr == '*' && nxt == '/') {
                     break;
                 }
+                reader.unread(nxt);  // unread a char to avoid missing '*/'
             }
         } else {
             // Division
