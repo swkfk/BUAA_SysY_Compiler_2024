@@ -23,7 +23,7 @@ public class Configure {
                 target = args[++i];
             } else if (args[i].equals("-debug")) {
                 debug.parse(args[++i]);
-            } else {
+            } else if (!args[i].startsWith("-")) {
                 source = args[i];
             }
         }
