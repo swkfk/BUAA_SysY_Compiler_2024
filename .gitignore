@@ -1,0 +1,16 @@
+
+# IDEA
+.idea/
+out/
+*.iml
+.attach_pid*
+
+# Jar Pack
+src/META-INF/
+META-INF/
+
+# Zip Pack
+submit/
+
+# Auto Test
+auto_test/
