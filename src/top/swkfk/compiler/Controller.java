@@ -9,6 +9,9 @@ import java.io.IOException;
 public class Controller {
     public static void frontend() throws IOException {
         TokenStream tokens = new Lexer(Configure.source).lex().emit();
+        if (Configure.debug.displayTokens) {
+            System.err.println(tokens.toDebugString());
+        }
         // Homework 2: Output the tokens
         try (FileWriter writer = new FileWriter(Configure.target)) {
             writer.write(tokens.toString());
