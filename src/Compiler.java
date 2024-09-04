@@ -1,5 +1,9 @@
+import top.swkfk.compiler.Configure;
+import top.swkfk.compiler.Controller;
+
 public class Compiler {
     public static void main(String[] args) {
-        System.out.println("Hello, World!");
+        Configure.parse(args);
+        Controller.frontend();
     }
 }
