@@ -7,11 +7,11 @@ import java.util.Arrays;
 public record Token(TokenType type, String value, Navigation location) {
 
     public String toString() {
-        return type + " " + value;
+        return type + " " + value.replace("\n", "\\n");
     }
 
     public String toDebugString() {
-        return type + " " + value + " " + location;
+        return type + " " + value.replace("\n", "\\n") + " " + location;
     }
 
     /**
