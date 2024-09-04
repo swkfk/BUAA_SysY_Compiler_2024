@@ -44,4 +44,8 @@ public class Navigation {
     public Pair<Integer, Integer> getEnd() {
         return end;
     }
+
+    public String toString() {
+        return String.format("%d:%d-%d:%d", start.getFirst(), start.getSecond(), end.getFirst(), end.getSecond());
+    }
 }
