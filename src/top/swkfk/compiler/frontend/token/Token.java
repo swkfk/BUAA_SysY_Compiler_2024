@@ -4,28 +4,7 @@ import top.swkfk.compiler.frontend.Navigation;
 
 import java.util.Arrays;
 
-public class Token {
-    private TokenType type;
-    private String value;
-    private Navigation location;
-
-    public Token(TokenType type, String value, Navigation location) {
-        this.type = type;
-        this.value = value;
-        this.location = location;
-    }
-
-    public TokenType getType() {
-        return type;
-    }
-
-    public String getValue() {
-        return value;
-    }
-
-    public Navigation getLocation() {
-        return location;
-    }
+public record Token(TokenType type, String value, Navigation location) {
 
     public String toString() {
         return type + " " + value;
@@ -37,6 +16,7 @@ public class Token {
 
     /**
      * Whether the token has the same content as the given token.
+     *
      * @param tk the token to compare
      * @return result
      */
@@ -46,6 +26,7 @@ public class Token {
 
     /**
      * Whether the token has the same type as the given type.
+     *
      * @param type the type to compare
      * @return result
      */
@@ -55,6 +36,7 @@ public class Token {
 
     /**
      * Whether the token has the same type as one of the given types.
+     *
      * @param types the types to compare
      * @return result
      */
