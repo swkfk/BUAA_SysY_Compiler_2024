@@ -1,5 +1,6 @@
 package top.swkfk.compiler.frontend.token;
 
+@SuppressWarnings("SpellCheckingInspection")
 public enum TokenType {
 
     Ident("IDENFR"),

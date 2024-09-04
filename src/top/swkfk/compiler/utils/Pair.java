@@ -1,29 +1,6 @@
 package top.swkfk.compiler.utils;
 
-public class Pair<T, U> {
-    public T first;
-    public U second;
-
-    public Pair(T first, U second) {
-        this.first = first;
-        this.second = second;
-    }
-
-    public T getFirst() {
-        return first;
-    }
-
-    public U getSecond() {
-        return second;
-    }
-
-    public void setFirst(T first) {
-        this.first = first;
-    }
-
-    public void setSecond(U second) {
-        this.second = second;
-    }
+public record Pair<T, U>(T first, U second) {
 
     public String toString() {
         return "(" + first + ", " + second + ")";

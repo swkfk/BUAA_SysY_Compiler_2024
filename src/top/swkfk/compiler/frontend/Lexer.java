@@ -53,6 +53,7 @@ public class Lexer {
         }
     }
 
+    @SuppressWarnings("SpellCheckingInspection")
     private final static Map<String, TokenType> keepwords = Map.ofEntries(
         entry("const", TokenType.Const), entry("int", TokenType.Int),
         entry("break", TokenType.Break), entry("continue", TokenType.Continue),

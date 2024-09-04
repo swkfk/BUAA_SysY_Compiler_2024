@@ -1,6 +1,7 @@
 package top.swkfk.compiler;
 
 public class Configure {
+    @SuppressWarnings("SpellCheckingInspection")
     public static String source = "testfile.txt";
     public static String target = "output.txt";
 
