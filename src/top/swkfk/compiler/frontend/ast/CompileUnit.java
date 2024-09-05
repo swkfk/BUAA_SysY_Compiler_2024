@@ -4,6 +4,7 @@ import top.swkfk.compiler.frontend.ast.declaration.function.FuncDef;
 import top.swkfk.compiler.frontend.ast.declaration.function.MainFuncDef;
 import top.swkfk.compiler.frontend.ast.declaration.object.Decl;
 
+import java.io.Writer;
 import java.util.LinkedList;
 import java.util.List;
 
