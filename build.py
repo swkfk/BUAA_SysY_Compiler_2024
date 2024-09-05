@@ -25,8 +25,10 @@ def pack(*args):
     print("--> \033[32mScanning...\033[0m")
     filelist = []
     for file in srcpath.glob("**/*.java"):
-        print(f"    {file}")
+        print(".", end='', flush=True)
+        sleep(0.02)
         filelist.append((str(file), str(file.relative_to(srcpath))))
+    print()
 
     print("--> \033[32mPacking...\033[0m")
     with ZipFile(str(zipfile), "w") as zpf:
@@ -34,7 +36,7 @@ def pack(*args):
             percent = str(i * 100 // len(filelist))
             print(f"{' ' * (3 - len(percent))}{percent}% {relative}")
             zpf.write(file, arcname=relative)
-            sleep(0.1)
+            sleep(0.03)
 
 
 tasks = {
