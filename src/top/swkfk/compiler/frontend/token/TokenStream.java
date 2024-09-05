@@ -61,27 +61,28 @@ public class TokenStream {
     /**
      * Consume a specific token. Otherwise, throw an exception.
      * @param type the token type to consume
+     * @return the consumed token
      */
-    public void consume(TokenType type) {
+    public Token consume(TokenType type) {
         assertFrozen();
         Token nxt = next();
         if (nxt == null || !nxt.is(type)) {
             throw new IllegalStateException("Expecting " + type + " but got " + nxt);
         }
+        return nxt;
     }
 
     /**
      * Check if the next token is a specific type. If so, consume it and return true.
      * @param types the token types to check
-     * @return whether the next token is one of the types
+     * @return <code>null</code> if the next token is not one of the types, otherwise the consumed token
      */
-    public boolean checkConsume(TokenType... types) {
+    public Token checkConsume(TokenType... types) {
         assertFrozen();
         if (!among(types)) {
-            return false;
+            return null;
         }
-        index++;
-        return true;
+        return next();
     }
 
     /**
