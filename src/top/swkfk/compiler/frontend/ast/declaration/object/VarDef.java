@@ -12,16 +12,16 @@ final public class VarDef extends ASTNode {
     /**
      * Initial value of the variable. <code>null</code> if not initialized.
      */
-    private final VarInitValue initial;
-
-    public VarDef(String identifer, VarInitValue initial) {
-        this.identifer = identifer;
-        this.indices = new LinkedList<>();
-        this.initial = initial;
-    }
+    private VarInitValue initial;
 
     public VarDef(String identifer) {
-        this(identifer, null);
+        this.identifer = identifer;
+        this.indices = new LinkedList<>();
+        this.initial = null;
+    }
+
+    public void setInitial(VarInitValue initial) {
+        this.initial = initial;
     }
 
     public void addIndex(ExprConst index) {

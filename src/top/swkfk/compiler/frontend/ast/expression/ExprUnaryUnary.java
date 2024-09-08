@@ -6,9 +6,11 @@ final public class ExprUnaryUnary extends ExprUnary {
     }
 
     private final Op op;
+    private final ExprUnary expr;
 
-    protected ExprUnaryUnary(Op op) {
+    public ExprUnaryUnary(Op op, ExprUnary expr) {
         super(Type.Unary);
         this.op = op;
+        this.expr = expr;
     }
 }

@@ -20,6 +20,11 @@ final public class ExprMul extends ASTNode {
         this.rights = new LinkedList<>();
     }
 
+    public void add(Op op, ExprUnary expr) {
+        this.ops.add(op);
+        this.rights.add(expr);
+    }
+
     @Override
     protected String getName() {
         return "<MulExp>";
