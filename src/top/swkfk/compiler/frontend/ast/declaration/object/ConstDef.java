@@ -2,11 +2,13 @@ package top.swkfk.compiler.frontend.ast.declaration.object;
 
 import top.swkfk.compiler.frontend.ast.ASTNode;
 import top.swkfk.compiler.frontend.ast.expression.ExprConst;
+import top.swkfk.compiler.frontend.symbol.SymbolVariable;
 
 import java.util.List;
 
 final public class ConstDef extends ASTNode {
     private final String identifier;
+    private SymbolVariable symbol = null;
     private final List<ExprConst> indices;
     private final ConstInitValue initial;
 
@@ -25,5 +27,9 @@ final public class ConstDef extends ASTNode {
     @Override
     protected String getName() {
         return "<ConstDef>";
+    }
+
+    public void setSymbol(SymbolVariable symbol) {
+        this.symbol = symbol;
     }
 }

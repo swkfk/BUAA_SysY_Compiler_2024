@@ -2,12 +2,14 @@ package top.swkfk.compiler.frontend.ast.declaration.object;
 
 import top.swkfk.compiler.frontend.ast.ASTNode;
 import top.swkfk.compiler.frontend.ast.expression.ExprConst;
+import top.swkfk.compiler.frontend.symbol.SymbolVariable;
 
 import java.util.LinkedList;
 import java.util.List;
 
 final public class VarDef extends ASTNode {
     private final String identifer;
+    private SymbolVariable symbol = null;
     private final List<ExprConst> indices;
     /**
      * Initial value of the variable. <code>null</code> if not initialized.
@@ -31,5 +33,9 @@ final public class VarDef extends ASTNode {
     @Override
     protected String getName() {
         return "<VarDef>";
+    }
+
+    public void setSymbol(SymbolVariable symbol) {
+        this.symbol = symbol;
     }
 }

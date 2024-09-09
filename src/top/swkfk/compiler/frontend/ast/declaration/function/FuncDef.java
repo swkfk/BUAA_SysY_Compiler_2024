@@ -2,10 +2,13 @@ package top.swkfk.compiler.frontend.ast.declaration.function;
 
 import top.swkfk.compiler.frontend.ast.ASTNode;
 import top.swkfk.compiler.frontend.ast.block.Block;
+import top.swkfk.compiler.frontend.symbol.SymbolFunction;
+import top.swkfk.compiler.frontend.symbol.SymbolVariable;
 
 final public class FuncDef extends ASTNode {
     private final FuncType type;
     private final String identifier;
+    private SymbolFunction symbol = null;
     private final FuncFormalParams params;
     private final Block block;
 
@@ -19,5 +22,9 @@ final public class FuncDef extends ASTNode {
     @Override
     protected String getName() {
         return "<FuncDef>";
+    }
+
+    public void setSymbol(SymbolFunction symbol) {
+        this.symbol = symbol;
     }
 }

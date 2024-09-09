@@ -3,6 +3,7 @@ package top.swkfk.compiler.frontend.ast.declaration.function;
 import top.swkfk.compiler.frontend.ast.ASTNode;
 import top.swkfk.compiler.frontend.ast.declaration.BasicType;
 import top.swkfk.compiler.frontend.ast.expression.ExprConst;
+import top.swkfk.compiler.frontend.symbol.SymbolVariable;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -10,6 +11,7 @@ import java.util.List;
 final public class FuncFormalParam extends ASTNode {
     private final BasicType type;
     private final String identifier;
+    private SymbolVariable symbol = null;
     /**
      * List of indices for the parameter. It is <code>null</code> if the parameter is not an array.
      * Otherwise, it is an array and the first element shall be <code>null</code>.
@@ -35,5 +37,9 @@ final public class FuncFormalParam extends ASTNode {
     @Override
     protected String getName() {
         return "<FuncFParam>";
+    }
+
+    public void setSymbol(SymbolVariable symbol) {
+        this.symbol = symbol;
     }
 }

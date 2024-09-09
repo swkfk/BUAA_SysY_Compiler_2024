@@ -5,6 +5,7 @@ import top.swkfk.compiler.frontend.Lexer;
 import top.swkfk.compiler.frontend.Parser;
 import top.swkfk.compiler.frontend.Traverser;
 import top.swkfk.compiler.frontend.ast.CompileUnit;
+import top.swkfk.compiler.frontend.symbol.SymbolTable;
 import top.swkfk.compiler.frontend.token.TokenStream;
 import top.swkfk.compiler.utils.ParserWatcher;
 
@@ -40,7 +41,8 @@ public class Controller {
 
         // 3. Semantic analysis
         ErrorTable errors = new ErrorTable();
-        new Traverser(ast, errors).spawn();
+        SymbolTable symbols = new SymbolTable();
+        new Traverser(ast, errors, symbols).spawn();
         if (Configure.debug.displayErrors) {
             System.err.println(errors.toDebugString());
         }
