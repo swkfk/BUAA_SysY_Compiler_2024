@@ -2,6 +2,7 @@ package top.swkfk.compiler.frontend;
 
 import top.swkfk.compiler.frontend.ast.CompileUnit;
 import top.swkfk.compiler.frontend.ast.block.Block;
+import top.swkfk.compiler.frontend.ast.block.BlockItem;
 import top.swkfk.compiler.frontend.ast.declaration.BasicType;
 import top.swkfk.compiler.frontend.ast.declaration.function.FuncDef;
 import top.swkfk.compiler.frontend.ast.declaration.function.FuncFormalParam;
@@ -24,8 +25,25 @@ import top.swkfk.compiler.frontend.ast.expression.ExprUnary;
 import top.swkfk.compiler.frontend.ast.expression.ExprUnaryCall;
 import top.swkfk.compiler.frontend.ast.expression.ExprUnaryPrimary;
 import top.swkfk.compiler.frontend.ast.expression.ExprUnaryUnary;
+import top.swkfk.compiler.frontend.ast.logical.Cond;
+import top.swkfk.compiler.frontend.ast.logical.CondAnd;
+import top.swkfk.compiler.frontend.ast.logical.CondEqu;
+import top.swkfk.compiler.frontend.ast.logical.CondOr;
+import top.swkfk.compiler.frontend.ast.logical.CondRel;
+import top.swkfk.compiler.frontend.ast.misc.ForStmt;
 import top.swkfk.compiler.frontend.ast.misc.LeftValue;
 import top.swkfk.compiler.frontend.ast.misc.Number;
+import top.swkfk.compiler.frontend.ast.statement.Stmt;
+import top.swkfk.compiler.frontend.ast.statement.StmtAssign;
+import top.swkfk.compiler.frontend.ast.statement.StmtBlock;
+import top.swkfk.compiler.frontend.ast.statement.StmtBreak;
+import top.swkfk.compiler.frontend.ast.statement.StmtContinue;
+import top.swkfk.compiler.frontend.ast.statement.StmtExpr;
+import top.swkfk.compiler.frontend.ast.statement.StmtFor;
+import top.swkfk.compiler.frontend.ast.statement.StmtGetInt;
+import top.swkfk.compiler.frontend.ast.statement.StmtIf;
+import top.swkfk.compiler.frontend.ast.statement.StmtPrintf;
+import top.swkfk.compiler.frontend.ast.statement.StmtReturn;
 import top.swkfk.compiler.frontend.token.Token;
 import top.swkfk.compiler.frontend.token.TokenStream;
 import top.swkfk.compiler.frontend.token.TokenType;
@@ -35,12 +53,18 @@ import java.util.LinkedList;
 import java.util.List;
 
 public class Parser {
+    private final CompileUnit ast;
+
+    /* =-=-=-=-=-= <tokens-wrapper> =-=-=-=-=-= */
+    // The following methods are wrappers of <code>TokenStream</code> methods.
+    // We need to record the tokens with its AST for homework 3.
+    // So we need to wrap these methods to record the tokens.
+
     /**
      * SHALL NOT consume the token without recording via methods of <code>Parser</code>.
      */
-    private final TokenStream tokens;
-    private final ParserWatcher watcher;
-    private final CompileUnit ast;
+    private final TokenStream __tokens;
+    private final ParserWatcher __watcher;
 
     /**
      * Consume the token. Prepared for recording.
@@ -49,8 +73,8 @@ public class Parser {
      * @return The consumed token.
      */
     private Token consume(TokenType type) {
-        Token token = tokens.consume(type);
-        watcher.add(token.toString());
+        Token token = __tokens.consume(type);
+        __watcher.add(token.toString());
         return token;
     }
 
@@ -61,9 +85,9 @@ public class Parser {
      * @return Whether the token is among the given types.
      */
     private boolean checkConsume(TokenType... types) {
-        Token token = tokens.checkConsume(types);
+        Token token = __tokens.checkConsume(types);
         if (token != null) {
-            watcher.add(token.toString());
+            __watcher.add(token.toString());
             return true;
         }
         return false;
@@ -75,23 +99,49 @@ public class Parser {
      * @return The next token.
      */
     private Token next() {
-        Token token = tokens.next();
-        watcher.add(token.toString());
+        Token token = __tokens.next();
+        __watcher.add(token.toString());
         return token;
     }
 
+    /**
+     * Check whether the next token is among the given types.
+     * @param types The specified token types.
+     * @return Whether the next token is among the given types.
+     * @see Parser#among(int, TokenType...)
+     */
+    private boolean among(TokenType... types) {
+        return among(0, types);
+    }
+
+    /**
+     * Check whether the next-th token is among the given types.
+     * @param next The next-th token.
+     * @param types The specified token types.
+     * @return The check result.
+     */
+    private boolean among(int next, TokenType... types) {
+        return __tokens.peek(next).among(types);
+    }
+
+    private boolean eof() {
+        return __tokens.eof();
+    }
+
+    /* =-=-=-=-=-= </tokens-wrapper> =-=-=-=-=-= */
+
     public Parser(TokenStream tokens, ParserWatcher watcher) {
-        this.tokens = tokens;
-        this.watcher = watcher;
+        this.__tokens = tokens;
+        this.__watcher = watcher;
         this.ast = new CompileUnit();
     }
 
     public Parser parse() {
-        while (!tokens.eof()) {
-            if (tokens.peek(1).is(TokenType.SpMain)) {
+        while (!eof()) {
+            if (among(1, TokenType.SpMain)) {
                 // Main Function
                 ast.setMainFunc(parseMainFuncDef());
-            } else if (tokens.peek(2).is(TokenType.LParen)) {
+            } else if (among(2, TokenType.LParen)) {
                 // Function
                 ast.addFunction(parseFuncDef());
             } else {
@@ -124,7 +174,7 @@ public class Parser {
 
     private FuncFormalParams parseFuncFormalParams() {
         FuncFormalParams params = new FuncFormalParams();
-        while (!next().among(TokenType.RParen)) {
+        while (!among(TokenType.RParen)) {
             params.addParam(parseFuncFormalParam());
             checkConsume(TokenType.Comma);
         }
@@ -136,10 +186,10 @@ public class Parser {
         assert type.is(TokenType.Int) : "Only support int type";
         BasicType paramType = new BasicType();
         String name = consume(TokenType.Ident).value();
-        boolean isArray = next().among(TokenType.LBracket);
+        boolean isArray = among(TokenType.LBracket);
         FuncFormalParam param = new FuncFormalParam(paramType, name, isArray);
         while (checkConsume(TokenType.LBracket)) {
-            if (next().among(TokenType.RBracket)) {
+            if (among(TokenType.RBracket)) {
                 param.addIndex(null);
             } else {
                 param.addIndex(parseConstExpr());
@@ -214,7 +264,7 @@ public class Parser {
             return new VarInitValue(parseExpr());
         }
         VarInitValue varInitValue = new VarInitValue();
-        while (!next().among(TokenType.RBrace)) {
+        while (!among(TokenType.RBrace)) {
             varInitValue.addSubInitializer(parseVarInitial());
             checkConsume(TokenType.Comma);
         }
@@ -223,7 +273,92 @@ public class Parser {
     }
 
     private Block parseBlock() {
-        return null;
+        Block block = new Block();
+        consume(TokenType.LBrace);
+        while (!checkConsume(TokenType.RBrace)) {
+            block.addBlock(parseBlockItem());
+        }
+        return block;
+    }
+
+    private BlockItem parseBlockItem() {
+        if (among(TokenType.Const, TokenType.IntConst)) {
+            return new BlockItem(parseDeclaration());
+        }
+        return new BlockItem(parseStmt());
+    }
+
+    private Stmt parseStmt() {
+        if (among(TokenType.LBrace)) {
+            return new StmtBlock(parseBlock());
+        }
+        if (checkConsume(TokenType.If)) {
+            consume(TokenType.LParen);
+            Cond cond = parseCond();
+            consume(TokenType.RParen);
+            Stmt thenStmt = parseStmt();
+            if (checkConsume(TokenType.Else)) {
+                return new StmtIf(cond, thenStmt, parseStmt());
+            }
+            return new StmtIf(cond, thenStmt);
+        }
+        if (checkConsume(TokenType.For)) {
+            consume(TokenType.LParen);
+            ForStmt forStmt = among(TokenType.Semicolon) ? null : parseForStmt();
+            consume(TokenType.Semicolon);
+            Cond cond = among(TokenType.Semicolon) ? null : parseCond();
+            consume(TokenType.Semicolon);
+            ForStmt update = among(TokenType.RParen) ? null : parseForStmt();
+            consume(TokenType.RParen);
+            return new StmtFor(forStmt, cond, update, parseStmt());
+        }
+        if (checkConsume(TokenType.Break)) {
+            consume(TokenType.Semicolon);
+            return new StmtBreak();
+        }
+        if (checkConsume(TokenType.Continue)) {
+            consume(TokenType.Semicolon);
+            return new StmtContinue();
+        }
+        if (checkConsume(TokenType.Return)) {
+            if (checkConsume(TokenType.Semicolon)) {
+                return new StmtReturn();
+            }
+            Expr expr = parseExpr();
+            consume(TokenType.Semicolon);
+            return new StmtReturn(expr);
+        }
+        if (checkConsume(TokenType.SpPrintf)) {
+            consume(TokenType.LParen);
+            StmtPrintf printf = new StmtPrintf(consume(TokenType.FString).value());
+            while (checkConsume(TokenType.Comma)) {
+                printf.addArg(parseExpr());
+            }
+            consume(TokenType.RParen);
+            consume(TokenType.Semicolon);
+            return printf;
+        }
+        int i = 0;
+        while (!among(i, TokenType.Assign) && !among(i, TokenType.Semicolon)) {
+            i++;
+        }
+        if (among(i, TokenType.Assign)) {
+            LeftValue lVal = parseLVal();
+            consume(TokenType.Assign);
+            if (checkConsume(TokenType.SpGetInt)) {
+                consume(TokenType.LParen);
+                consume(TokenType.RParen);
+                consume(TokenType.Semicolon);
+                return new StmtGetInt(lVal);
+            }
+            Expr expr = parseExpr();
+            consume(TokenType.Semicolon);
+            return new StmtAssign(lVal, expr);
+        }
+        if (checkConsume(TokenType.Semicolon)) {
+            return new StmtExpr(null);
+        }
+        return new StmtExpr(parseExpr());
     }
 
     private Expr parseExpr() {
@@ -232,7 +367,7 @@ public class Parser {
 
     private ExprAdd parseAddExpr() {
         ExprAdd expr = new ExprAdd(parseMulExpr());
-        while (tokens.among(TokenType.Plus, TokenType.Minus)) {
+        while (among(TokenType.Plus, TokenType.Minus)) {
             Token token = next();
             ExprAdd.Op op = token.is(TokenType.Plus) ? ExprAdd.Op.ADD : ExprAdd.Op.SUB;
             expr.add(op, parseMulExpr());
@@ -242,7 +377,7 @@ public class Parser {
 
     private ExprMul parseMulExpr() {
         ExprMul expr = new ExprMul(parseUnaryExpr());
-        while (tokens.among(TokenType.Mult, TokenType.Div, TokenType.Mod)) {
+        while (among(TokenType.Mult, TokenType.Div, TokenType.Mod)) {
             Token token = next();
             ExprMul.Op op =
                 token.is(TokenType.Mult) ? ExprMul.Op.MUL :
@@ -254,7 +389,7 @@ public class Parser {
     }
 
     private ExprUnary parseUnaryExpr() {
-        if (tokens.among(TokenType.Plus, TokenType.Minus, TokenType.Not)) {
+        if (among(TokenType.Plus, TokenType.Minus, TokenType.Not)) {
             Token token = next();
             ExprUnaryUnary.Op op =
                 token.is(TokenType.Plus) ? ExprUnaryUnary.Op.Plus :
@@ -262,7 +397,7 @@ public class Parser {
                         ExprUnaryUnary.Op.Not;
             return new ExprUnaryUnary(op, parseUnaryExpr());
         }
-        if (tokens.among(TokenType.Ident) && tokens.peek(1).among(TokenType.LParen)) {
+        if (among(TokenType.Ident) && among(1, TokenType.LParen)) {
             ExprUnaryCall call = new ExprUnaryCall(consume(TokenType.Ident).value());
             consume(TokenType.LParen);
             while (!checkConsume(TokenType.RParen)) {
@@ -280,10 +415,54 @@ public class Parser {
             consume(TokenType.RParen);
             return new ExprPrimary(expr);
         }
-        if (tokens.among(TokenType.IntConst)) {
+        if (among(TokenType.IntConst)) {
             return new ExprPrimary(new Number(Integer.parseInt(next().value())));
         }
         return new ExprPrimary(parseLVal());
+    }
+
+    private Cond parseCond() {
+        return new Cond(parseLOrExpr());
+    }
+
+    private CondOr parseLOrExpr() {
+        CondOr cond = new CondOr();
+        do {
+            cond.addCondAnd(parseLAndExpr());
+        } while (checkConsume(TokenType.Or));
+        return cond;
+    }
+
+    private CondAnd parseLAndExpr() {
+        CondAnd cond = new CondAnd();
+        do {
+            cond.addCondEqu(parseEqExpr());
+        } while (checkConsume(TokenType.And));
+        return cond;
+    }
+
+    private CondEqu parseEqExpr() {
+        CondEqu cond = new CondEqu(parseRelExpr());
+        while (among(TokenType.Eq, TokenType.Neq)) {
+            Token token = next();
+            CondEqu.Op op = token.is(TokenType.Eq) ? CondEqu.Op.Eq : CondEqu.Op.Ne;
+            cond.add(op, parseRelExpr());
+        }
+        return cond;
+    }
+
+    private CondRel parseRelExpr() {
+        CondRel cond = new CondRel(parseAddExpr());
+        while (among(TokenType.Lt, TokenType.Gt, TokenType.Leq, TokenType.Geq)) {
+            Token token = next();
+            CondRel.Op op =
+                token.is(TokenType.Lt) ? CondRel.Op.Lt :
+                    token.is(TokenType.Gt) ? CondRel.Op.Gt :
+                        token.is(TokenType.Leq) ? CondRel.Op.Le :
+                            CondRel.Op.Ge;
+            cond.add(op, parseAddExpr());
+        }
+        return cond;
     }
 
     private LeftValue parseLVal() {
@@ -293,6 +472,13 @@ public class Parser {
             consume(TokenType.RBracket);
         }
         return leftValue;
+    }
+
+    private ForStmt parseForStmt() {
+        LeftValue lVal = parseLVal();
+        consume(TokenType.Assign);
+        Expr expr = parseExpr();
+        return new ForStmt(lVal, expr);
     }
 
     public CompileUnit emit() {
