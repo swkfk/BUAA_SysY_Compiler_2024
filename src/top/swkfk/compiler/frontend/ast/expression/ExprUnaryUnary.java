@@ -2,7 +2,11 @@ package top.swkfk.compiler.frontend.ast.expression;
 
 final public class ExprUnaryUnary extends ExprUnary {
     public enum Op {
-        Plus, Minus, Not
+        Plus, Minus, Not;
+
+        public String toString() {
+            return "<UnaryOp>";
+        }
     }
 
     private final Op op;

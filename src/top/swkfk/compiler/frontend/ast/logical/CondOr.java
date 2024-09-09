@@ -18,6 +18,6 @@ final public class CondOr extends ASTNode {
 
     @Override
     protected String getName() {
-        return "LOrExp";
+        return "<LOrExp>";
     }
 }

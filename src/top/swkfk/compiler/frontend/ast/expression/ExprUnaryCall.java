@@ -10,13 +10,9 @@ final public class ExprUnaryCall extends ExprUnary {
      */
     private final FuncRealParams params;
 
-    public ExprUnaryCall(String identifier) {
+    public ExprUnaryCall(String identifier, FuncRealParams params) {
         super(Type.Call);
         this.identifier = identifier;
-        this.params = new FuncRealParams();
-    }
-
-    public void addParam(Expr expr) {
-        this.params.addParam(expr);
+        this.params = params;
     }
 }

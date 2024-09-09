@@ -31,6 +31,7 @@ import top.swkfk.compiler.frontend.ast.logical.CondEqu;
 import top.swkfk.compiler.frontend.ast.logical.CondOr;
 import top.swkfk.compiler.frontend.ast.logical.CondRel;
 import top.swkfk.compiler.frontend.ast.misc.ForStmt;
+import top.swkfk.compiler.frontend.ast.misc.FuncRealParams;
 import top.swkfk.compiler.frontend.ast.misc.LeftValue;
 import top.swkfk.compiler.frontend.ast.misc.Number;
 import top.swkfk.compiler.frontend.ast.statement.Stmt;
@@ -128,6 +129,11 @@ public class Parser {
         return __tokens.eof();
     }
 
+    private<T> T watch(T inst) {
+        __watcher.add(inst.toString());
+        return inst;
+    }
+
     /* =-=-=-=-=-= </tokens-wrapper> =-=-=-=-=-= */
 
     public Parser(TokenStream tokens, ParserWatcher watcher) {
@@ -149,6 +155,7 @@ public class Parser {
                 ast.addDeclaration(parseDeclaration());
             }
         }
+        watch("<CompUnit>");
         return this;
     }
 
@@ -157,19 +164,24 @@ public class Parser {
         consume(TokenType.SpMain);
         consume(TokenType.LParen);
         consume(TokenType.RParen);
-        return new MainFuncDef(parseBlock());
+        return watch(new MainFuncDef(parseBlock()));
+    }
+
+    private FuncType parseFuncType() {
+        Token type = next();
+        assert type.among(TokenType.Int, TokenType.Void) : "Only support int or void type";
+        return watch(new FuncType(type.is(TokenType.Int) ? FuncType.Type.Int : FuncType.Type.Void));
     }
 
     private FuncDef parseFuncDef() {
-        Token type = next();
-        assert type.among(TokenType.Int, TokenType.Void) : "Only support int or void type";
-        FuncType returnType = new FuncType(type.is(TokenType.Int) ? FuncType.Type.Int : FuncType.Type.Void);
+        FuncType returnType = parseFuncType();
         String name = consume(TokenType.Ident).value();
         consume(TokenType.LParen);
-        FuncFormalParams params = parseFuncFormalParams();
+        FuncFormalParams params =
+            among(TokenType.RParen) ? new FuncFormalParams() : parseFuncFormalParams();
         consume(TokenType.RParen);
         Block body = parseBlock();
-        return new FuncDef(returnType, name, params, body);
+        return watch(new FuncDef(returnType, name, params, body));
     }
 
     private FuncFormalParams parseFuncFormalParams() {
@@ -178,7 +190,7 @@ public class Parser {
             params.addParam(parseFuncFormalParam());
             checkConsume(TokenType.Comma);
         }
-        return params;
+        return watch(params);
     }
 
     private FuncFormalParam parseFuncFormalParam() {
@@ -196,7 +208,7 @@ public class Parser {
                 consume(TokenType.RBracket);
             }
         }
-        return param;
+        return watch(param);
     }
 
     private Decl parseDeclaration() {
@@ -215,7 +227,7 @@ public class Parser {
             constDecl.addDef(parseConstDefinition());
         } while (checkConsume(TokenType.Comma));
         consume(TokenType.Semicolon);
-        return constDecl;
+        return watch(constDecl);
     }
 
     private ConstDef parseConstDefinition() {
@@ -227,7 +239,7 @@ public class Parser {
         }
         consume(TokenType.Assign);
         ConstInitValue initial = parseConstInitial();
-        return new ConstDef(name, indices, initial);
+        return watch(new ConstDef(name, indices, initial));
     }
 
     private VarDecl parseVarDeclaration() {
@@ -238,7 +250,7 @@ public class Parser {
             varDecl.addDef(parseVarDefinition());
         } while (checkConsume(TokenType.Comma));
         consume(TokenType.Semicolon);
-        return varDecl;
+        return watch(varDecl);
     }
 
     private VarDef parseVarDefinition() {
@@ -250,16 +262,16 @@ public class Parser {
         if (checkConsume(TokenType.Assign)) {
             varDef.setInitial(parseVarInitial());
         }
-        return varDef;
+        return watch(varDef);
     }
 
     private ExprConst parseConstExpr() {
-        return new ExprConst(parseAddExpr());
+        return watch(new ExprConst(parseAddExpr()));
     }
 
     private ConstInitValue parseConstInitial() {
         if (!checkConsume(TokenType.LBrace)) {
-            return new ConstInitValue(parseConstExpr());
+            return watch(new ConstInitValue(parseConstExpr()));
         }
         ConstInitValue constInitValue = new ConstInitValue();
         while (!among(TokenType.RBrace)) {
@@ -267,12 +279,12 @@ public class Parser {
             checkConsume(TokenType.Comma);
         }
         consume(TokenType.RBrace);
-        return constInitValue;
+        return watch(constInitValue);
     }
 
     private VarInitValue parseVarInitial() {
         if (!checkConsume(TokenType.LBrace)) {
-            return new VarInitValue(parseExpr());
+            return watch(new VarInitValue(parseExpr()));
         }
         VarInitValue varInitValue = new VarInitValue();
         while (!among(TokenType.RBrace)) {
@@ -280,7 +292,7 @@ public class Parser {
             checkConsume(TokenType.Comma);
         }
         consume(TokenType.RBrace);
-        return varInitValue;
+        return watch(varInitValue);
     }
 
     private Block parseBlock() {
@@ -289,19 +301,19 @@ public class Parser {
         while (!checkConsume(TokenType.RBrace)) {
             block.addBlock(parseBlockItem());
         }
-        return block;
+        return watch(block);
     }
 
     private BlockItem parseBlockItem() {
         if (among(TokenType.Const, TokenType.Int)) {
             return new BlockItem(parseDeclaration());
         }
-        return new BlockItem(parseStmt());
+        return new BlockItem(parseStmt());  // Skip watching
     }
 
     private Stmt parseStmt() {
         if (among(TokenType.LBrace)) {
-            return new StmtBlock(parseBlock());
+            return watch(new StmtBlock(parseBlock()));
         }
         if (checkConsume(TokenType.If)) {
             consume(TokenType.LParen);
@@ -309,9 +321,9 @@ public class Parser {
             consume(TokenType.RParen);
             Stmt thenStmt = parseStmt();
             if (checkConsume(TokenType.Else)) {
-                return new StmtIf(cond, thenStmt, parseStmt());
+                return watch(new StmtIf(cond, thenStmt, parseStmt()));
             }
-            return new StmtIf(cond, thenStmt);
+            return watch(new StmtIf(cond, thenStmt));
         }
         if (checkConsume(TokenType.For)) {
             consume(TokenType.LParen);
@@ -321,23 +333,23 @@ public class Parser {
             consume(TokenType.Semicolon);
             ForStmt update = among(TokenType.RParen) ? null : parseForStmt();
             consume(TokenType.RParen);
-            return new StmtFor(forStmt, cond, update, parseStmt());
+            return watch(new StmtFor(forStmt, cond, update, parseStmt()));
         }
         if (checkConsume(TokenType.Break)) {
             consume(TokenType.Semicolon);
-            return new StmtBreak();
+            return watch(new StmtBreak());
         }
         if (checkConsume(TokenType.Continue)) {
             consume(TokenType.Semicolon);
-            return new StmtContinue();
+            return watch(new StmtContinue());
         }
         if (checkConsume(TokenType.Return)) {
             if (checkConsume(TokenType.Semicolon)) {
-                return new StmtReturn();
+                return watch(new StmtReturn());
             }
             Expr expr = parseExpr();
             consume(TokenType.Semicolon);
-            return new StmtReturn(expr);
+            return watch(new StmtReturn(expr));
         }
         if (checkConsume(TokenType.SpPrintf)) {
             consume(TokenType.LParen);
@@ -347,7 +359,7 @@ public class Parser {
             }
             consume(TokenType.RParen);
             consume(TokenType.Semicolon);
-            return printf;
+            return watch(printf);
         }
         int i = 0;
         while (!among(i, TokenType.Assign) && !among(i, TokenType.Semicolon)) {
@@ -360,35 +372,41 @@ public class Parser {
                 consume(TokenType.LParen);
                 consume(TokenType.RParen);
                 consume(TokenType.Semicolon);
-                return new StmtGetInt(lVal);
+                return watch(new StmtGetInt(lVal));
             }
             Expr expr = parseExpr();
             consume(TokenType.Semicolon);
-            return new StmtAssign(lVal, expr);
+            return watch(new StmtAssign(lVal, expr));
         }
-        if (checkConsume(TokenType.Semicolon)) {
-            return new StmtExpr(null);
+        if (among(TokenType.Semicolon)) {
+            Stmt stmt = new StmtExpr(null);
+            consume(TokenType.Semicolon);
+            return watch(stmt);
         }
-        return new StmtExpr(parseExpr());
+        Stmt stmt = new StmtExpr(parseExpr());
+        consume(TokenType.Semicolon);
+        return watch(stmt);
     }
 
     private Expr parseExpr() {
-        return new Expr(parseAddExpr());
+        return watch(new Expr(parseAddExpr()));
     }
 
     private ExprAdd parseAddExpr() {
         ExprAdd expr = new ExprAdd(parseMulExpr());
         while (among(TokenType.Plus, TokenType.Minus)) {
+            watch(expr); // Pay attention to the order of watching
             Token token = next();
             ExprAdd.Op op = token.is(TokenType.Plus) ? ExprAdd.Op.ADD : ExprAdd.Op.SUB;
             expr.add(op, parseMulExpr());
         }
-        return expr;
+        return watch(expr);
     }
 
     private ExprMul parseMulExpr() {
         ExprMul expr = new ExprMul(parseUnaryExpr());
         while (among(TokenType.Mult, TokenType.Div, TokenType.Mod)) {
+            watch(expr); // Pay attention to the order of watching
             Token token = next();
             ExprMul.Op op =
                 token.is(TokenType.Mult) ? ExprMul.Op.MUL :
@@ -396,75 +414,103 @@ public class Parser {
                         ExprMul.Op.MOD;
             expr.add(op, parseUnaryExpr());
         }
-        return expr;
+        return watch(expr);
+    }
+
+    private ExprUnaryUnary.Op parseUnaryOp() {
+        Token token = next();
+        return watch(
+            token.is(TokenType.Plus) ? ExprUnaryUnary.Op.Plus :
+                token.is(TokenType.Minus) ? ExprUnaryUnary.Op.Minus :
+                    ExprUnaryUnary.Op.Not
+        );
+    }
+
+    private FuncRealParams parseFuncRealParams() {
+        FuncRealParams params = new FuncRealParams();
+        while (!among(TokenType.RParen)) {
+            params.addParam(parseExpr());
+            checkConsume(TokenType.Comma);
+        }
+        return watch(params);
     }
 
     private ExprUnary parseUnaryExpr() {
         if (among(TokenType.Plus, TokenType.Minus, TokenType.Not)) {
-            Token token = next();
-            ExprUnaryUnary.Op op =
-                token.is(TokenType.Plus) ? ExprUnaryUnary.Op.Plus :
-                    token.is(TokenType.Minus) ? ExprUnaryUnary.Op.Minus :
-                        ExprUnaryUnary.Op.Not;
-            return new ExprUnaryUnary(op, parseUnaryExpr());
+            return watch(new ExprUnaryUnary(parseUnaryOp(), parseUnaryExpr()));
         }
         if (among(TokenType.Ident) && among(1, TokenType.LParen)) {
-            ExprUnaryCall call = new ExprUnaryCall(consume(TokenType.Ident).value());
+            String name = consume(TokenType.Ident).value();
             consume(TokenType.LParen);
-            while (!checkConsume(TokenType.RParen)) {
-                call.addParam(parseExpr());
-                checkConsume(TokenType.Comma);
+            ExprUnaryCall call;
+            if (among(TokenType.RParen)) {
+                call = new ExprUnaryCall(name, new FuncRealParams());
+            } else {
+                call = new ExprUnaryCall(name, parseFuncRealParams());
             }
-            return call;
+            consume(TokenType.RParen);
+            return watch(call);
         }
-        return new ExprUnaryPrimary(parsePrimaryExpr());
+        return watch(new ExprUnaryPrimary(parsePrimaryExpr()));
     }
 
     private ExprPrimary parsePrimaryExpr() {
         if (checkConsume(TokenType.LParen)) {
             Expr expr = parseExpr();
             consume(TokenType.RParen);
-            return new ExprPrimary(expr);
+            return watch(new ExprPrimary(expr));
         }
         if (among(TokenType.IntConst)) {
-            return new ExprPrimary(new Number(Integer.parseInt(next().value())));
+            return watch(new ExprPrimary(parseNumber()));
         }
-        return new ExprPrimary(parseLVal());
+        return watch(new ExprPrimary(parseLVal()));
+    }
+
+    private Number parseNumber() {
+        return watch(new Number(Integer.parseInt(next().value())));
     }
 
     private Cond parseCond() {
-        return new Cond(parseLOrExpr());
+        return watch(new Cond(parseLOrExpr()));
     }
 
     private CondOr parseLOrExpr() {
         CondOr cond = new CondOr();
-        do {
+        cond.addCondAnd(parseLAndExpr());
+        while (among(TokenType.Or)) {
+            watch(cond); // Pay attention to the order of watching
+            consume(TokenType.Or);
             cond.addCondAnd(parseLAndExpr());
-        } while (checkConsume(TokenType.Or));
-        return cond;
+        }
+        return watch(cond);
     }
 
     private CondAnd parseLAndExpr() {
         CondAnd cond = new CondAnd();
-        do {
+        cond.addCondEqu(parseEqExpr());
+        while (among(TokenType.And)) {
+            watch(cond); // Pay attention to the order of watching
+            consume(TokenType.And);
             cond.addCondEqu(parseEqExpr());
-        } while (checkConsume(TokenType.And));
-        return cond;
+        }
+        return watch(cond);
     }
 
     private CondEqu parseEqExpr() {
         CondEqu cond = new CondEqu(parseRelExpr());
         while (among(TokenType.Eq, TokenType.Neq)) {
+            watch(cond); // Pay attention to the order of watching
             Token token = next();
             CondEqu.Op op = token.is(TokenType.Eq) ? CondEqu.Op.Eq : CondEqu.Op.Ne;
             cond.add(op, parseRelExpr());
         }
-        return cond;
+        return watch(cond);
     }
 
     private CondRel parseRelExpr() {
         CondRel cond = new CondRel(parseAddExpr());
         while (among(TokenType.Lt, TokenType.Gt, TokenType.Leq, TokenType.Geq)) {
+            watch(cond); // Pay attention to the order of watching
             Token token = next();
             CondRel.Op op =
                 token.is(TokenType.Lt) ? CondRel.Op.Lt :
@@ -473,7 +519,7 @@ public class Parser {
                             CondRel.Op.Ge;
             cond.add(op, parseAddExpr());
         }
-        return cond;
+        return watch(cond);
     }
 
     private LeftValue parseLVal() {
@@ -482,14 +528,14 @@ public class Parser {
             leftValue.addIndex(parseExpr());
             consume(TokenType.RBracket);
         }
-        return leftValue;
+        return watch(leftValue);
     }
 
     private ForStmt parseForStmt() {
         LeftValue lVal = parseLVal();
         consume(TokenType.Assign);
         Expr expr = parseExpr();
-        return new ForStmt(lVal, expr);
+        return watch(new ForStmt(lVal, expr));
     }
 
     public CompileUnit emit() {
