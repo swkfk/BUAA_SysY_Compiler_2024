@@ -10,6 +10,7 @@ final public class StmtFor extends Stmt {
     private final Stmt body;
 
     public StmtFor(ForStmt init, Cond condition, ForStmt update, Stmt body) {
+        super(Type.For);
         this.init = init;
         this.condition = condition;
         this.update = update;

@@ -9,10 +9,12 @@ final public class StmtReturn extends Stmt {
     private final Expr expr;
 
     public StmtReturn(Expr expr) {
+        super(Type.Return);
         this.expr = expr;
     }
 
     public StmtReturn() {
+        super(Type.Return);
         this.expr = null;
     }
 }

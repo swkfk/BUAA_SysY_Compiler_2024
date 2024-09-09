@@ -8,6 +8,7 @@ final public class StmtAssign extends Stmt {
     private final Expr right;
 
     public StmtAssign(LeftValue left, Expr right) {
+        super(Type.Assign);
         this.left = left;
         this.right = right;
     }

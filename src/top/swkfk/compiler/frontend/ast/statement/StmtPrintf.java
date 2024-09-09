@@ -10,6 +10,7 @@ final public class StmtPrintf extends Stmt {
     private final List<Expr> args;
 
     public StmtPrintf(String format) {
+        super(Type.Printf);
         this.format = format;
         this.args = new LinkedList<>();
     }

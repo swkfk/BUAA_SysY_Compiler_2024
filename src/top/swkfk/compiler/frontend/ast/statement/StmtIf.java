@@ -8,6 +8,7 @@ final public class StmtIf extends Stmt {
     private final Stmt elseStmt;
 
     public StmtIf(Cond condition, Stmt thenStmt, Stmt elseStmt) {
+        super(Type.If);
         this.condition = condition;
         this.thenStmt = thenStmt;
         this.elseStmt = elseStmt;

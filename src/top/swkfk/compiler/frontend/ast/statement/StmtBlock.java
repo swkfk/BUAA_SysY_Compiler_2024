@@ -6,6 +6,7 @@ final public class StmtBlock extends Stmt {
     private final Block block;
 
     public StmtBlock(Block block) {
+        super(Type.Block);
         this.block = block;
     }
 }

@@ -9,6 +9,7 @@ final public class StmtExpr extends Stmt {
     private final Expr expr;
 
     public StmtExpr(Expr expr) {
+        super(Type.Expr);
         this.expr = expr;
     }
 }
