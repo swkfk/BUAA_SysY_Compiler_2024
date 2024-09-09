@@ -189,7 +189,7 @@ public class Parser {
         boolean isArray = among(TokenType.LBracket);
         FuncFormalParam param = new FuncFormalParam(paramType, name, isArray);
         while (checkConsume(TokenType.LBracket)) {
-            if (among(TokenType.RBracket)) {
+            if (checkConsume(TokenType.RBracket)) {
                 param.addIndex(null);
             } else {
                 param.addIndex(parseConstExpr());
@@ -214,6 +214,7 @@ public class Parser {
         do {
             constDecl.addDef(parseConstDefinition());
         } while (checkConsume(TokenType.Comma));
+        consume(TokenType.Semicolon);
         return constDecl;
     }
 
@@ -236,6 +237,7 @@ public class Parser {
         do {
             varDecl.addDef(parseVarDefinition());
         } while (checkConsume(TokenType.Comma));
+        consume(TokenType.Semicolon);
         return varDecl;
     }
 
@@ -256,7 +258,16 @@ public class Parser {
     }
 
     private ConstInitValue parseConstInitial() {
-        return new ConstInitValue(parseConstExpr());
+        if (!checkConsume(TokenType.LBrace)) {
+            return new ConstInitValue(parseConstExpr());
+        }
+        ConstInitValue constInitValue = new ConstInitValue();
+        while (!among(TokenType.RBrace)) {
+            constInitValue.addSubInitializer(parseConstInitial());
+            checkConsume(TokenType.Comma);
+        }
+        consume(TokenType.RBrace);
+        return constInitValue;
     }
 
     private VarInitValue parseVarInitial() {
@@ -282,7 +293,7 @@ public class Parser {
     }
 
     private BlockItem parseBlockItem() {
-        if (among(TokenType.Const, TokenType.IntConst)) {
+        if (among(TokenType.Const, TokenType.Int)) {
             return new BlockItem(parseDeclaration());
         }
         return new BlockItem(parseStmt());

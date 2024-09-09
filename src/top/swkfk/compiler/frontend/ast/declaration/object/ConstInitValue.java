@@ -27,6 +27,11 @@ final public class ConstInitValue extends ASTNode {
         this.subInitializers = new LinkedList<>();
     }
 
+    public void addSubInitializer(ConstInitValue subInitializer) {
+        assert subInitializers != null : "Only sub-initializer can add a sub-initializer.";
+        subInitializers.add(subInitializer);
+    }
+
     @Override
     protected String getName() {
         return "<ConstInitVal>";
