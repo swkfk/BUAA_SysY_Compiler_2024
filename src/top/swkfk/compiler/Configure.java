@@ -7,16 +7,17 @@ public class Configure {
 
     public static class debug {
         public static boolean displayTokens = false;
+        public static boolean displayErrors = false;
 
         /**
          * Display tokens with AST. For homework 3. Switch in {@link Controller#frontend()}.
          */
         public static boolean displayTokensWithAst = false;
 
-        @SuppressWarnings("SwitchStatementWithTooFewBranches")
         public static void parse(String arg) {
             switch (arg) {
                 case "tokens" -> displayTokens = true;
+                case "errors" -> displayErrors = true;
                 default -> throw new IllegalArgumentException("Unknown debug option: " + arg);
             }
         }
