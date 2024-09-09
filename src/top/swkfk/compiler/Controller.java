@@ -46,9 +46,12 @@ public class Controller {
         if (Configure.debug.displayErrors) {
             System.err.println(errors.toDebugString());
         }
+        if (Configure.debug.displaySymbols) {
+            System.err.println(symbols);
+        }
         // <Homework 4>
         try (FileWriter writer = new FileWriter(Configure.target)) {
-         writer.write(errors.toString());
+            writer.write(errors.toString());
         }
         System.exit(0);
         // </Homework 4>

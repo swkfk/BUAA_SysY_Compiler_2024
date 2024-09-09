@@ -8,6 +8,7 @@ public class Configure {
     public static class debug {
         public static boolean displayTokens = false;
         public static boolean displayErrors = false;
+        public static boolean displaySymbols = false;
 
         /**
          * Display tokens with AST. For homework 3. Switch in {@link Controller#frontend()}.
@@ -18,6 +19,7 @@ public class Configure {
             switch (arg) {
                 case "tokens" -> displayTokens = true;
                 case "errors" -> displayErrors = true;
+                case "symbols" -> displaySymbols = true;
                 default -> throw new IllegalArgumentException("Unknown debug option: " + arg);
             }
         }

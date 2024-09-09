@@ -3,6 +3,7 @@ package top.swkfk.compiler.frontend.symbol;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Stack;
+import java.util.stream.Collectors;
 
 final public class SymbolTable {
     private final Map<String, SymbolVariable> allVariables;
@@ -73,5 +74,13 @@ final public class SymbolTable {
         stack.peek().put(name, parameter);
         function.addParameter(parameter);
         return parameter;
+    }
+
+    public String toString() {
+        return "==> Variables: \n" +
+            allVariables.values().stream().map(Symbol::toString).collect(Collectors.joining("\n"))
+            + "\n==> Functions: " +
+            allFunctions.values().stream().map(SymbolFunction::toString).collect(Collectors.joining("\n"))
+            ;
     }
 }
