@@ -20,6 +20,14 @@ final public class ExprAdd extends ASTNode {
         this.rights = new LinkedList<>();
     }
 
+    public ExprMul getLeft() {
+        return left;
+    }
+
+    public List<ExprMul> getRights() {
+        return rights;
+    }
+
     public void add(Op op, ExprMul right) {
         ops.add(op);
         rights.add(right);

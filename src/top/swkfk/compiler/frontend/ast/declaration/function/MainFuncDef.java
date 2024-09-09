@@ -10,6 +10,10 @@ final public class MainFuncDef extends ASTNode {
         this.block = block;
     }
 
+    public Block getBlock() {
+        return block;
+    }
+
     @Override
     protected String getName() {
         return "<MainFuncDef>";

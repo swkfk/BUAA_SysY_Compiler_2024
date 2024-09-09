@@ -16,6 +16,10 @@ final public class FuncFormalParams extends ASTNode {
         paramList.add(param);
     }
 
+    public List<FuncFormalParam> getParamList() {
+        return paramList;
+    }
+
     @Override
     protected String getName() {
         return "<FuncFParams>";

@@ -12,6 +12,10 @@ final public class CondOr extends ASTNode {
         this.condAndList = new LinkedList<>();
     }
 
+    public List<CondAnd> getCondAndList() {
+        return condAndList;
+    }
+
     public void addCondAnd(CondAnd condAnd) {
         condAndList.add(condAnd);
     }

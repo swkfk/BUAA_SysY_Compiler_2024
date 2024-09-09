@@ -20,6 +20,14 @@ final public class ExprMul extends ASTNode {
         this.rights = new LinkedList<>();
     }
 
+    public ExprUnary getLeft() {
+        return left;
+    }
+
+    public List<ExprUnary> getRights() {
+        return rights;
+    }
+
     public void add(Op op, ExprUnary expr) {
         this.ops.add(op);
         this.rights.add(expr);

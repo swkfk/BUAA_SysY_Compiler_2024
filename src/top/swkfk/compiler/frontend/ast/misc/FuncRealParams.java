@@ -17,6 +17,10 @@ final public class FuncRealParams extends ASTNode {
         params.add(param);
     }
 
+    public List<Expr> getParams() {
+        return params;
+    }
+
     @Override
     protected String getName() {
         return "<FuncRParams>";

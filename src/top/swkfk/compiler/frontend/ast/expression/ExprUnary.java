@@ -13,6 +13,10 @@ public class ExprUnary extends ASTNode {
         this.type = type;
     }
 
+    public Type getType() {
+        return type;
+    }
+
     @Override
     protected String getName() {
         return "<UnaryExp>";

@@ -19,6 +19,10 @@ final public class VarDecl extends ASTNode {
         defs.add(def);
     }
 
+    public List<VarDef> getDefs() {
+        return defs;
+    }
+
     @Override
     protected String getName() {
         return "<VarDecl>";

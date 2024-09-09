@@ -18,4 +18,8 @@ final public class StmtPrintf extends Stmt {
     public void addArg(Expr arg) {
         args.add(arg);
     }
+
+    public List<Expr> getArgs() {
+        return args;
+    }
 }

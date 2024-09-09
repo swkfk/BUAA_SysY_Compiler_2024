@@ -16,4 +16,20 @@ final public class StmtFor extends Stmt {
         this.update = update;
         this.body = body;
     }
+
+    public ForStmt getInit() {
+        return init;
+    }
+
+    public Cond getCondition() {
+        return condition;
+    }
+
+    public ForStmt getUpdate() {
+        return update;
+    }
+
+    public Stmt getBody() {
+        return body;
+    }
 }

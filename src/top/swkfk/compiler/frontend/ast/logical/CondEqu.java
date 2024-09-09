@@ -20,6 +20,14 @@ final public class CondEqu extends ASTNode {
         this.rights = new LinkedList<>();
     }
 
+    public CondRel getLeft() {
+        return left;
+    }
+
+    public List<CondRel> getRights() {
+        return rights;
+    }
+
     public void add(Op op, CondRel right) {
         ops.add(op);
         rights.add(right);

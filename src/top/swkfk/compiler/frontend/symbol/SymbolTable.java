@@ -34,7 +34,7 @@ final public class SymbolTable {
      * @return The mangled name of the variable
      */
     @SuppressWarnings("SpellCheckingInspection")
-    public String addVariable(String name, Symbol.Type type) {
+    public SymbolVariable addVariable(String name, Symbol.Type type) {
         if (stack.peek().containsKey(name) || allFunctions.containsKey(name)
             || name.equals("main") || name.equals("printf") || name.equals("getint")
         ) {
@@ -43,7 +43,7 @@ final public class SymbolTable {
         SymbolVariable variable = new SymbolVariable(name, type, stack.size() == 1);
         allVariables.put(name, variable);
         stack.peek().put(name, variable);
-        return variable.getMangle();
+        return variable;
     }
 
     /**
@@ -66,6 +66,10 @@ final public class SymbolTable {
         SymbolFunction function = new SymbolFunction(name, type);
         allFunctions.put(name, function);
         return function;
+    }
+
+    public SymbolFunction getFunction(String name) {
+        return allFunctions.get(name);
     }
 
     public SymbolVariable addParameter(SymbolFunction function, String name, Symbol.Type type) {

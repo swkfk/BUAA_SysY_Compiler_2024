@@ -12,4 +12,8 @@ final public class StmtExpr extends Stmt {
         super(Type.Expr);
         this.expr = expr;
     }
+
+    public Expr getExpr() {
+        return expr;
+    }
 }

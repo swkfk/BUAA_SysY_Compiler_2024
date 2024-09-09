@@ -28,6 +28,18 @@ final public class CompileUnit extends ASTNode {
         mainFunc[0] = func;
     }
 
+    public List<Decl> getDeclarations() {
+        return declarations;
+    }
+
+    public List<FuncDef> getFunctions() {
+        return functions;
+    }
+
+    public MainFuncDef getMainFunc() {
+        return mainFunc[0];
+    }
+
     @Override
     protected String getName() {
         return "<CompUnit>";

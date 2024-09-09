@@ -10,6 +10,10 @@ final public class Expr extends ASTNode {
         this.expr = expr;
     }
 
+    public ExprAdd getExpr() {
+        return expr;
+    }
+
     @Override
     protected String getName() {
         return "<Exp>";

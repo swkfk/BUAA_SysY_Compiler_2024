@@ -19,6 +19,10 @@ final public class ConstDecl extends ASTNode {
         defs.add(def);
     }
 
+    public List<ConstDef> getDefs() {
+        return defs;
+    }
+
     @Override
     protected String getName() {
         return "<ConstDecl>";

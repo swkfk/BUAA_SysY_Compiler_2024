@@ -7,4 +7,8 @@ final public class ExprUnaryPrimary extends ExprUnary {
         super(Type.Primary);
         this.primary = primary;
     }
+
+    public ExprPrimary getPrimary() {
+        return primary;
+    }
 }

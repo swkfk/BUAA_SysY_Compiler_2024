@@ -1,6 +1,6 @@
 package top.swkfk.compiler.frontend.symbol;
 
-class Symbol {
+public class Symbol {
 
     public enum Type {
         Int, Void
@@ -13,7 +13,7 @@ class Symbol {
     private final Type type;
     private final boolean isGlobal;
 
-    public Symbol(String name, Type type, boolean isGlobal) {
+    protected Symbol(String name, Type type, boolean isGlobal) {
         this.name = name;
         this.type = type;
         this.mangle = "__" + type + "_" + name + "_" + count++;

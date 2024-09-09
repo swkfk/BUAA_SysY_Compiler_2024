@@ -29,6 +29,10 @@ final public class ConstDef extends ASTNode {
         return "<ConstDef>";
     }
 
+    public String getIdentifier() {
+        return identifier;
+    }
+
     public void setSymbol(SymbolVariable symbol) {
         this.symbol = symbol;
     }

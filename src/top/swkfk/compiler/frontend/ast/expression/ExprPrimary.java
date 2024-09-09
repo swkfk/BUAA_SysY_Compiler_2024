@@ -27,6 +27,14 @@ final public class ExprPrimary extends ASTNode {
         this.value = number;
     }
 
+    public Type getType() {
+        return type;
+    }
+
+    public Object getValue() {
+        return value;
+    }
+
     @Override
     protected String getName() {
         return "<PrimaryExp>";

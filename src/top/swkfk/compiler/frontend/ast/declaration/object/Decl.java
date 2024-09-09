@@ -20,6 +20,14 @@ final public class Decl extends ASTNode {
         this.declaration = varDecl;
     }
 
+    public Type getType() {
+        return type;
+    }
+
+    public Object getDeclaration() {
+        return declaration;
+    }
+
     @Override
     protected String getName() {
         return "<Decl>";

@@ -16,6 +16,10 @@ final public class Block extends ASTNode {
         blocks.add(block);
     }
 
+    public List<BlockItem> getItems() {
+        return blocks;
+    }
+
     @Override
     protected String getName() {
         return "<Block>";

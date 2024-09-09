@@ -22,6 +22,14 @@ final public class CondRel extends ASTNode {
         this.rights = new LinkedList<>();
     }
 
+    public ExprAdd getLeft() {
+        return left;
+    }
+
+    public List<ExprAdd> getRights() {
+        return rights;
+    }
+
     public void add(Op op, ExprAdd right) {
         ops.add(op);
         rights.add(right);

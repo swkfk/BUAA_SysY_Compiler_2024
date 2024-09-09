@@ -14,6 +14,18 @@ final public class StmtIf extends Stmt {
         this.elseStmt = elseStmt;
     }
 
+    public Cond getCondition() {
+        return condition;
+    }
+
+    public Stmt getThenStmt() {
+        return thenStmt;
+    }
+
+    public Stmt getElseStmt() {
+        return elseStmt;
+    }
+
     public StmtIf(Cond condition, Stmt thenStmt) {
         this(condition, thenStmt, null);
     }

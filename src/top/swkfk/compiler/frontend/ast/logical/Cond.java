@@ -9,6 +9,10 @@ final public class Cond extends ASTNode {
         this.condOr = condOr;
     }
 
+    public CondOr getCondOr() {
+        return condOr;
+    }
+
     @Override
     protected String getName() {
         return "<Cond>";

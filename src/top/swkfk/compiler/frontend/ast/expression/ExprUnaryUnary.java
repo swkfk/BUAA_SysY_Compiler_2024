@@ -17,4 +17,8 @@ final public class ExprUnaryUnary extends ExprUnary {
         this.op = op;
         this.expr = expr;
     }
+
+    public ExprUnary getExpr() {
+        return expr;
+    }
 }

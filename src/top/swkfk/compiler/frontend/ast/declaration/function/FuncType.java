@@ -7,10 +7,14 @@ final public class FuncType extends ASTNode {
         Void, Int
     }
 
-    private Type type;
+    private final Type type;
 
     public FuncType(Type type) {
         this.type = type;
+    }
+
+    public boolean is(Type type) {
+        return this.type == type;
     }
 
     @Override

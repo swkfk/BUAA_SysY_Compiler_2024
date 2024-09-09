@@ -17,4 +17,8 @@ final public class StmtReturn extends Stmt {
         super(Type.Return);
         this.expr = null;
     }
+
+    public Expr getExpr() {
+        return expr;
+    }
 }

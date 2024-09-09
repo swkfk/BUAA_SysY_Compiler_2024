@@ -12,4 +12,12 @@ final public class StmtAssign extends Stmt {
         this.left = left;
         this.right = right;
     }
+
+    public LeftValue getLeft() {
+        return left;
+    }
+
+    public Expr getRight() {
+        return right;
+    }
 }

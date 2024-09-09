@@ -3,7 +3,8 @@ package top.swkfk.compiler.frontend.ast.declaration.function;
 import top.swkfk.compiler.frontend.ast.ASTNode;
 import top.swkfk.compiler.frontend.ast.block.Block;
 import top.swkfk.compiler.frontend.symbol.SymbolFunction;
-import top.swkfk.compiler.frontend.symbol.SymbolVariable;
+
+import java.util.List;
 
 final public class FuncDef extends ASTNode {
     private final FuncType type;
@@ -17,6 +18,22 @@ final public class FuncDef extends ASTNode {
         this.identifier = identifier;
         this.params = params;
         this.block = block;
+    }
+
+    public FuncType getType() {
+        return type;
+    }
+
+    public String getIdentifier() {
+        return identifier;
+    }
+
+    public List<FuncFormalParam> getParams() {
+        return params.getParamList();
+    }
+
+    public Block getBody() {
+        return block;
     }
 
     @Override

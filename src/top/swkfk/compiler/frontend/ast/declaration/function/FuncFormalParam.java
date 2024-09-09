@@ -34,6 +34,10 @@ final public class FuncFormalParam extends ASTNode {
         indices.add(index);
     }
 
+    public String getIdentifier() {
+        return identifier;
+    }
+
     @Override
     protected String getName() {
         return "<FuncFParam>";

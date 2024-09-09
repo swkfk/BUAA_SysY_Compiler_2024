@@ -9,4 +9,8 @@ final public class StmtBlock extends Stmt {
         super(Type.Block);
         this.block = block;
     }
+
+    public Block getBlock() {
+        return block;
+    }
 }

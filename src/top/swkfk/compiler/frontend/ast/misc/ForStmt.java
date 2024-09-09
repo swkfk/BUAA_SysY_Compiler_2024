@@ -16,6 +16,14 @@ final public class ForStmt extends ASTNode {
         this.right = right;
     }
 
+    public LeftValue getLeft() {
+        return left;
+    }
+
+    public Expr getRight() {
+        return right;
+    }
+
     @Override
     protected String getName() {
         return "<ForStmt>";

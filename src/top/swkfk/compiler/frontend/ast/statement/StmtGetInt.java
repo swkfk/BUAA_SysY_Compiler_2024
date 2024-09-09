@@ -9,4 +9,8 @@ final public class StmtGetInt extends Stmt {
         super(Type.GetInt);
         this.left = left;
     }
+
+    public LeftValue getLeft() {
+        return left;
+    }
 }

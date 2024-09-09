@@ -30,6 +30,10 @@ final public class VarDef extends ASTNode {
         indices.add(index);
     }
 
+    public String getIdentifier() {
+        return identifer;
+    }
+
     @Override
     protected String getName() {
         return "<VarDef>";
