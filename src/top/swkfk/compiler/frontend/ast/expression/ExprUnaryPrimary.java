@@ -11,4 +11,9 @@ final public class ExprUnaryPrimary extends ExprUnary {
     public ExprPrimary getPrimary() {
         return primary;
     }
+
+    @Override
+    public int calculateConst() {
+        return primary.calculateConst();
+    }
 }

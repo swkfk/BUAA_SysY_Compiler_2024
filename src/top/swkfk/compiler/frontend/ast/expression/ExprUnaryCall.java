@@ -32,4 +32,9 @@ final public class ExprUnaryCall extends ExprUnary {
     public List<Expr> getParams() {
         return params.getParams();
     }
+
+    @Override
+    public int calculateConst() {
+        throw new RuntimeException("Const calculation is not supported for function call");
+    }
 }

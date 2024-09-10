@@ -2,7 +2,7 @@ package top.swkfk.compiler.frontend.ast.expression;
 
 import top.swkfk.compiler.frontend.ast.ASTNode;
 
-public class ExprUnary extends ASTNode {
+abstract public class ExprUnary extends ASTNode {
     public enum Type {
         Primary, Call, Unary
     }
@@ -16,6 +16,8 @@ public class ExprUnary extends ASTNode {
     public Type getType() {
         return type;
     }
+
+    abstract public int calculateConst();
 
     @Override
     protected String getName() {

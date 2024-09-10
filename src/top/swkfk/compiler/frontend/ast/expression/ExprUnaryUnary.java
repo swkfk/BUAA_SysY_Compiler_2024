@@ -18,6 +18,16 @@ final public class ExprUnaryUnary extends ExprUnary {
         this.expr = expr;
     }
 
+    @Override
+    public int calculateConst() {
+        int value = expr.calculateConst();
+        return switch (op) {
+            case Plus -> value;
+            case Minus -> -value;
+            default -> throw new RuntimeException("Unexpected Not in Const Expr");
+        };
+    }
+
     public ExprUnary getExpr() {
         return expr;
     }

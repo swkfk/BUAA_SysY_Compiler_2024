@@ -1,5 +1,7 @@
 package top.swkfk.compiler.utils;
 
+import top.swkfk.compiler.frontend.ast.expression.ExprAdd;
+import top.swkfk.compiler.frontend.ast.expression.ExprMul;
 import top.swkfk.compiler.frontend.token.TokenType;
 
 final public class ConstValue {
@@ -25,6 +27,21 @@ final public class ConstValue {
             case Div -> CalcType.Div;
             case Mod -> CalcType.Mod;
             default -> null;
+        };
+    }
+
+    public static CalcType from(ExprAdd.Op op) {
+        return switch (op) {
+            case ADD -> CalcType.Add;
+            case SUB -> CalcType.Sub;
+        };
+    }
+
+    public static CalcType from(ExprMul.Op op) {
+        return switch (op) {
+            case MUL -> CalcType.Mul;
+            case DIV -> CalcType.Div;
+            case MOD -> CalcType.Mod;
         };
     }
 

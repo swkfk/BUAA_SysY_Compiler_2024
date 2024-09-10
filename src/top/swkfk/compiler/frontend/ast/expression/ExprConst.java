@@ -13,4 +13,8 @@ final public class ExprConst extends ASTNode {
     protected String getName() {
         return "<ConstExp>";
     }
+
+    public int calculate() {
+        return expr.calculateConst();
+    }
 }
