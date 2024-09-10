@@ -21,4 +21,8 @@ final public class SymbolVariable extends Symbol {
     public boolean hasFixedValue() {
         return constantValue != null;
     }
+
+    public Either<FixedValue, FixedArray> getConstantValue() {
+        return constantValue;
+    }
 }

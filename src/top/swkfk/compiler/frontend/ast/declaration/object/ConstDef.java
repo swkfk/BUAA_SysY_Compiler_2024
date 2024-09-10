@@ -34,6 +34,14 @@ final public class ConstDef extends ASTNode {
         return identifier;
     }
 
+    public List<ExprConst> getIndices() {
+        return indices;
+    }
+
+    public ConstInitValue getInitial() {
+        return initial;
+    }
+
     public void setSymbol(SymbolVariable symbol) {
         this.symbol = symbol;
     }

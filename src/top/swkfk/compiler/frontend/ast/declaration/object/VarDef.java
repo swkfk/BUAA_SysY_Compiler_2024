@@ -35,6 +35,10 @@ final public class VarDef extends ASTNode {
         return identifer;
     }
 
+    public List<ExprConst> getIndices() {
+        return indices;
+    }
+
     @Override
     protected String getName() {
         return "<VarDef>";

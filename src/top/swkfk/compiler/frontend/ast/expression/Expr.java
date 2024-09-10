@@ -14,6 +14,10 @@ final public class Expr extends ASTNode {
         return expr;
     }
 
+    public int calculateConst() {
+        return expr.calculateConst();
+    }
+
     @Override
     protected String getName() {
         return "<Exp>";

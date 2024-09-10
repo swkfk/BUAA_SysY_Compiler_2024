@@ -7,6 +7,10 @@ final public class FixedValue {
         this.value = value;
     }
 
+    public FixedValue() {
+        this(0);
+    }
+
     public int getValue() {
         return value;
     }

@@ -38,10 +38,14 @@ import top.swkfk.compiler.frontend.ast.statement.StmtGetInt;
 import top.swkfk.compiler.frontend.ast.statement.StmtIf;
 import top.swkfk.compiler.frontend.ast.statement.StmtPrintf;
 import top.swkfk.compiler.frontend.ast.statement.StmtReturn;
+import top.swkfk.compiler.frontend.symbol.FixedArray;
+import top.swkfk.compiler.frontend.symbol.FixedValue;
 import top.swkfk.compiler.frontend.symbol.SymbolFunction;
 import top.swkfk.compiler.frontend.symbol.SymbolTable;
 import top.swkfk.compiler.frontend.symbol.SymbolVariable;
+import top.swkfk.compiler.frontend.symbol.type.SymbolType;
 import top.swkfk.compiler.frontend.symbol.type.Ty;
+import top.swkfk.compiler.frontend.symbol.type.TyArray;
 
 import java.util.LinkedList;
 import java.util.Optional;
@@ -92,19 +96,24 @@ public class Traverser {
         if (decl.getType().equals(Decl.Type.Const)) {
             ConstDecl constDecl = (ConstDecl) decl.getDeclaration();
             for (ConstDef def : constDecl.getDefs()) {
-                // TODO: Now ignore the indices
-                SymbolVariable symbol = symbols.addVariable(def.getIdentifier().value(),Ty.I32);
+                SymbolType ty = TyArray.from(def.getIndices());
+                SymbolVariable symbol = symbols.addVariable(def.getIdentifier().value(), ty);
                 if (symbol == null) {
                     errors.add(ErrorType.DuplicatedDeclaration, def.getIdentifier().location());
                 } else {
+                    if (def.getIndices().isEmpty()) {
+                        symbol.setConstantValue(new FixedValue(def.getInitial().getExpr().calculate()));
+                    } else {
+                        symbol.setConstantValue(FixedArray.from(((TyArray) ty).getIndices(), def.getInitial()));
+                    }
                     def.setSymbol(symbol);
                 }
             }
         } else {
             VarDecl varDecl = (VarDecl) decl.getDeclaration();
             for (VarDef def : varDecl.getDefs()) {
-                // TODO: Now ignore the indices
-                SymbolVariable symbol = symbols.addVariable(def.getIdentifier().value(), Ty.I32);
+                SymbolVariable symbol = symbols.addVariable(def.getIdentifier().value(), TyArray.from(def.getIndices()));
+                // TODO: Now ignore the initial value
                 if (symbol == null) {
                     errors.add(ErrorType.DuplicatedDeclaration, def.getIdentifier().location());
                 } else {
