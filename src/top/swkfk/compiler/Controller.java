@@ -14,6 +14,7 @@ import java.io.IOException;
 
 public class Controller {
     public static final ErrorTable errors = new ErrorTable();
+    public static final SymbolTable symbols = new SymbolTable();
 
     public static void frontend() throws IOException {
         // 1. Lexical analysis
@@ -42,8 +43,7 @@ public class Controller {
         // </Homework 3>
 
         // 3. Semantic analysis
-        SymbolTable symbols = new SymbolTable();
-        new Traverser(ast, symbols).spawn();
+        new Traverser(ast).spawn();
         if (Configure.debug.displayErrors) {
             System.err.println(errors.toDebugString());
         }
