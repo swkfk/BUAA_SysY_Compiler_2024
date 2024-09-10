@@ -13,7 +13,7 @@ public class Symbol {
     protected Symbol(String name, SymbolType type, boolean isGlobal) {
         this.name = name;
         this.type = type;
-        this.mangle = "__" + type + "_" + name + "_" + count++;
+        this.mangle = (isGlobal ? "__g_" : "__l_") + name + "_" + count++;
         this.isGlobal = isGlobal;
     }
 

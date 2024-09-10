@@ -94,7 +94,7 @@ final public class SymbolTable {
     public String toString() {
         return "==> Variables: \n" +
             allVariables.values().stream().map(Symbol::toString).collect(Collectors.joining("\n"))
-            + "\n==> Functions: " +
+            + "\n==> Functions: \n" +
             allFunctions.values().stream().map(SymbolFunction::toString).collect(Collectors.joining("\n"))
             ;
     }

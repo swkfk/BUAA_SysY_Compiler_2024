@@ -9,6 +9,10 @@ final public class ExprConst extends ASTNode {
         this.expr = expr;
     }
 
+    public ExprAdd getExpr() {
+        return expr;
+    }
+
     @Override
     protected String getName() {
         return "<ConstExp>";

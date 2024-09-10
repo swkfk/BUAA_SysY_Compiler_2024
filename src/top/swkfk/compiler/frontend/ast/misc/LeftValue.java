@@ -2,7 +2,6 @@ package top.swkfk.compiler.frontend.ast.misc;
 
 import top.swkfk.compiler.frontend.ast.ASTNode;
 import top.swkfk.compiler.frontend.ast.expression.Expr;
-import top.swkfk.compiler.frontend.ast.expression.ExprConst;
 import top.swkfk.compiler.frontend.symbol.FixedArray;
 import top.swkfk.compiler.frontend.symbol.FixedValue;
 import top.swkfk.compiler.frontend.symbol.SymbolVariable;

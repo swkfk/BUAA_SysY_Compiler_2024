@@ -38,7 +38,7 @@ final public class ExprPrimary extends ASTNode {
     public int calculateConst() {
         return switch (type) {
             case Expr -> ((Expr) value).getExpr().calculateConst();
-            case LVal -> 0;  // TODO: Get the value of the left value
+            case LVal -> ((LeftValue) value).calculateConst();
             case Number -> ((Number) value).getValue();
         };
     }

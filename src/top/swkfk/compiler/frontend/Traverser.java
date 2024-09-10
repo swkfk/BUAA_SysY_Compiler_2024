@@ -17,6 +17,7 @@ import top.swkfk.compiler.frontend.ast.declaration.object.VarDecl;
 import top.swkfk.compiler.frontend.ast.declaration.object.VarDef;
 import top.swkfk.compiler.frontend.ast.expression.Expr;
 import top.swkfk.compiler.frontend.ast.expression.ExprAdd;
+import top.swkfk.compiler.frontend.ast.expression.ExprConst;
 import top.swkfk.compiler.frontend.ast.expression.ExprMul;
 import top.swkfk.compiler.frontend.ast.expression.ExprPrimary;
 import top.swkfk.compiler.frontend.ast.expression.ExprUnary;
@@ -96,11 +97,13 @@ public class Traverser {
         if (decl.getType().equals(Decl.Type.Const)) {
             ConstDecl constDecl = (ConstDecl) decl.getDeclaration();
             for (ConstDef def : constDecl.getDefs()) {
+                def.getIndices().forEach(this::visitExprConst);
                 SymbolType ty = TyArray.from(def.getIndices());
                 SymbolVariable symbol = symbols.addVariable(def.getIdentifier().value(), ty);
                 if (symbol == null) {
                     errors.add(ErrorType.DuplicatedDeclaration, def.getIdentifier().location());
                 } else {
+                    visitConstInitValue(def.getInitial());
                     if (def.getIndices().isEmpty()) {
                         symbol.setConstantValue(new FixedValue(def.getInitial().getExpr().calculate()));
                     } else {
@@ -112,11 +115,12 @@ public class Traverser {
         } else {
             VarDecl varDecl = (VarDecl) decl.getDeclaration();
             for (VarDef def : varDecl.getDefs()) {
+                def.getIndices().forEach(this::visitExprConst);
                 SymbolVariable symbol = symbols.addVariable(def.getIdentifier().value(), TyArray.from(def.getIndices()));
-                // TODO: Now ignore the initial value
                 if (symbol == null) {
                     errors.add(ErrorType.DuplicatedDeclaration, def.getIdentifier().location());
                 } else {
+                    // TODO: Now ignore the initial value
                     def.setSymbol(symbol);
                 }
             }
@@ -193,6 +197,18 @@ public class Traverser {
     }
 
     private void visitExpr(Expr expr) {
+        visitAddExpr(expr.getExpr());
+    }
+
+    private void visitConstInitValue(ConstInitValue init) {
+        if (init.getExpr() == null) {
+            init.getSubInitializers().forEach(this::visitConstInitValue);
+        } else {
+            visitExprConst(init.getExpr());
+        }
+    }
+
+    private void visitExprConst(ExprConst expr) {
         visitAddExpr(expr.getExpr());
     }
 
