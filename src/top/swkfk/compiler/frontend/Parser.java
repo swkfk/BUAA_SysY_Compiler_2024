@@ -178,13 +178,13 @@ public class Parser {
 
     private FuncDef parseFuncDef() {
         FuncType returnType = parseFuncType();
-        String name = consume(TokenType.Ident).value();
+        Token identifier = consume(TokenType.Ident);
         consume(TokenType.LParen);
         FuncFormalParams params =
             among(TokenType.RParen) ? new FuncFormalParams() : parseFuncFormalParams();
         consume(TokenType.RParen);
         Block body = parseBlock();
-        return watch(new FuncDef(returnType, name, params, body));
+        return watch(new FuncDef(returnType, identifier, params, body));
     }
 
     private FuncFormalParams parseFuncFormalParams() {
@@ -200,9 +200,9 @@ public class Parser {
         Token type = next();
         assert type.is(TokenType.Int) : "Only support int type";
         BasicType paramType = new BasicType();
-        String name = consume(TokenType.Ident).value();
+        Token identifier = consume(TokenType.Ident);
         boolean isArray = among(TokenType.LBracket);
-        FuncFormalParam param = new FuncFormalParam(paramType, name, isArray);
+        FuncFormalParam param = new FuncFormalParam(paramType, identifier, isArray);
         while (checkConsume(TokenType.LBracket)) {
             if (checkConsume(TokenType.RBracket)) {
                 param.addIndex(null);
@@ -234,7 +234,7 @@ public class Parser {
     }
 
     private ConstDef parseConstDefinition() {
-        String name = consume(TokenType.Ident).value();
+        Token identifier = consume(TokenType.Ident);
         List<ExprConst> indices = new LinkedList<>();
         while (checkConsume(TokenType.LBracket)) {
             indices.add(parseConstExpr());
@@ -242,7 +242,7 @@ public class Parser {
         }
         consume(TokenType.Assign);
         ConstInitValue initial = parseConstInitial();
-        return watch(new ConstDef(name, indices, initial));
+        return watch(new ConstDef(identifier, indices, initial));
     }
 
     private VarDecl parseVarDeclaration() {
@@ -257,7 +257,7 @@ public class Parser {
     }
 
     private VarDef parseVarDefinition() {
-        VarDef varDef = new VarDef(consume(TokenType.Ident).value());
+        VarDef varDef = new VarDef(consume(TokenType.Ident));
         while (checkConsume(TokenType.LBracket)) {
             varDef.addIndex(parseConstExpr());
             consume(TokenType.RBracket);
@@ -443,13 +443,13 @@ public class Parser {
             return watch(new ExprUnaryUnary(parseUnaryOp(), parseUnaryExpr()));
         }
         if (among(TokenType.Ident) && among(1, TokenType.LParen)) {
-            String name = consume(TokenType.Ident).value();
+            Token identifier = consume(TokenType.Ident);
             consume(TokenType.LParen);
             ExprUnaryCall call;
             if (among(TokenType.RParen)) {
-                call = new ExprUnaryCall(name, new FuncRealParams());
+                call = new ExprUnaryCall(identifier, new FuncRealParams());
             } else {
-                call = new ExprUnaryCall(name, parseFuncRealParams());
+                call = new ExprUnaryCall(identifier, parseFuncRealParams());
             }
             consume(TokenType.RParen);
             return watch(call);
@@ -526,7 +526,7 @@ public class Parser {
     }
 
     private LeftValue parseLVal() {
-        LeftValue leftValue = new LeftValue(consume(TokenType.Ident).value());
+        LeftValue leftValue = new LeftValue(consume(TokenType.Ident));
         while (checkConsume(TokenType.LBracket)) {
             leftValue.addIndex(parseExpr());
             consume(TokenType.RBracket);

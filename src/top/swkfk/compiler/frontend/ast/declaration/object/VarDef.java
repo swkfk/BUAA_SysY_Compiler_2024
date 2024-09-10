@@ -3,12 +3,13 @@ package top.swkfk.compiler.frontend.ast.declaration.object;
 import top.swkfk.compiler.frontend.ast.ASTNode;
 import top.swkfk.compiler.frontend.ast.expression.ExprConst;
 import top.swkfk.compiler.frontend.symbol.SymbolVariable;
+import top.swkfk.compiler.frontend.token.Token;
 
 import java.util.LinkedList;
 import java.util.List;
 
 final public class VarDef extends ASTNode {
-    private final String identifer;
+    private final Token identifer;
     private SymbolVariable symbol = null;
     private final List<ExprConst> indices;
     /**
@@ -16,8 +17,8 @@ final public class VarDef extends ASTNode {
      */
     private VarInitValue initial;
 
-    public VarDef(String identifer) {
-        this.identifer = identifer;
+    public VarDef(Token identifier) {
+        this.identifer = identifier;
         this.indices = new LinkedList<>();
         this.initial = null;
     }
@@ -30,7 +31,7 @@ final public class VarDef extends ASTNode {
         indices.add(index);
     }
 
-    public String getIdentifier() {
+    public Token getIdentifier() {
         return identifer;
     }
 

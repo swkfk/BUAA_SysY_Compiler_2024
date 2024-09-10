@@ -60,7 +60,7 @@ public class Traverser {
         ast.getDeclarations().forEach(this::registerDecl);
         for (FuncDef func : ast.getFunctions()) {
             SymbolFunction symbol = symbols.addFunction(
-                func.getIdentifier(),
+                func.getIdentifier().value(),
                 func.getType().is(FuncType.Type.Void) ? Symbol.Type.Void : Symbol.Type.Int
             );
             func.setSymbol(symbol);
@@ -68,7 +68,7 @@ public class Traverser {
             symbols.newScope();
             for (FuncFormalParam param : func.getParams()) {
                 // TODO: Now ignore the indices
-                param.setSymbol(symbols.addParameter(symbol, param.getIdentifier(), Symbol.Type.Int));
+                param.setSymbol(symbols.addParameter(symbol, param.getIdentifier().value(), Symbol.Type.Int));
             }
             visitBlock(func.getBody());
             symbols.exitScope();
@@ -84,13 +84,13 @@ public class Traverser {
             for (ConstDef def : constDecl.getDefs()) {
                 // TODO: Now ignore the indices
                 // TODO: Now ignore the const
-                def.setSymbol(symbols.addVariable(def.getIdentifier(), Symbol.Type.Int));
+                def.setSymbol(symbols.addVariable(def.getIdentifier().value(), Symbol.Type.Int));
             }
         } else {
             VarDecl varDecl = (VarDecl) decl.getDeclaration();
             for (VarDef def : varDecl.getDefs()) {
                 // TODO: Now ignore the indices
-                def.setSymbol(symbols.addVariable(def.getIdentifier(), Symbol.Type.Int));
+                def.setSymbol(symbols.addVariable(def.getIdentifier().value(), Symbol.Type.Int));
             }
         }
     }
@@ -161,7 +161,7 @@ public class Traverser {
     }
 
     private void visitLeftValue(LeftValue leftValue) {
-        leftValue.setSymbol(symbols.getVariable(leftValue.getIdentifier()));
+        leftValue.setSymbol(symbols.getVariable(leftValue.getIdentifier().value()));
     }
 
     private void visitExpr(Expr expr) {
@@ -189,7 +189,7 @@ public class Traverser {
             case Call -> {
                 ExprUnaryCall call = (ExprUnaryCall) unary;
                 call.getParams().forEach(this::visitExpr);
-                call.setSymbol(symbols.getFunction(call.getIdentifier()));
+                call.setSymbol(symbols.getFunction(call.getIdentifier().value()));
             }
         }
     }

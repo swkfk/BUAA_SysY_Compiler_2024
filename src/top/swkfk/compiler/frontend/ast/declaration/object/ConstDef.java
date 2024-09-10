@@ -3,11 +3,12 @@ package top.swkfk.compiler.frontend.ast.declaration.object;
 import top.swkfk.compiler.frontend.ast.ASTNode;
 import top.swkfk.compiler.frontend.ast.expression.ExprConst;
 import top.swkfk.compiler.frontend.symbol.SymbolVariable;
+import top.swkfk.compiler.frontend.token.Token;
 
 import java.util.List;
 
 final public class ConstDef extends ASTNode {
-    private final String identifier;
+    private final Token identifier;
     private SymbolVariable symbol = null;
     private final List<ExprConst> indices;
     private final ConstInitValue initial;
@@ -18,7 +19,7 @@ final public class ConstDef extends ASTNode {
      * @param indices The indices, empty means no indices
      * @param initial The initial value
      */
-    public ConstDef(String identifier, List<ExprConst> indices, ConstInitValue initial) {
+    public ConstDef(Token identifier, List<ExprConst> indices, ConstInitValue initial) {
         this.identifier = identifier;
         this.indices = indices;
         this.initial = initial;
@@ -29,7 +30,7 @@ final public class ConstDef extends ASTNode {
         return "<ConstDef>";
     }
 
-    public String getIdentifier() {
+    public Token getIdentifier() {
         return identifier;
     }
 
