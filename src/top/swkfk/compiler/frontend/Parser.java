@@ -1,5 +1,7 @@
 package top.swkfk.compiler.frontend;
 
+import top.swkfk.compiler.Controller;
+import top.swkfk.compiler.error.ErrorTable;
 import top.swkfk.compiler.frontend.ast.CompileUnit;
 import top.swkfk.compiler.frontend.ast.block.Block;
 import top.swkfk.compiler.frontend.ast.block.BlockItem;
@@ -54,6 +56,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 public class Parser {
+    private ErrorTable errors = Controller.errors;
     private final CompileUnit ast;
 
     /* =-=-=-=-=-= <tokens-wrapper> =-=-=-=-=-= */

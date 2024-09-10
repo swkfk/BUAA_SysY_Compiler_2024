@@ -13,6 +13,8 @@ import java.io.FileWriter;
 import java.io.IOException;
 
 public class Controller {
+    public static final ErrorTable errors = new ErrorTable();
+
     public static void frontend() throws IOException {
         // 1. Lexical analysis
         TokenStream tokens = new Lexer(Configure.source).lex().emit();
@@ -40,9 +42,8 @@ public class Controller {
         // </Homework 3>
 
         // 3. Semantic analysis
-        ErrorTable errors = new ErrorTable();
         SymbolTable symbols = new SymbolTable();
-        new Traverser(ast, errors, symbols).spawn();
+        new Traverser(ast, symbols).spawn();
         if (Configure.debug.displayErrors) {
             System.err.println(errors.toDebugString());
         }

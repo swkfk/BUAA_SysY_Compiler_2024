@@ -1,5 +1,7 @@
 package top.swkfk.compiler.frontend;
 
+import top.swkfk.compiler.Controller;
+import top.swkfk.compiler.error.ErrorTable;
 import top.swkfk.compiler.frontend.token.Token;
 import top.swkfk.compiler.frontend.token.TokenStream;
 import top.swkfk.compiler.frontend.token.TokenType;
@@ -13,6 +15,8 @@ import java.util.Map;
 import static java.util.Map.entry;
 
 public class Lexer {
+    private final ErrorTable errors = Controller.errors;
+
     static class Reader {
         private final PushbackReader reader;
         private int lineno = 1;
