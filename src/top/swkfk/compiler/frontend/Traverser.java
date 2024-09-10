@@ -11,6 +11,7 @@ import top.swkfk.compiler.frontend.ast.declaration.function.FuncFormalParam;
 import top.swkfk.compiler.frontend.ast.declaration.function.FuncType;
 import top.swkfk.compiler.frontend.ast.declaration.object.ConstDecl;
 import top.swkfk.compiler.frontend.ast.declaration.object.ConstDef;
+import top.swkfk.compiler.frontend.ast.declaration.object.ConstInitValue;
 import top.swkfk.compiler.frontend.ast.declaration.object.Decl;
 import top.swkfk.compiler.frontend.ast.declaration.object.VarDecl;
 import top.swkfk.compiler.frontend.ast.declaration.object.VarDef;
@@ -93,7 +94,6 @@ public class Traverser {
             ConstDecl constDecl = (ConstDecl) decl.getDeclaration();
             for (ConstDef def : constDecl.getDefs()) {
                 // TODO: Now ignore the indices
-                // TODO: Now ignore the const
                 SymbolVariable symbol = symbols.addVariable(def.getIdentifier().value(),Ty.I32);
                 if (symbol == null) {
                     errors.add(ErrorType.DuplicatedDeclaration, def.getIdentifier().location());
