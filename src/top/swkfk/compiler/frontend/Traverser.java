@@ -15,6 +15,7 @@ import top.swkfk.compiler.frontend.ast.declaration.object.ConstInitValue;
 import top.swkfk.compiler.frontend.ast.declaration.object.Decl;
 import top.swkfk.compiler.frontend.ast.declaration.object.VarDecl;
 import top.swkfk.compiler.frontend.ast.declaration.object.VarDef;
+import top.swkfk.compiler.frontend.ast.declaration.object.VarInitValue;
 import top.swkfk.compiler.frontend.ast.expression.Expr;
 import top.swkfk.compiler.frontend.ast.expression.ExprAdd;
 import top.swkfk.compiler.frontend.ast.expression.ExprConst;
@@ -104,10 +105,14 @@ public class Traverser {
                     errors.add(ErrorType.DuplicatedDeclaration, def.getIdentifier().location());
                 } else {
                     visitConstInitValue(def.getInitial());
-                    if (def.getIndices().isEmpty()) {
-                        symbol.setConstantValue(new FixedValue(def.getInitial().getExpr().calculate()));
-                    } else {
-                        symbol.setConstantValue(FixedArray.from(((TyArray) ty).getIndices(), def.getInitial()));
+                    try {
+                        if (def.getIndices().isEmpty()) {
+                            symbol.setConstantValue(new FixedValue(def.getInitial().getExpr().calculate()));
+                        } else {
+                            symbol.setConstantValue(FixedArray.from(((TyArray) ty).getIndices(), def.getInitial()));
+                        }
+                    } catch (Exception e) {
+                        // Ignore the error, it will be reported by the error handler
                     }
                     def.setSymbol(symbol);
                 }
@@ -120,7 +125,7 @@ public class Traverser {
                 if (symbol == null) {
                     errors.add(ErrorType.DuplicatedDeclaration, def.getIdentifier().location());
                 } else {
-                    // TODO: Now ignore the initial value
+                    visitVarInitValue(def.getInitial());
                     def.setSymbol(symbol);
                 }
             }
@@ -193,11 +198,25 @@ public class Traverser {
     }
 
     private void visitLeftValue(LeftValue leftValue) {
-        leftValue.setSymbol(symbols.getVariable(leftValue.getIdentifier().value()));
+        SymbolVariable symbol = symbols.getVariable(leftValue.getIdentifier().value());
+        if (symbol == null) {
+            errors.add(ErrorType.UndefinedReference, leftValue.getIdentifier().location());
+        } else {
+            leftValue.setSymbol(symbol);
+            leftValue.getIndices().forEach(this::visitExpr);
+        }
     }
 
     private void visitExpr(Expr expr) {
         visitAddExpr(expr.getExpr());
+    }
+
+    private void visitVarInitValue(VarInitValue init) {
+        if (init.getExpr() == null) {
+            init.getSubInitializers().forEach(this::visitVarInitValue);
+        } else {
+            visitExpr(init.getExpr());
+        }
     }
 
     private void visitConstInitValue(ConstInitValue init) {

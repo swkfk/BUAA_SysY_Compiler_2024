@@ -35,6 +35,10 @@ final public class VarDef extends ASTNode {
         return identifer;
     }
 
+    public VarInitValue getInitial() {
+        return initial;
+    }
+
     public List<ExprConst> getIndices() {
         return indices;
     }

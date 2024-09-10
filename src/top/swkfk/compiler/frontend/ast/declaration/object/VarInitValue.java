@@ -27,6 +27,14 @@ final public class VarInitValue extends ASTNode {
         this.subInitializers = new LinkedList<>();
     }
 
+    public Expr getExpr() {
+        return expr;
+    }
+
+    public List<VarInitValue> getSubInitializers() {
+        return subInitializers;
+    }
+
     public void addSubInitializer(VarInitValue subInitializer) {
         assert subInitializers != null : "Only sub-initializer can add a sub-initializer.";
         subInitializers.add(subInitializer);

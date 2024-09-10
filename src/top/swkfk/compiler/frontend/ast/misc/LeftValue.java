@@ -29,6 +29,10 @@ final public class LeftValue extends ASTNode {
         return identifier;
     }
 
+    public List<Expr> getIndices() {
+        return indices;
+    }
+
     @Override
     protected String getName() {
         return "<LVal>";
