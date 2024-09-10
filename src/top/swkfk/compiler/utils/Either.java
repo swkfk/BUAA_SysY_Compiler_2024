@@ -34,4 +34,8 @@ final public class Either<T, U> {
     public U getRight() {
         return right;
     }
+
+    public String toString() {
+        return isLeft ? left.toString() : right.toString();
+    }
 }

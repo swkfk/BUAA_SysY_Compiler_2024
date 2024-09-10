@@ -25,4 +25,12 @@ final public class SymbolVariable extends Symbol {
     public Either<FixedValue, FixedArray> getConstantValue() {
         return constantValue;
     }
+
+    @Override
+    public String toString() {
+        if (!hasFixedValue()) {
+            return super.toString();
+        }
+        return super.toString() + " = " + constantValue;
+    }
 }

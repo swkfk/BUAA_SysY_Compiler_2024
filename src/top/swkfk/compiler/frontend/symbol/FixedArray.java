@@ -51,4 +51,9 @@ final public class FixedArray {
         }
         return array;
     }
+
+    @Override
+    public String toString() {
+        return values.toString();
+    }
 }
