@@ -2,6 +2,7 @@ package top.swkfk.compiler.frontend;
 
 import top.swkfk.compiler.Controller;
 import top.swkfk.compiler.error.ErrorTable;
+import top.swkfk.compiler.error.ErrorType;
 import top.swkfk.compiler.frontend.ast.CompileUnit;
 import top.swkfk.compiler.frontend.ast.block.Block;
 import top.swkfk.compiler.frontend.ast.block.BlockItem;
@@ -39,6 +40,7 @@ import top.swkfk.compiler.frontend.ast.statement.StmtReturn;
 import top.swkfk.compiler.frontend.symbol.Symbol;
 import top.swkfk.compiler.frontend.symbol.SymbolFunction;
 import top.swkfk.compiler.frontend.symbol.SymbolTable;
+import top.swkfk.compiler.frontend.symbol.SymbolVariable;
 
 import java.util.LinkedList;
 import java.util.Optional;
@@ -59,16 +61,25 @@ public class Traverser {
     public void spawn() {
         ast.getDeclarations().forEach(this::registerDecl);
         for (FuncDef func : ast.getFunctions()) {
-            SymbolFunction symbol = symbols.addFunction(
+            SymbolFunction symbolFunc = symbols.addFunction(
                 func.getIdentifier().value(),
                 func.getType().is(FuncType.Type.Void) ? Symbol.Type.Void : Symbol.Type.Int
             );
-            func.setSymbol(symbol);
+            if (symbolFunc == null) {
+                errors.add(ErrorType.DuplicatedDeclaration, func.getIdentifier().location());
+                continue;
+            }
+            func.setSymbol(symbolFunc);
 
             symbols.newScope();
             for (FuncFormalParam param : func.getParams()) {
                 // TODO: Now ignore the indices
-                param.setSymbol(symbols.addParameter(symbol, param.getIdentifier().value(), Symbol.Type.Int));
+                SymbolVariable symbolParam = symbols.addVariable(param.getIdentifier().value(), Symbol.Type.Int);
+                if (symbolParam == null) {
+                    errors.add(ErrorType.DuplicatedDeclaration, param.getIdentifier().location());
+                } else {
+                    param.setSymbol(symbolParam);
+                }
             }
             visitBlock(func.getBody());
             symbols.exitScope();
@@ -84,13 +95,23 @@ public class Traverser {
             for (ConstDef def : constDecl.getDefs()) {
                 // TODO: Now ignore the indices
                 // TODO: Now ignore the const
-                def.setSymbol(symbols.addVariable(def.getIdentifier().value(), Symbol.Type.Int));
+                SymbolVariable symbol = symbols.addVariable(def.getIdentifier().value(), Symbol.Type.Int);
+                if (symbol == null) {
+                    errors.add(ErrorType.DuplicatedDeclaration, def.getIdentifier().location());
+                } else {
+                    def.setSymbol(symbol);
+                }
             }
         } else {
             VarDecl varDecl = (VarDecl) decl.getDeclaration();
             for (VarDef def : varDecl.getDefs()) {
                 // TODO: Now ignore the indices
-                def.setSymbol(symbols.addVariable(def.getIdentifier().value(), Symbol.Type.Int));
+                SymbolVariable symbol = symbols.addVariable(def.getIdentifier().value(), Symbol.Type.Int);
+                if (symbol == null) {
+                    errors.add(ErrorType.DuplicatedDeclaration, def.getIdentifier().location());
+                } else {
+                    def.setSymbol(symbol);
+                }
             }
         }
     }

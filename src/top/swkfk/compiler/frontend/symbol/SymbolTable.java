@@ -26,6 +26,11 @@ final public class SymbolTable {
         stack.pop();
     }
 
+    @SuppressWarnings("SpellCheckingInspection")
+    private boolean bumpKeepIdentifier(String name) {
+        return name.equals("main") || name.equals("printf") || name.equals("getint");
+    }
+
     /**
      * Add a variable to the current scope. If the variable already exists in the current scope or
      * is the same name with a function, return null.
@@ -33,11 +38,8 @@ final public class SymbolTable {
      * @param type The type of the variable
      * @return The mangled name of the variable
      */
-    @SuppressWarnings("SpellCheckingInspection")
     public SymbolVariable addVariable(String name, Symbol.Type type) {
-        if (stack.peek().containsKey(name) || allFunctions.containsKey(name)
-            || name.equals("main") || name.equals("printf") || name.equals("getint")
-        ) {
+        if (stack.peek().containsKey(name) || allFunctions.containsKey(name) || bumpKeepIdentifier(name) ) {
             return null;
         }
         SymbolVariable variable = new SymbolVariable(name, type, stack.size() == 1);
@@ -63,6 +65,9 @@ final public class SymbolTable {
     }
 
     public SymbolFunction addFunction(String name, Symbol.Type type) {
+        if (allFunctions.containsKey(name) || getVariable(name) != null || bumpKeepIdentifier(name)) {
+            return null;
+        }
         SymbolFunction function = new SymbolFunction(name, type);
         allFunctions.put(name, function);
         return function;

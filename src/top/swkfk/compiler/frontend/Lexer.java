@@ -2,6 +2,7 @@ package top.swkfk.compiler.frontend;
 
 import top.swkfk.compiler.Controller;
 import top.swkfk.compiler.error.ErrorTable;
+import top.swkfk.compiler.error.ErrorType;
 import top.swkfk.compiler.frontend.token.Token;
 import top.swkfk.compiler.frontend.token.TokenStream;
 import top.swkfk.compiler.frontend.token.TokenType;
@@ -225,12 +226,25 @@ public class Lexer {
         Pair<Integer, Integer> start = reader.location();
         StringBuilder str = new StringBuilder();
         while ((chr = reader.read()) != '"') {
-            if (chr == '\\') {
+            if (chr == '%') {
                 chr = reader.read();
-                assert chr == 'n' : "Only '\\n' is allowed.";
-                chr = '\n';
+                if (chr != 'd') {
+                    errors.add(ErrorType.InvalidFormatString, location());
+                    continue;
+                }
+                str.append('%').append('d');
+            } else if (chr == '\\') {
+                chr = reader.read();
+                if (chr != 'n') {
+                    errors.add(ErrorType.InvalidFormatString, location());
+                    continue;
+                }
+                str.append('\n');
+            } else if (chr != (char) 32 && chr != (char) 33 && (chr < (char) 40 || chr > (char) 126)) {
+                errors.add(ErrorType.InvalidFormatString, location());
+            } else {
+                str.append((char) chr);
             }
-            str.append((char) chr);
         }
         addToken(TokenType.FString, '"' + str.toString() + '"', start);
     }
@@ -246,5 +260,9 @@ public class Lexer {
 
     private void addToken(TokenType type, String value, Pair<Integer, Integer> start) {
         tokens.add(new Token(type, value, new Navigation(start, reader.location())));
+    }
+
+    private Navigation location() {
+        return new Navigation(reader.location(), reader.location());
     }
 }
