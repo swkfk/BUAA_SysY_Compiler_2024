@@ -1,5 +1,8 @@
 package top.swkfk.compiler.frontend.symbol;
 
+import top.swkfk.compiler.frontend.ast.declaration.function.FuncType;
+import top.swkfk.compiler.frontend.symbol.type.SymbolType;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Stack;
@@ -38,7 +41,7 @@ final public class SymbolTable {
      * @param type The type of the variable
      * @return The mangled name of the variable
      */
-    public SymbolVariable addVariable(String name, Symbol.Type type) {
+    public SymbolVariable addVariable(String name, SymbolType type) {
         if (stack.peek().containsKey(name) || allFunctions.containsKey(name) || bumpKeepIdentifier(name) ) {
             return null;
         }
@@ -64,11 +67,11 @@ final public class SymbolTable {
         return null;
     }
 
-    public SymbolFunction addFunction(String name, Symbol.Type type) {
+    public SymbolFunction addFunction(String name, FuncType type) {
         if (allFunctions.containsKey(name) || getVariable(name) != null || bumpKeepIdentifier(name)) {
             return null;
         }
-        SymbolFunction function = new SymbolFunction(name, type);
+        SymbolFunction function = new SymbolFunction(name, SymbolType.from(type));
         allFunctions.put(name, function);
         return function;
     }
@@ -77,8 +80,11 @@ final public class SymbolTable {
         return allFunctions.get(name);
     }
 
-    public SymbolVariable addParameter(SymbolFunction function, String name, Symbol.Type type) {
-        SymbolVariable parameter = new SymbolVariable(name, type, false);
+    public SymbolVariable addParameter(SymbolFunction function, String name, SymbolType type) {
+        SymbolVariable parameter = addVariable(name, type);
+        if (parameter == null) {
+            return null;
+        }
         allVariables.put(name, parameter);
         stack.peek().put(name, parameter);
         function.addParameter(parameter);

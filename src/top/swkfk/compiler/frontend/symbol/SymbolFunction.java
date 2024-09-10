@@ -1,5 +1,7 @@
 package top.swkfk.compiler.frontend.symbol;
 
+import top.swkfk.compiler.frontend.symbol.type.SymbolType;
+
 import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -8,7 +10,7 @@ final public class SymbolFunction extends Symbol {
 
     private final List<SymbolVariable> parameters;
 
-    public SymbolFunction(String name, Type type) {
+    public SymbolFunction(String name, SymbolType type) {
         super(name, type, true);
         parameters = new LinkedList<>();
     }

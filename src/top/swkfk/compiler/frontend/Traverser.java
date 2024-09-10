@@ -37,10 +37,10 @@ import top.swkfk.compiler.frontend.ast.statement.StmtGetInt;
 import top.swkfk.compiler.frontend.ast.statement.StmtIf;
 import top.swkfk.compiler.frontend.ast.statement.StmtPrintf;
 import top.swkfk.compiler.frontend.ast.statement.StmtReturn;
-import top.swkfk.compiler.frontend.symbol.Symbol;
 import top.swkfk.compiler.frontend.symbol.SymbolFunction;
 import top.swkfk.compiler.frontend.symbol.SymbolTable;
 import top.swkfk.compiler.frontend.symbol.SymbolVariable;
+import top.swkfk.compiler.frontend.symbol.type.Ty;
 
 import java.util.LinkedList;
 import java.util.Optional;
@@ -61,10 +61,7 @@ public class Traverser {
     public void spawn() {
         ast.getDeclarations().forEach(this::registerDecl);
         for (FuncDef func : ast.getFunctions()) {
-            SymbolFunction symbolFunc = symbols.addFunction(
-                func.getIdentifier().value(),
-                func.getType().is(FuncType.Type.Void) ? Symbol.Type.Void : Symbol.Type.Int
-            );
+            SymbolFunction symbolFunc = symbols.addFunction( func.getIdentifier().value(), func.getType());
             if (symbolFunc == null) {
                 errors.add(ErrorType.DuplicatedDeclaration, func.getIdentifier().location());
                 continue;
@@ -74,7 +71,9 @@ public class Traverser {
             symbols.newScope();
             for (FuncFormalParam param : func.getParams()) {
                 // TODO: Now ignore the indices
-                SymbolVariable symbolParam = symbols.addVariable(param.getIdentifier().value(), Symbol.Type.Int);
+                SymbolVariable symbolParam = symbols.addParameter(
+                    symbolFunc, param.getIdentifier().value(), Ty.I32
+                );
                 if (symbolParam == null) {
                     errors.add(ErrorType.DuplicatedDeclaration, param.getIdentifier().location());
                 } else {
@@ -95,7 +94,7 @@ public class Traverser {
             for (ConstDef def : constDecl.getDefs()) {
                 // TODO: Now ignore the indices
                 // TODO: Now ignore the const
-                SymbolVariable symbol = symbols.addVariable(def.getIdentifier().value(), Symbol.Type.Int);
+                SymbolVariable symbol = symbols.addVariable(def.getIdentifier().value(),Ty.I32);
                 if (symbol == null) {
                     errors.add(ErrorType.DuplicatedDeclaration, def.getIdentifier().location());
                 } else {
@@ -106,7 +105,7 @@ public class Traverser {
             VarDecl varDecl = (VarDecl) decl.getDeclaration();
             for (VarDef def : varDecl.getDefs()) {
                 // TODO: Now ignore the indices
-                SymbolVariable symbol = symbols.addVariable(def.getIdentifier().value(), Symbol.Type.Int);
+                SymbolVariable symbol = symbols.addVariable(def.getIdentifier().value(), Ty.I32);
                 if (symbol == null) {
                     errors.add(ErrorType.DuplicatedDeclaration, def.getIdentifier().location());
                 } else {
