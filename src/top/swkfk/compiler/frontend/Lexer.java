@@ -236,6 +236,7 @@ public class Lexer {
             } else if (chr == '\\') {
                 chr = reader.read();
                 if (chr != 'n') {
+                    reader.unread(chr);
                     errors.add(ErrorType.InvalidFormatString, location());
                     continue;
                 }

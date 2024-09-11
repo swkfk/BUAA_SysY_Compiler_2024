@@ -26,4 +26,12 @@ final public class TyPtr extends SymbolType {
     public String toString() {
         return base + "*";
     }
+
+    @Override
+    public boolean equals(Object other) {
+        if (other instanceof TyPtr) {
+            return base.equals(((TyPtr) other).base);
+        }
+        return false;
+    }
 }

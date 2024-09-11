@@ -102,6 +102,7 @@ public class Traverser {
         }
         symbols.newScope();
         returnIntFound = false;
+        notAllowIntReturn = false;
         visitBlock(ast.getMainFunc().getBlock());
         if (!returnIntFound) {
             errors.add(ErrorType.MissingReturnStatement, ast.getMainFunc().getBlock().getEndToken().location());
@@ -202,9 +203,13 @@ public class Traverser {
             case Expr -> Optional.ofNullable(((StmtExpr) stmt).getExpr()).ifPresent(this::visitExpr);
             case Assign -> {
                 visitLeftValue(((StmtAssign) stmt).getLeft());
-                if (((StmtAssign) stmt).getLeft().getSymbol().getType().isConst()) {
-                    errors.add(ErrorType.AssignToConstant, ((StmtAssign) stmt).getLeft().getIdentifier().location());
-                }
+                Optional.ofNullable(((StmtAssign) stmt).getLeft().getSymbol()).ifPresent(
+                    symbol -> {
+                        if (symbol.getType().isConst()) {
+                            errors.add(ErrorType.AssignToConstant, ((StmtAssign) stmt).getLeft().getIdentifier().location());
+                        }
+                    }
+                );
                 visitExpr(((StmtAssign) stmt).getRight());
             }
             case Block -> visitBlock(((StmtBlock) stmt).getBlock());
@@ -255,6 +260,9 @@ public class Traverser {
     }
 
     private void visitVarInitValue(VarInitValue init) {
+        if (init == null) {
+            return;
+        }
         if (init.getExpr() == null) {
             init.getSubInitializers().forEach(this::visitVarInitValue);
         } else {
@@ -296,6 +304,10 @@ public class Traverser {
                 ExprUnaryCall call = (ExprUnaryCall) unary;
                 call.getParams().forEach(this::visitExpr);
                 call.setSymbol(symbols.getFunction(call.getIdentifier().value()));
+                if (call.getSymbol() == null) {
+                    errors.add(ErrorType.UndefinedReference, call.getIdentifier().location());
+                    return;
+                }
                 if (call.getParams().size() != call.getSymbol().getParameters().size()) {
                     errors.add(ErrorType.MismatchedParameterCount, call.getIdentifier().location());
                 } else {
