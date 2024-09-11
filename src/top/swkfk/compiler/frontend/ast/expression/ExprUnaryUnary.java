@@ -1,5 +1,7 @@
 package top.swkfk.compiler.frontend.ast.expression;
 
+import top.swkfk.compiler.frontend.symbol.type.SymbolType;
+
 final public class ExprUnaryUnary extends ExprUnary {
     public enum Op {
         Plus, Minus, Not;
@@ -26,6 +28,11 @@ final public class ExprUnaryUnary extends ExprUnary {
             case Minus -> -value;
             default -> throw new RuntimeException("Unexpected Not in Const Expr");
         };
+    }
+
+    @Override
+    public SymbolType calculateType() {
+        return expr.calculateType();
     }
 
     public ExprUnary getExpr() {

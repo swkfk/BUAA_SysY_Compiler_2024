@@ -39,7 +39,11 @@ final public class TyArray extends SymbolType {
     public static SymbolType from(List<ExprConst> indices) {
         SymbolType base = Ty.I32;
         for (int i = indices.size() - 1; i >= 0; i--) {
-            base = new TyArray(base, indices.get(i).calculate());
+            if (indices.get(i) == null) {
+                base = new TyPtr(base);
+            } else {
+                base = new TyArray(base, indices.get(i).calculate());
+            }
         }
         return base;
     }
@@ -53,5 +57,9 @@ final public class TyArray extends SymbolType {
         } else {
             return Collections.singletonList(length);
         }
+    }
+
+    public SymbolType getBase() {
+        return base;
     }
 }

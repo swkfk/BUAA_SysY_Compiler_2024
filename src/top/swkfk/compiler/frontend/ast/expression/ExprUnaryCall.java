@@ -2,6 +2,7 @@ package top.swkfk.compiler.frontend.ast.expression;
 
 import top.swkfk.compiler.frontend.ast.misc.FuncRealParams;
 import top.swkfk.compiler.frontend.symbol.SymbolFunction;
+import top.swkfk.compiler.frontend.symbol.type.SymbolType;
 import top.swkfk.compiler.frontend.token.Token;
 
 import java.util.List;
@@ -25,6 +26,10 @@ final public class ExprUnaryCall extends ExprUnary {
         this.symbol = symbol;
     }
 
+    public SymbolFunction getSymbol() {
+        return symbol;
+    }
+
     public Token getIdentifier() {
         return identifier;
     }
@@ -37,4 +42,11 @@ final public class ExprUnaryCall extends ExprUnary {
     public int calculateConst() {
         throw new RuntimeException("Const calculation is not supported for function call");
     }
+
+    @Override
+    public SymbolType calculateType() {
+        return symbol.getType();
+    }
+
+
 }

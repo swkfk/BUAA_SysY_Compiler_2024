@@ -35,6 +35,10 @@ final public class FuncFormalParam extends ASTNode {
         indices.add(index);
     }
 
+    public List<ExprConst> getIndices() {
+        return indices == null ? List.of() : indices;
+    }
+
     public Token getIdentifier() {
         return identifier;
     }

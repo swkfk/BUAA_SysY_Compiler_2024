@@ -3,6 +3,8 @@ package top.swkfk.compiler.frontend.ast.expression;
 import top.swkfk.compiler.frontend.ast.ASTNode;
 import top.swkfk.compiler.frontend.ast.misc.LeftValue;
 import top.swkfk.compiler.frontend.ast.misc.Number;
+import top.swkfk.compiler.frontend.symbol.type.SymbolType;
+import top.swkfk.compiler.frontend.symbol.type.Ty;
 
 final public class ExprPrimary extends ASTNode {
     public enum Type {
@@ -40,6 +42,14 @@ final public class ExprPrimary extends ASTNode {
             case Expr -> ((Expr) value).getExpr().calculateConst();
             case LVal -> ((LeftValue) value).calculateConst();
             case Number -> ((Number) value).getValue();
+        };
+    }
+
+    public SymbolType calculateType() {
+        return switch (type) {
+            case Expr -> ((Expr) value).getExpr().calculateType();
+            case LVal -> ((LeftValue) value).calculateType();
+            case Number -> Ty.I32;
         };
     }
 

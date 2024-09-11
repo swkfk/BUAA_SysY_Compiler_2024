@@ -1,6 +1,7 @@
 package top.swkfk.compiler.frontend.ast.expression;
 
 import top.swkfk.compiler.frontend.ast.ASTNode;
+import top.swkfk.compiler.frontend.symbol.type.SymbolType;
 
 abstract public class ExprUnary extends ASTNode {
     public enum Type {
@@ -18,6 +19,8 @@ abstract public class ExprUnary extends ASTNode {
     }
 
     abstract public int calculateConst();
+
+    abstract public SymbolType calculateType();
 
     @Override
     protected String getName() {

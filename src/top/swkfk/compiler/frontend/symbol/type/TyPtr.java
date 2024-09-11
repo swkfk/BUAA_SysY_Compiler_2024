@@ -8,6 +8,10 @@ final public class TyPtr extends SymbolType {
         this.base = base;
     }
 
+    public SymbolType getBase() {
+        return base;
+    }
+
     @Override
     public boolean is(String type) {
         return type.equalsIgnoreCase(toString()) || type.equalsIgnoreCase("ptr");

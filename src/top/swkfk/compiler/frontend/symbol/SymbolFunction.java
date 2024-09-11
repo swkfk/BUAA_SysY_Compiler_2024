@@ -24,4 +24,8 @@ final public class SymbolFunction extends Symbol {
             parameters.stream().map(Symbol::toString).collect(Collectors.joining(", ")) +
             ")";
     }
+
+    public List<SymbolVariable> getParameters() {
+        return parameters;
+    }
 }

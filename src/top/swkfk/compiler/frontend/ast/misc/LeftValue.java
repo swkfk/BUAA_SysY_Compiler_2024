@@ -5,6 +5,10 @@ import top.swkfk.compiler.frontend.ast.expression.Expr;
 import top.swkfk.compiler.frontend.symbol.FixedArray;
 import top.swkfk.compiler.frontend.symbol.FixedValue;
 import top.swkfk.compiler.frontend.symbol.SymbolVariable;
+import top.swkfk.compiler.frontend.symbol.type.SymbolType;
+import top.swkfk.compiler.frontend.symbol.type.Ty;
+import top.swkfk.compiler.frontend.symbol.type.TyArray;
+import top.swkfk.compiler.frontend.symbol.type.TyPtr;
 import top.swkfk.compiler.frontend.token.Token;
 import top.swkfk.compiler.utils.Either;
 
@@ -60,5 +64,21 @@ final public class LeftValue extends ASTNode {
             FixedArray array = value.getRight();
             return array.get(indices);
         }
+    }
+
+    public SymbolType calculateType() {
+        SymbolType result = symbol.getType();
+        if (result.is("ptr")) {
+            result = new TyArray(((TyPtr) result).getBase(), 0);
+        }
+        if (result.is("array")) {
+            for (var ignore : indices) {
+                result = ((TyArray) result).getBase();
+            }
+        }
+        if (result.is("array")) {
+            result = new TyPtr(((TyArray) result).getBase());
+        }
+        return result;
     }
 }

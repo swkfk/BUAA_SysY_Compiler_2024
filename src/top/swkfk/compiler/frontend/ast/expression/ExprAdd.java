@@ -1,6 +1,7 @@
 package top.swkfk.compiler.frontend.ast.expression;
 
 import top.swkfk.compiler.frontend.ast.ASTNode;
+import top.swkfk.compiler.frontend.symbol.type.SymbolType;
 import top.swkfk.compiler.utils.ConstValue;
 
 import java.util.LinkedList;
@@ -40,6 +41,10 @@ final public class ExprAdd extends ASTNode {
             value = ConstValue.calculate(value, rights.get(i).calculateConst(), ConstValue.from(ops.get(i)));
         }
         return value;
+    }
+
+    public SymbolType calculateType() {
+        return left.calculateType();
     }
 
     @Override

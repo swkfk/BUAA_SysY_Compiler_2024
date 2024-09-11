@@ -1,5 +1,7 @@
 package top.swkfk.compiler.frontend.ast.expression;
 
+import top.swkfk.compiler.frontend.symbol.type.SymbolType;
+
 final public class ExprUnaryPrimary extends ExprUnary {
     private final ExprPrimary primary;
 
@@ -15,5 +17,10 @@ final public class ExprUnaryPrimary extends ExprUnary {
     @Override
     public int calculateConst() {
         return primary.calculateConst();
+    }
+
+    @Override
+    public SymbolType calculateType() {
+        return primary.calculateType();
     }
 }

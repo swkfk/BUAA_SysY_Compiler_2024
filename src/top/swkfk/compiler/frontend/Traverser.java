@@ -50,6 +50,7 @@ import top.swkfk.compiler.frontend.symbol.SymbolVariable;
 import top.swkfk.compiler.frontend.symbol.type.SymbolType;
 import top.swkfk.compiler.frontend.symbol.type.Ty;
 import top.swkfk.compiler.frontend.symbol.type.TyArray;
+import top.swkfk.compiler.frontend.symbol.type.TyPtr;
 
 import java.util.LinkedList;
 import java.util.Optional;
@@ -82,9 +83,8 @@ public class Traverser {
 
             symbols.newScope();
             for (FuncFormalParam param : func.getParams()) {
-                // TODO: Now ignore the indices
                 SymbolVariable symbolParam = symbols.addParameter(
-                    symbolFunc, param.getIdentifier().value(), Ty.I32
+                    symbolFunc, param.getIdentifier().value(), TyArray.from(param.getIndices())
                 );
                 if (symbolParam == null) {
                     errors.add(ErrorType.DuplicatedDeclaration, param.getIdentifier().location());
@@ -296,6 +296,17 @@ public class Traverser {
                 ExprUnaryCall call = (ExprUnaryCall) unary;
                 call.getParams().forEach(this::visitExpr);
                 call.setSymbol(symbols.getFunction(call.getIdentifier().value()));
+                if (call.getParams().size() != call.getSymbol().getParameters().size()) {
+                    errors.add(ErrorType.MismatchedParameterCount, call.getIdentifier().location());
+                } else {
+                    for (int i = 0; i < call.getParams().size(); i++) {
+                        SymbolType fType = call.getSymbol().getParameters().get(i).getType();
+                        SymbolType rType = call.getParams().get(i).calculateType();
+                        if (!fType.equals(rType)) {
+                            errors.add(ErrorType.MismatchedParameterType, call.getIdentifier().location());
+                        }
+                    }
+                }
             }
         }
     }
