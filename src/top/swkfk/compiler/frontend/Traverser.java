@@ -172,7 +172,12 @@ public class Traverser {
                 loopDepth--;
             }
             case GetInt -> visitLeftValue(((StmtGetInt) stmt).getLeft());
-            case Printf -> ((StmtPrintf) stmt).getArgs().forEach(this::visitExpr);
+            case Printf -> {
+                if (((StmtPrintf) stmt).getArgs().size() != ((StmtPrintf) stmt).getFormatArgCount()) {
+                    errors.add(ErrorType.MismatchedFormatArgument, ((StmtPrintf) stmt).getToken().location());
+                }
+                ((StmtPrintf) stmt).getArgs().forEach(this::visitExpr);
+            }
             case Return -> Optional.ofNullable(((StmtReturn) stmt).getExpr()).ifPresent(this::visitExpr);
             case Expr -> Optional.ofNullable(((StmtExpr) stmt).getExpr()).ifPresent(this::visitExpr);
             case Assign -> {

@@ -370,9 +370,10 @@ public class Parser {
             consume(TokenType.Semicolon);
             return watch(new StmtReturn(expr));
         }
-        if (checkConsume(TokenType.SpPrintf)) {
+        if (among(TokenType.SpPrintf)) {
+            Token tk = consume(TokenType.SpPrintf);
             consume(TokenType.LParen);
-            StmtPrintf printf = new StmtPrintf(consume(TokenType.FString).value());
+            StmtPrintf printf = new StmtPrintf(tk, consume(TokenType.FString).value());
             while (checkConsume(TokenType.Comma)) {
                 printf.addArg(parseExpr());
             }
