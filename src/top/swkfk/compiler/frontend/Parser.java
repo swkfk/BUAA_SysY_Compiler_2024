@@ -445,10 +445,9 @@ public class Parser {
 
     private FuncRealParams parseFuncRealParams() {
         FuncRealParams params = new FuncRealParams();
-        while (!among(TokenType.RParen)) {
+        do {
             params.addParam(parseExpr());
-            checkConsume(TokenType.Comma);
-        }
+        } while (checkConsume(TokenType.Comma));
         return watch(params);
     }
 
