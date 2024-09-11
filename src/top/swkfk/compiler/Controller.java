@@ -7,6 +7,8 @@ import top.swkfk.compiler.frontend.Traverser;
 import top.swkfk.compiler.frontend.ast.CompileUnit;
 import top.swkfk.compiler.frontend.symbol.SymbolTable;
 import top.swkfk.compiler.frontend.token.TokenStream;
+import top.swkfk.compiler.llvm.IrBuilder;
+import top.swkfk.compiler.llvm.IrModule;
 import top.swkfk.compiler.utils.ParserWatcher;
 
 import java.io.FileWriter;
@@ -43,7 +45,7 @@ public class Controller {
         // </Homework 3>
 
         // 3. Semantic analysis
-        new Traverser(ast).spawn();
+        new Traverser(ast).spawn();  // --> SymbolTable
         if (Configure.debug.displayErrors) {
             System.err.println(errors.toDebugString());
         }
@@ -51,10 +53,14 @@ public class Controller {
             System.err.println(symbols);
         }
         // <Homework 4>
-        try (FileWriter writer = new FileWriter(Configure.target)) {
-            writer.write(errors.toString());
-        }
-        System.exit(0);
+        // try (FileWriter writer = new FileWriter(Configure.target)) {
+        //     writer.write(errors.toString());
+        // }
+        // System.exit(0);
         // </Homework 4>
+
+        // 4. Intermediate code generation
+        @SuppressWarnings("unused")
+        IrModule module = new IrBuilder(ast).build().emit();
     }
 }
