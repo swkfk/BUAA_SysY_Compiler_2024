@@ -65,11 +65,11 @@ public class TokenStream {
      */
     public Token consume(TokenType type) {
         assertFrozen();
-        Token nxt = next();
+        Token nxt = peek();
         if (nxt == null || !nxt.is(type)) {
             throw new IllegalStateException("Expecting " + type + " but got " + nxt);
         }
-        return nxt;
+        return next();
     }
 
     /**

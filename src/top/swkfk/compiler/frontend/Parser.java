@@ -2,6 +2,7 @@ package top.swkfk.compiler.frontend;
 
 import top.swkfk.compiler.Controller;
 import top.swkfk.compiler.error.ErrorTable;
+import top.swkfk.compiler.error.ErrorType;
 import top.swkfk.compiler.frontend.ast.CompileUnit;
 import top.swkfk.compiler.frontend.ast.block.Block;
 import top.swkfk.compiler.frontend.ast.block.BlockItem;
@@ -77,8 +78,21 @@ public class Parser {
      * @return The consumed token.
      */
     private Token consume(TokenType type) {
-        Token token = __tokens.consume(type);
-        __watcher.add(token.toString());
+        Token token = null;
+        try {
+            token = __tokens.consume(type);
+            __watcher.add(token.toString());
+        } catch (IllegalStateException e) {
+            if (type.equals(TokenType.Semicolon)) {
+                errors.add(ErrorType.ExpectedSemicolon, __tokens.peek(-1).location());
+            } else if (type.equals(TokenType.RParen)) {
+                errors.add(ErrorType.ExpectedRParen, __tokens.peek(-1).location());
+            } else if (type.equals(TokenType.RBracket)) {
+                errors.add(ErrorType.ExpectedRBracket, __tokens.peek(-1).location());
+            } else {
+                throw e;
+            }
+        }
         return token;
     }
 
@@ -189,7 +203,7 @@ public class Parser {
 
     private FuncFormalParams parseFuncFormalParams() {
         FuncFormalParams params = new FuncFormalParams();
-        while (!among(TokenType.RParen)) {
+        while (among(TokenType.Int)) {
             params.addParam(parseFuncFormalParam());
             checkConsume(TokenType.Comma);
         }
@@ -203,13 +217,13 @@ public class Parser {
         Token identifier = consume(TokenType.Ident);
         boolean isArray = among(TokenType.LBracket);
         FuncFormalParam param = new FuncFormalParam(paramType, identifier, isArray);
+        if (checkConsume(TokenType.LBracket)) {
+            consume(TokenType.RBracket);
+            param.addIndex(null);
+        }
         while (checkConsume(TokenType.LBracket)) {
-            if (checkConsume(TokenType.RBracket)) {
-                param.addIndex(null);
-            } else {
-                param.addIndex(parseConstExpr());
-                consume(TokenType.RBracket);
-            }
+            param.addIndex(parseConstExpr());
+            consume(TokenType.RBracket);
         }
         return watch(param);
     }
