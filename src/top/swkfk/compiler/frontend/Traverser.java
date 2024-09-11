@@ -34,6 +34,8 @@ import top.swkfk.compiler.frontend.ast.misc.LeftValue;
 import top.swkfk.compiler.frontend.ast.statement.Stmt;
 import top.swkfk.compiler.frontend.ast.statement.StmtAssign;
 import top.swkfk.compiler.frontend.ast.statement.StmtBlock;
+import top.swkfk.compiler.frontend.ast.statement.StmtBreak;
+import top.swkfk.compiler.frontend.ast.statement.StmtContinue;
 import top.swkfk.compiler.frontend.ast.statement.StmtExpr;
 import top.swkfk.compiler.frontend.ast.statement.StmtFor;
 import top.swkfk.compiler.frontend.ast.statement.StmtGetInt;
@@ -59,6 +61,8 @@ public class Traverser {
     private final CompileUnit ast;
     private final ErrorTable errors = Controller.errors;
     private final SymbolTable symbols = Controller.symbols;
+
+    private int loopDepth = 0;
 
     public Traverser(CompileUnit ast) {
         this.ast = ast;
@@ -160,10 +164,12 @@ public class Traverser {
                 Optional.ofNullable(((StmtIf) stmt).getElseStmt()).ifPresent(this::visitNewScopeStmt);
             }
             case For -> {
+                loopDepth++;
                 Optional.ofNullable(((StmtFor) stmt).getInit()).ifPresent(this::visitForStmt);
                 Optional.ofNullable(((StmtFor) stmt).getCondition()).ifPresent(this::visitCond);
                 Optional.ofNullable(((StmtFor) stmt).getUpdate()).ifPresent(this::visitForStmt);
                 visitNewScopeStmt(((StmtFor) stmt).getBody());
+                loopDepth--;
             }
             case GetInt -> visitLeftValue(((StmtGetInt) stmt).getLeft());
             case Printf -> ((StmtPrintf) stmt).getArgs().forEach(this::visitExpr);
@@ -174,7 +180,16 @@ public class Traverser {
                 visitExpr(((StmtAssign) stmt).getRight());
             }
             case Block -> visitBlock(((StmtBlock) stmt).getBlock());
-            case Break, Continue -> {}
+            case Break -> {
+                if (loopDepth == 0) {
+                    errors.add(ErrorType.InvalidLoopControl, ((StmtBreak) stmt).getToken().location());
+                }
+            }
+            case Continue -> {
+                if (loopDepth == 0) {
+                    errors.add(ErrorType.InvalidLoopControl, ((StmtContinue) stmt).getToken().location());
+                }
+            }
         }
     }
 

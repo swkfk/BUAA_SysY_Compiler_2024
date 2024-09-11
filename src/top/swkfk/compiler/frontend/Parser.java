@@ -352,13 +352,15 @@ public class Parser {
             consume(TokenType.RParen);
             return watch(new StmtFor(forStmt, cond, update, parseStmt()));
         }
-        if (checkConsume(TokenType.Break)) {
+        if (among(TokenType.Break)) {
+            Token tk = consume(TokenType.Break);
             consume(TokenType.Semicolon);
-            return watch(new StmtBreak());
+            return watch(new StmtBreak(tk));
         }
-        if (checkConsume(TokenType.Continue)) {
+        if (among(TokenType.Continue)) {
+            Token tk = consume(TokenType.Continue);
             consume(TokenType.Semicolon);
-            return watch(new StmtContinue());
+            return watch(new StmtContinue(tk));
         }
         if (checkConsume(TokenType.Return)) {
             if (checkConsume(TokenType.Semicolon)) {
