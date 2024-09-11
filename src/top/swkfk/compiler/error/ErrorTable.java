@@ -2,6 +2,7 @@ package top.swkfk.compiler.error;
 
 import top.swkfk.compiler.frontend.Navigation;
 
+import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -18,7 +19,8 @@ final public class ErrorTable {
     }
 
     public String toString() {
-        return errors.stream().map(ErrorEntry::toString).collect(Collectors.joining("\n"));
+        return errors.stream().sorted(Comparator.comparingInt(t0 -> Integer.parseInt(t0.toString().split(" ")[0])))
+            .map(ErrorEntry::toString).collect(Collectors.joining("\n"));
     }
 
     public String toDebugString() {
