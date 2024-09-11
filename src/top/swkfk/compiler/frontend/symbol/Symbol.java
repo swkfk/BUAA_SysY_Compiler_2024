@@ -28,4 +28,8 @@ public class Symbol {
     public String getName() {
         return name;
     }
+
+    public SymbolType getType() {
+        return type;
+    }
 }

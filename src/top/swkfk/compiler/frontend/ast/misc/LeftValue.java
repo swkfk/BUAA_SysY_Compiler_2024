@@ -33,6 +33,10 @@ final public class LeftValue extends ASTNode {
         return indices;
     }
 
+    public SymbolVariable getSymbol() {
+        return symbol;
+    }
+
     @Override
     protected String getName() {
         return "<LVal>";

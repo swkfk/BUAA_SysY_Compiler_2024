@@ -104,6 +104,7 @@ public class Traverser {
             for (ConstDef def : constDecl.getDefs()) {
                 def.getIndices().forEach(this::visitExprConst);
                 SymbolType ty = TyArray.from(def.getIndices());
+                ty.setConst();
                 SymbolVariable symbol = symbols.addVariable(def.getIdentifier().value(), ty);
                 if (symbol == null) {
                     errors.add(ErrorType.DuplicatedDeclaration, def.getIdentifier().location());
@@ -182,6 +183,9 @@ public class Traverser {
             case Expr -> Optional.ofNullable(((StmtExpr) stmt).getExpr()).ifPresent(this::visitExpr);
             case Assign -> {
                 visitLeftValue(((StmtAssign) stmt).getLeft());
+                if (((StmtAssign) stmt).getLeft().getSymbol().getType().isConst()) {
+                    errors.add(ErrorType.AssignToConstant, ((StmtAssign) stmt).getLeft().getIdentifier().location());
+                }
                 visitExpr(((StmtAssign) stmt).getRight());
             }
             case Block -> visitBlock(((StmtBlock) stmt).getBlock());
