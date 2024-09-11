@@ -63,6 +63,8 @@ public class Traverser {
     private final SymbolTable symbols = Controller.symbols;
 
     private int loopDepth = 0;
+    private boolean returnIntFound = false;
+    private boolean notAllowIntReturn = false;
 
     public Traverser(CompileUnit ast) {
         this.ast = ast;
@@ -90,11 +92,20 @@ public class Traverser {
                     param.setSymbol(symbolParam);
                 }
             }
+            returnIntFound = false;
+            notAllowIntReturn = !func.getType().is(FuncType.Type.Int);
             visitBlock(func.getBody());
+            if (!returnIntFound && !func.getType().is(FuncType.Type.Void)) {
+                errors.add(ErrorType.MissingReturnStatement, func.getBody().getEndToken().location());
+            }
             symbols.exitScope();
         }
         symbols.newScope();
+        returnIntFound = false;
         visitBlock(ast.getMainFunc().getBlock());
+        if (!returnIntFound) {
+            errors.add(ErrorType.MissingReturnStatement, ast.getMainFunc().getBlock().getEndToken().location());
+        }
         symbols.exitScope();
     }
 
@@ -179,7 +190,15 @@ public class Traverser {
                 }
                 ((StmtPrintf) stmt).getArgs().forEach(this::visitExpr);
             }
-            case Return -> Optional.ofNullable(((StmtReturn) stmt).getExpr()).ifPresent(this::visitExpr);
+            case Return -> {
+                if (((StmtReturn) stmt).getExpr() != null) {
+                    returnIntFound = true;
+                    if (notAllowIntReturn) {
+                        errors.add(ErrorType.MismatchedReturnType, ((StmtReturn) stmt).getToken().location());
+                    }
+                    visitExpr(((StmtReturn) stmt).getExpr());
+                }
+            }
             case Expr -> Optional.ofNullable(((StmtExpr) stmt).getExpr()).ifPresent(this::visitExpr);
             case Assign -> {
                 visitLeftValue(((StmtAssign) stmt).getLeft());

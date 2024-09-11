@@ -315,9 +315,10 @@ public class Parser {
     private Block parseBlock() {
         Block block = new Block();
         consume(TokenType.LBrace);
-        while (!checkConsume(TokenType.RBrace)) {
+        while (!among(TokenType.RBrace)) {
             block.addBlock(parseBlockItem());
         }
+        block.setEndToken(consume(TokenType.RBrace));
         return watch(block);
     }
 
@@ -362,13 +363,14 @@ public class Parser {
             consume(TokenType.Semicolon);
             return watch(new StmtContinue(tk));
         }
-        if (checkConsume(TokenType.Return)) {
+        if (among(TokenType.Return)) {
+            Token tk = consume(TokenType.Return);
             if (checkConsume(TokenType.Semicolon)) {
-                return watch(new StmtReturn());
+                return watch(new StmtReturn(tk));
             }
             Expr expr = parseExpr();
             consume(TokenType.Semicolon);
-            return watch(new StmtReturn(expr));
+            return watch(new StmtReturn(expr, tk));
         }
         if (among(TokenType.SpPrintf)) {
             Token tk = consume(TokenType.SpPrintf);
