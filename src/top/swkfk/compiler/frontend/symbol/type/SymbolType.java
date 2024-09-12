@@ -1,8 +1,9 @@
 package top.swkfk.compiler.frontend.symbol.type;
 
 import top.swkfk.compiler.frontend.ast.declaration.function.FuncType;
+import top.swkfk.compiler.llvm.type.Type;
 
-abstract public class SymbolType {
+abstract public class SymbolType extends Type {
     private final SymbolQualifier qualifier = new SymbolQualifier();
 
     public void setConst() {
