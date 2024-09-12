@@ -1,4 +1,4 @@
-package top.swkfk.compiler.utils;
+package top.swkfk.compiler.helpers;
 
 import top.swkfk.compiler.Configure;
 

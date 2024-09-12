@@ -51,7 +51,7 @@ import top.swkfk.compiler.frontend.ast.statement.StmtReturn;
 import top.swkfk.compiler.frontend.token.Token;
 import top.swkfk.compiler.frontend.token.TokenStream;
 import top.swkfk.compiler.frontend.token.TokenType;
-import top.swkfk.compiler.utils.ParserWatcher;
+import top.swkfk.compiler.helpers.ParserWatcher;
 
 import java.util.LinkedList;
 import java.util.List;

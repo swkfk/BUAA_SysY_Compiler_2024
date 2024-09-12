@@ -2,7 +2,7 @@ package top.swkfk.compiler.llvm.value;
 
 import top.swkfk.compiler.frontend.symbol.type.SymbolType;
 import top.swkfk.compiler.llvm.Use;
-import top.swkfk.compiler.utils.GlobalCounter;
+import top.swkfk.compiler.helpers.GlobalCounter;
 
 import java.util.LinkedList;
 import java.util.List;

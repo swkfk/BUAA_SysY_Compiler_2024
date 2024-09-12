@@ -1,4 +1,4 @@
-package top.swkfk.compiler.utils;
+package top.swkfk.compiler.helpers;
 
 final public class GlobalCounter {
     private int counter = 0;

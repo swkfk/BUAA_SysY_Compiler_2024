@@ -9,9 +9,8 @@ import top.swkfk.compiler.frontend.symbol.SymbolTable;
 import top.swkfk.compiler.frontend.token.TokenStream;
 import top.swkfk.compiler.llvm.IrBuilder;
 import top.swkfk.compiler.llvm.IrModule;
-import top.swkfk.compiler.utils.ParserWatcher;
+import top.swkfk.compiler.helpers.ParserWatcher;
 
-import java.io.FileWriter;
 import java.io.IOException;
 
 public class Controller {
