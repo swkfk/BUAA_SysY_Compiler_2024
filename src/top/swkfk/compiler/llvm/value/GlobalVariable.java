@@ -1,5 +1,8 @@
 package top.swkfk.compiler.llvm.value;
 
+import top.swkfk.compiler.frontend.ast.declaration.object.ConstDef;
+import top.swkfk.compiler.frontend.ast.declaration.object.Decl;
+import top.swkfk.compiler.frontend.ast.declaration.object.VarDef;
 import top.swkfk.compiler.frontend.symbol.type.SymbolType;
 import top.swkfk.compiler.utils.Either;
 
@@ -32,5 +35,13 @@ final public class GlobalVariable extends Value {
         super(name, type);
         assert type.is("array") : "Global variable must be an array with a list of initializers";
         this.initializer = Either.right(initializer);
+    }
+
+    public static GlobalVariable from(ConstDef def) {
+        return null;
+    }
+
+    public static GlobalVariable from(VarDef def) {
+        return null;
     }
 }
