@@ -11,6 +11,7 @@ import top.swkfk.compiler.llvm.IrBuilder;
 import top.swkfk.compiler.llvm.IrModule;
 import top.swkfk.compiler.helpers.ParserWatcher;
 
+import java.io.FileWriter;
 import java.io.IOException;
 
 public class Controller {
@@ -59,7 +60,12 @@ public class Controller {
         // </Homework 4>
 
         // 4. Intermediate code generation
-        @SuppressWarnings("unused")
         IrModule module = new IrBuilder(ast).build().emit();
+        // <Homework 5>
+        try (FileWriter writer = new FileWriter(Configure.target)) {
+            writer.write(module.toString());
+        }
+        System.exit(0);
+        // </Homework 5>
     }
 }
