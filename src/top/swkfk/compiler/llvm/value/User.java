@@ -1,7 +1,7 @@
-package top.swkfk.compiler.llvm;
+package top.swkfk.compiler.llvm.value;
 
 import top.swkfk.compiler.frontend.symbol.type.SymbolType;
-import top.swkfk.compiler.llvm.value.Value;
+import top.swkfk.compiler.llvm.Use;
 
 import java.util.LinkedList;
 import java.util.List;

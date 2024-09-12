@@ -1,7 +1,7 @@
 package top.swkfk.compiler.llvm.value.instruction;
 
 import top.swkfk.compiler.frontend.symbol.type.TyPtr;
-import top.swkfk.compiler.llvm.User;
+import top.swkfk.compiler.llvm.value.User;
 import top.swkfk.compiler.llvm.value.Value;
 
 final public class IStore extends User {

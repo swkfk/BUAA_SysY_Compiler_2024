@@ -1,5 +1,6 @@
 package top.swkfk.compiler.llvm;
 
+import top.swkfk.compiler.llvm.value.User;
 import top.swkfk.compiler.llvm.value.Value;
 
 final public class Use {
