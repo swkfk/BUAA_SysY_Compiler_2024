@@ -6,11 +6,13 @@ import top.swkfk.compiler.llvm.value.Value;
 import java.util.LinkedList;
 import java.util.List;
 
-public class User extends Value {
+abstract public class User extends Value {
     protected List<Value> operands;
 
-    public User(String name, Type type) {
+    protected User(String name, Type type) {
         super(name, type);
         this.operands = new LinkedList<>();
     }
+
+    abstract public String toLLVM();
 }
