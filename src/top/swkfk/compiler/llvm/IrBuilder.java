@@ -7,10 +7,14 @@ import top.swkfk.compiler.frontend.ast.declaration.object.ConstDecl;
 import top.swkfk.compiler.frontend.ast.declaration.object.Decl;
 import top.swkfk.compiler.frontend.ast.declaration.object.VarDecl;
 import top.swkfk.compiler.frontend.symbol.type.SymbolType;
+import top.swkfk.compiler.frontend.symbol.type.TyPtr;
 import top.swkfk.compiler.llvm.value.Block;
 import top.swkfk.compiler.llvm.value.Function;
 import top.swkfk.compiler.llvm.value.GlobalVariable;
+import top.swkfk.compiler.llvm.value.User;
 import top.swkfk.compiler.llvm.value.Value;
+import top.swkfk.compiler.llvm.value.instruction.IAllocate;
+import top.swkfk.compiler.llvm.value.instruction.IStore;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -67,13 +71,30 @@ public class IrBuilder {
 
         for (FuncFormalParam param : params) {
             param.getSymbol().setValue(function.addParam(param.getSymbol().getType()));
-            param.getSymbol().setFromParam();
         }
 
         Block entry = new Block(function);
         function.addBlock(entry);
-
         insertPoint = entry;
+
+        for (FuncFormalParam param : params) {
+            Value raw = param.getSymbol().getValue();
+            Value pointer = insertInstruction(
+                new IAllocate(new TyPtr(param.getSymbol().getType()))
+            );
+
+            insertInstruction(
+                new IStore(raw, pointer)
+            );
+
+            param.getSymbol().setValue(pointer);
+            param.getSymbol().setFromParam();
+        }
+    }
+
+    User insertInstruction(User instruction) {
+        insertPoint.addInstruction(instruction);
+        return instruction;
     }
 
     public IrModule emit() {

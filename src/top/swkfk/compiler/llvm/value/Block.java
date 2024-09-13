@@ -16,8 +16,12 @@ final public class Block extends Value {
         StringBuilder sb = new StringBuilder();
         sb.append("  ").append(getName()).append(":\n");
         for (DualLinkedList.Node<User> node : instructions) {
-            sb.append("    ").append(node.getData()).append("\n");
+            sb.append("    ").append(node.getData().toLLVM()).append("\n");
         }
         return sb.toString();
+    }
+
+    public void addInstruction(User instruction) {
+        new DualLinkedList.Node<>(instruction).insertIntoTail(instructions);
     }
 }
