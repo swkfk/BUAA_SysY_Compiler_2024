@@ -45,4 +45,8 @@ final public class FuncDef extends ASTNode {
     public void setSymbol(SymbolFunction symbol) {
         this.symbol = symbol;
     }
+
+    public SymbolFunction getSymbol() {
+        return symbol;
+    }
 }
