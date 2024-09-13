@@ -3,10 +3,13 @@ package top.swkfk.compiler.frontend.symbol;
 import top.swkfk.compiler.frontend.ast.declaration.object.ConstInitValue;
 import top.swkfk.compiler.frontend.ast.expression.Expr;
 import top.swkfk.compiler.frontend.ast.expression.ExprConst;
+import top.swkfk.compiler.llvm.value.Value;
+import top.swkfk.compiler.llvm.value.constants.ConstInteger;
 
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Queue;
 
 final public class FixedArray {
@@ -55,5 +58,13 @@ final public class FixedArray {
     @Override
     public String toString() {
         return values.toString();
+    }
+
+    public Map<Integer, Value> into() {
+        Map<Integer, Value> result = new HashMap<>();
+        for (Map.Entry<Integer, Integer> entry : values.entrySet()) {
+            result.put(entry.getKey(), new ConstInteger(entry.getValue()));
+        }
+        return result;
     }
 }

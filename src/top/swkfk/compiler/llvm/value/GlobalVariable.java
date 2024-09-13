@@ -1,9 +1,11 @@
 package top.swkfk.compiler.llvm.value;
 
 import top.swkfk.compiler.frontend.ast.declaration.object.ConstDef;
-import top.swkfk.compiler.frontend.ast.declaration.object.Decl;
 import top.swkfk.compiler.frontend.ast.declaration.object.VarDef;
+import top.swkfk.compiler.frontend.symbol.SymbolVariable;
 import top.swkfk.compiler.frontend.symbol.type.SymbolType;
+import top.swkfk.compiler.frontend.symbol.type.TyArray;
+import top.swkfk.compiler.helpers.ArrayInitialString;
 import top.swkfk.compiler.utils.Either;
 
 import java.util.Map;
@@ -37,11 +39,34 @@ final public class GlobalVariable extends Value {
         this.initializer = Either.right(initializer);
     }
 
+    private static GlobalVariable from(SymbolVariable symbol) {
+        if (symbol.getConstantValue().isLeft()) {
+            return new GlobalVariable(
+                symbol.getName(), symbol.getType(), symbol.getConstantValue().getLeft().into()
+            );
+        } else {
+            return new GlobalVariable(
+                symbol.getName(), symbol.getType(), symbol.getConstantValue().getRight().into()
+            );
+        }
+    }
+
     public static GlobalVariable from(ConstDef def) {
-        return null;
+        return from(def.getSymbol());
     }
 
     public static GlobalVariable from(VarDef def) {
-        return null;
+        return from(def.getSymbol());
+    }
+
+    public String toString() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("@").append(getName()).append(" = dso_local global ");
+        if (initializer.isLeft()) {
+            sb.append(getType()).append(" ").append(initializer.getLeft());
+        } else {
+            sb.append(ArrayInitialString.into(getType(), initializer.getRight()));
+        }
+        return sb.toString();
     }
 }

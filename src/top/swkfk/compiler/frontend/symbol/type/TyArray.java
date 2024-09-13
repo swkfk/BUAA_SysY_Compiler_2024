@@ -26,6 +26,10 @@ final public class TyArray extends SymbolType {
         return base.sizeof() * length;
     }
 
+    public int getLength() {
+        return length;
+    }
+
     @Override
     public String toString() {
         return "[" + length + " x " + base + "]";

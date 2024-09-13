@@ -138,11 +138,22 @@ public class Traverser {
             VarDecl varDecl = (VarDecl) decl.getDeclaration();
             for (VarDef def : varDecl.getDefs()) {
                 def.getIndices().forEach(this::visitExprConst);
-                SymbolVariable symbol = symbols.addVariable(def.getIdentifier().value(), TyArray.from(def.getIndices()));
+                SymbolType ty = TyArray.from(def.getIndices());
+                SymbolVariable symbol = symbols.addVariable(def.getIdentifier().value(), ty);
                 if (symbol == null) {
                     errors.add(ErrorType.DuplicatedDeclaration, def.getIdentifier().location());
                 } else {
                     visitVarInitValue(def.getInitial());
+                    try {
+                        // It is certain that the VarInitValue in global scope shall be a ConstInitValue
+                        if (def.getIndices().isEmpty()) {
+                            symbol.setConstantValue(new FixedValue(def.getInitial().getExpr().calculateConst()));
+                        } else {
+                            symbol.setConstantValue(FixedArray.from(((TyArray) ty).getIndices(), def.getInitial().into()));
+                        }
+                    } catch (Exception e) {
+                        // Ignore the error, it will be reported by the error handler
+                    }
                     def.setSymbol(symbol);
                 }
             }

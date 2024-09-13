@@ -51,4 +51,8 @@ final public class VarDef extends ASTNode {
     public void setSymbol(SymbolVariable symbol) {
         this.symbol = symbol;
     }
+
+    public SymbolVariable getSymbol() {
+        return symbol;
+    }
 }

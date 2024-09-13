@@ -45,4 +45,8 @@ final public class ConstDef extends ASTNode {
     public void setSymbol(SymbolVariable symbol) {
         this.symbol = symbol;
     }
+
+    public SymbolVariable getSymbol() {
+        return symbol;
+    }
 }
