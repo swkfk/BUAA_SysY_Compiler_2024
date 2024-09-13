@@ -46,7 +46,6 @@ final public class DualLinkedList<T> implements Iterable<DualLinkedList.Node<T>>
 
         public void insertIntoHead(DualLinkedList<T> parent) {
             this.parent = parent;
-            parent.length++;
             if (parent.isEmpty()) {
                 parent.tail = this;
             } else {
@@ -54,11 +53,11 @@ final public class DualLinkedList<T> implements Iterable<DualLinkedList.Node<T>>
                 this.next = parent.head;
             }
             parent.head = this;
+            parent.length++;
         }
 
         public void insertIntoTail(DualLinkedList<T> parent) {
             this.parent = parent;
-            parent.length++;
             if (parent.isEmpty()) {
                 parent.head = this;
             } else {
@@ -66,6 +65,7 @@ final public class DualLinkedList<T> implements Iterable<DualLinkedList.Node<T>>
                 this.prev = parent.tail;
             }
             parent.tail = this;
+            parent.length++;
         }
 
         public void insertAfter(Node<T> node) {
