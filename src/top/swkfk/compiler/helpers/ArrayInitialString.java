@@ -25,7 +25,7 @@ final public class ArrayInitialString {
             if (init.getOrDefault(start, ConstInteger.zero).equals(ConstInteger.zero)) {
                 return new Pair<>("i32 0", true);
             } else {
-                return new Pair<>("i32 " + init.get(start).toString(), false);
+                return new Pair<>(init.get(start).toString(), false);
             }
         }
         TyArray tyArray = (TyArray) ty;

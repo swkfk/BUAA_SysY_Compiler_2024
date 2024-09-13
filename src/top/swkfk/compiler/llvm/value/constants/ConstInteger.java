@@ -12,8 +12,9 @@ final public class ConstInteger extends Constant {
         this.value = value;
     }
 
-    public String toString() {
-        return String.valueOf(value);
+    public ConstInteger(int value, SymbolType type) {
+        super(String.valueOf(value), type);
+        this.value = value;
     }
 
     @Override
@@ -25,4 +26,5 @@ final public class ConstInteger extends Constant {
     }
 
     public final static ConstInteger zero = new ConstInteger(0);
+    public final static ConstInteger logicOne = new ConstInteger(1, Ty.I1);
 }
