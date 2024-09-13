@@ -2,6 +2,7 @@ package top.swkfk.compiler.llvm;
 
 import top.swkfk.compiler.frontend.ast.CompileUnit;
 import top.swkfk.compiler.frontend.ast.declaration.function.FuncDef;
+import top.swkfk.compiler.frontend.ast.declaration.function.FuncFormalParam;
 import top.swkfk.compiler.frontend.ast.declaration.object.ConstDecl;
 import top.swkfk.compiler.frontend.ast.declaration.object.Decl;
 import top.swkfk.compiler.frontend.ast.declaration.object.VarDecl;
@@ -59,12 +60,19 @@ public class IrBuilder {
         }
     }
 
-    void registerFunction(String name, SymbolType type) {
+    void registerFunction(String name, SymbolType type, List<FuncFormalParam> params) {
         Value.counter.reset();
         Function function = new Function(name, type);
         functions.add(function);
+
+        for (FuncFormalParam param : params) {
+            param.getSymbol().setValue(function.addParam(param.getSymbol().getType()));
+            param.getSymbol().setFromParam();
+        }
+
         Block entry = new Block(function);
         function.addBlock(entry);
+
         insertPoint = entry;
     }
 

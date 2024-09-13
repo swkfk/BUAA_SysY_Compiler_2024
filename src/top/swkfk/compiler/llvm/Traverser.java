@@ -27,7 +27,9 @@ class Traverser {
     }
 
     void visitFunction(FuncDef funcDef) {
-        builder.registerFunction(funcDef.getSymbol().getName(), funcDef.getSymbol().getType());
+        builder.registerFunction(
+            funcDef.getSymbol().getName(), funcDef.getSymbol().getType(), funcDef.getParams()
+        );
     }
 
 }
