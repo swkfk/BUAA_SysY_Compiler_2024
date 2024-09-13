@@ -11,6 +11,7 @@ public enum BinaryOp {
     MOD("srem"),
     AND("and"),
     OR("or"),
+    XOR("xor"),
 
     Separator("===="),
 

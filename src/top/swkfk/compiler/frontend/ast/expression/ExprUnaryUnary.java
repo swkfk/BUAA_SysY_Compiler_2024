@@ -38,4 +38,8 @@ final public class ExprUnaryUnary extends ExprUnary {
     public ExprUnary getExpr() {
         return expr;
     }
+
+    public Op getOp() {
+        return op;
+    }
 }

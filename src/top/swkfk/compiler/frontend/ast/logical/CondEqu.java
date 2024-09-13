@@ -28,6 +28,10 @@ final public class CondEqu extends ASTNode {
         return rights;
     }
 
+    public List<Op> getOps() {
+        return ops;
+    }
+
     public void add(Op op, CondRel right) {
         ops.add(op);
         rights.add(right);

@@ -26,5 +26,6 @@ final public class ConstInteger extends Constant {
     }
 
     public final static ConstInteger zero = new ConstInteger(0);
+    public final static ConstInteger logicZero = new ConstInteger(0, Ty.I1);
     public final static ConstInteger logicOne = new ConstInteger(1, Ty.I1);
 }

@@ -47,6 +47,10 @@ final public class ExprAdd extends ASTNode {
         return left.calculateType();
     }
 
+    public List<Op> getOps() {
+        return ops;
+    }
+
     @Override
     protected String getName() {
         return "<AddExp>";

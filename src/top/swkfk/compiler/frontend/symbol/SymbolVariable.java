@@ -51,6 +51,10 @@ final public class SymbolVariable extends Symbol {
         this.fromParam = true;
     }
 
+    public boolean isFromParam() {
+        return fromParam;
+    }
+
     @Override
     public String toString() {
         if (!hasFixedValue()) {

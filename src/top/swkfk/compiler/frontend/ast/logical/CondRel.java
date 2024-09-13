@@ -30,6 +30,10 @@ final public class CondRel extends ASTNode {
         return rights;
     }
 
+    public List<Op> getOps() {
+        return ops;
+    }
+
     public void add(Op op, ExprAdd right) {
         ops.add(op);
         rights.add(right);

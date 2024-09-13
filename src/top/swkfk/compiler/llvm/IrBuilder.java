@@ -6,6 +6,7 @@ import top.swkfk.compiler.frontend.ast.declaration.function.FuncFormalParam;
 import top.swkfk.compiler.frontend.ast.declaration.object.ConstDecl;
 import top.swkfk.compiler.frontend.ast.declaration.object.Decl;
 import top.swkfk.compiler.frontend.ast.declaration.object.VarDecl;
+import top.swkfk.compiler.frontend.symbol.SymbolVariable;
 import top.swkfk.compiler.frontend.symbol.type.SymbolType;
 import top.swkfk.compiler.frontend.symbol.type.TyPtr;
 import top.swkfk.compiler.llvm.value.Block;
@@ -14,6 +15,8 @@ import top.swkfk.compiler.llvm.value.GlobalVariable;
 import top.swkfk.compiler.llvm.value.User;
 import top.swkfk.compiler.llvm.value.Value;
 import top.swkfk.compiler.llvm.value.instruction.IAllocate;
+import top.swkfk.compiler.llvm.value.instruction.IBranch;
+import top.swkfk.compiler.llvm.value.instruction.IGep;
 import top.swkfk.compiler.llvm.value.instruction.IStore;
 
 import java.util.LinkedList;
@@ -95,6 +98,27 @@ public class IrBuilder {
     User insertInstruction(User instruction) {
         insertPoint.addInstruction(instruction);
         return instruction;
+    }
+
+    void jumpToNewBlock() {
+        Block block = new Block(insertPoint.getParent());
+        insertPoint.getParent().addBlock(block);
+        insertInstruction(
+            new IBranch(block)
+        );
+        insertPoint = block;
+    }
+
+    Value getGep(SymbolVariable symbol, List<Value> indices) {
+        Value res = insertInstruction(
+            new IGep(symbol.getValue(), indices.get(0), symbol.isFromParam())
+        );
+        for (int i = 1; i < indices.size(); i++) {
+            res = insertInstruction(
+                new IGep(res, indices.get(i), false)
+            );
+        }
+        return res;
     }
 
     public IrModule emit() {

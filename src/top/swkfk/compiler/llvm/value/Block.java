@@ -24,4 +24,8 @@ final public class Block extends Value {
     public void addInstruction(User instruction) {
         new DualLinkedList.Node<>(instruction).insertIntoTail(instructions);
     }
+
+    public Function getParent() {
+        return parent;
+    }
 }
