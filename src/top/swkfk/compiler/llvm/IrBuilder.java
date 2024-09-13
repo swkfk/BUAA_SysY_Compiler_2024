@@ -9,6 +9,7 @@ import top.swkfk.compiler.frontend.symbol.type.SymbolType;
 import top.swkfk.compiler.llvm.value.Block;
 import top.swkfk.compiler.llvm.value.Function;
 import top.swkfk.compiler.llvm.value.GlobalVariable;
+import top.swkfk.compiler.llvm.value.Value;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -59,6 +60,7 @@ public class IrBuilder {
     }
 
     void registerFunction(String name, SymbolType type) {
+        Value.counter.reset();
         Function function = new Function(name, type);
         functions.add(function);
         Block entry = new Block(function);

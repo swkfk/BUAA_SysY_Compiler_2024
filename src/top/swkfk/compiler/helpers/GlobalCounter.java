@@ -9,4 +9,8 @@ final public class GlobalCounter {
     public int get() {
         return ++counter;
     }
+
+    public void reset() {
+        counter = 0;
+    }
 }
