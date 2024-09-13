@@ -9,7 +9,7 @@ import top.swkfk.compiler.frontend.ast.declaration.object.VarDecl;
 import top.swkfk.compiler.frontend.symbol.SymbolVariable;
 import top.swkfk.compiler.frontend.symbol.type.SymbolType;
 import top.swkfk.compiler.frontend.symbol.type.TyPtr;
-import top.swkfk.compiler.llvm.value.Block;
+import top.swkfk.compiler.llvm.value.BasicBlock;
 import top.swkfk.compiler.llvm.value.Function;
 import top.swkfk.compiler.llvm.value.GlobalVariable;
 import top.swkfk.compiler.llvm.value.User;
@@ -33,7 +33,7 @@ public class IrBuilder {
     private final List<Function> functions;
     private final List<GlobalVariable> globalVariables;
 
-    private Block insertPoint;
+    private BasicBlock insertPoint;
 
     public IrBuilder(CompileUnit ast) {
         this.traverser = new Traverser(ast, this);
@@ -76,7 +76,7 @@ public class IrBuilder {
             param.getSymbol().setValue(function.addParam(param.getSymbol().getType()));
         }
 
-        Block entry = new Block(function);
+        BasicBlock entry = new BasicBlock(function);
         function.addBlock(entry);
         insertPoint = entry;
 
@@ -101,7 +101,7 @@ public class IrBuilder {
     }
 
     void jumpToNewBlock() {
-        Block block = new Block(insertPoint.getParent());
+        BasicBlock block = new BasicBlock(insertPoint.getParent());
         insertPoint.getParent().addBlock(block);
         insertInstruction(
             new IBranch(block)

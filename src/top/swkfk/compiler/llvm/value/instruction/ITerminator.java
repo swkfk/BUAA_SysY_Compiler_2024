@@ -2,7 +2,7 @@ package top.swkfk.compiler.llvm.value.instruction;
 
 import top.swkfk.compiler.frontend.symbol.type.SymbolType;
 import top.swkfk.compiler.llvm.value.User;
-import top.swkfk.compiler.llvm.value.Block;
+import top.swkfk.compiler.llvm.value.BasicBlock;
 
 abstract public class ITerminator extends User {
 
@@ -10,5 +10,5 @@ abstract public class ITerminator extends User {
         super(name, type);
     }
 
-    abstract public Block[] getSuccessors();
+    abstract public BasicBlock[] getSuccessors();
 }

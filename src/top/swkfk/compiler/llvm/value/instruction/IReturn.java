@@ -1,6 +1,6 @@
 package top.swkfk.compiler.llvm.value.instruction;
 
-import top.swkfk.compiler.llvm.value.Block;
+import top.swkfk.compiler.llvm.value.BasicBlock;
 import top.swkfk.compiler.llvm.value.Value;
 
 final public class IReturn extends ITerminator {
@@ -27,7 +27,7 @@ final public class IReturn extends ITerminator {
     }
 
     @Override
-    public Block[] getSuccessors() {
-        return new Block[0];
+    public BasicBlock[] getSuccessors() {
+        return new BasicBlock[0];
     }
 }

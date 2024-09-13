@@ -9,7 +9,7 @@ import java.util.stream.Collectors;
 
 final public class Function extends Value {
 
-    private final DualLinkedList<Block> blocks;
+    private final DualLinkedList<BasicBlock> blocks;
     private final List<Value> params;
 
     /**
@@ -24,7 +24,7 @@ final public class Function extends Value {
         this.params = new LinkedList<>();
     }
 
-    public void addBlock(Block block) {
+    public void addBlock(BasicBlock block) {
         new DualLinkedList.Node<>(block).insertIntoTail(blocks);
     }
 
@@ -39,7 +39,7 @@ final public class Function extends Value {
         sb.append("define dso_local ").append(getType()).append(" @").append(getName()).append("(");
         sb.append(params.stream().map(Value::toString).collect(Collectors.joining(", ")));
         sb.append(") {\n");
-        for (DualLinkedList.Node<Block> node : blocks) {
+        for (DualLinkedList.Node<BasicBlock> node : blocks) {
             sb.append(node.getData()).append("\n");
         }
         sb.append("}\n");

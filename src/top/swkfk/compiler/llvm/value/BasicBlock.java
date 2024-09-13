@@ -2,11 +2,11 @@ package top.swkfk.compiler.llvm.value;
 
 import top.swkfk.compiler.utils.DualLinkedList;
 
-final public class Block extends Value {
+final public class BasicBlock extends Value {
     private final Function parent;
     private final DualLinkedList<User> instructions;
 
-    public Block(Function parent) {
+    public BasicBlock(Function parent) {
         super("" + Value.counter.get(), null);
         this.instructions = new DualLinkedList<>();
         this.parent = parent;
