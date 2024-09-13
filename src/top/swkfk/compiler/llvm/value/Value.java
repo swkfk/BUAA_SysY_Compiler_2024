@@ -14,6 +14,10 @@ public class Value {
 
     public final static GlobalCounter counter = new GlobalCounter();
 
+    public Value(SymbolType type) {
+        this("%" + counter.get(), type);
+    }
+
     public Value(String name, SymbolType type) {
         this.name = name;
         this.type = type;
@@ -30,5 +34,9 @@ public class Value {
 
     public void addUse(Use use) {
         uses.add(use);
+    }
+
+    public String toString() {
+        return type + " " + name;
     }
 }

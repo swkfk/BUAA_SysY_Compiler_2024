@@ -7,7 +7,7 @@ final public class GlobalCounter {
     }
 
     public int get() {
-        return ++counter;
+        return counter++;
     }
 
     public void reset() {
