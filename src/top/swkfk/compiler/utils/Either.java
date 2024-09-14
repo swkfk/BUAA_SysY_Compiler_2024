@@ -1,8 +1,8 @@
 package top.swkfk.compiler.utils;
 
 final public class Either<T, U> {
-    private final T left;
-    private final U right;
+    private T left;
+    private U right;
     private final boolean isLeft;
 
     private Either(T left, U right, boolean isLeft) {
@@ -25,6 +25,16 @@ final public class Either<T, U> {
 
     public boolean isRight() {
         return !isLeft;
+    }
+
+    public void setLeft(T left) {
+        assert isLeft() : "Invalid Either side";
+        this.left = left;
+    }
+
+    public void setRight(U right) {
+        assert isRight() : "Invalid Either side";
+        this.right = right;
     }
 
     public T getLeft() {
