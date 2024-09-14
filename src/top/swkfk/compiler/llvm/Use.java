@@ -12,6 +12,10 @@ final public class Use {
      */
     private final int position;
 
+    public User getUser() {
+        return user;
+    }
+
     public Use(Value value, User user, int position) {
         this.value = value;
         this.user = user;

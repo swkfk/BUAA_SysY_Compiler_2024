@@ -6,6 +6,7 @@ import top.swkfk.compiler.helpers.GlobalCounter;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.stream.IntStream;
 
 public class Value {
     private final String name;
@@ -34,6 +35,16 @@ public class Value {
 
     public void addUse(Use use) {
         uses.add(use);
+    }
+
+    public void removeSingleUseOfUser(User user) {
+        IntStream.range(0, uses.size())
+            .filter(i -> uses.get(i).getUser().equals(user))
+            .findFirst().ifPresent(uses::remove);
+    }
+
+    public void removeAllUseOfUser(User user) {
+        uses.removeIf(use -> use.getUser().equals(user));
     }
 
     public String toString() {
