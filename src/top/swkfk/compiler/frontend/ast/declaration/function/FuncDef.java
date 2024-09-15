@@ -7,7 +7,7 @@ import top.swkfk.compiler.frontend.token.Token;
 
 import java.util.List;
 
-final public class FuncDef extends ASTNode {
+public class FuncDef extends ASTNode {
     private final FuncType type;
     private final Token identifier;
     private SymbolFunction symbol = null;

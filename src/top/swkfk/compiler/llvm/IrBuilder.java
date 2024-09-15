@@ -73,7 +73,10 @@ public class IrBuilder {
                 ).toList());
             } else {
                 globalVariables.addAll(((VarDecl) decl.getDeclaration()).getDefs().stream().map(
-                    GlobalVariable::from
+                    def -> {
+                        traverser.markGlobalVars(def);
+                        return GlobalVariable.from(def);
+                    }
                 ).toList());
             }
         }
@@ -83,6 +86,7 @@ public class IrBuilder {
         for (FuncDef funcDef : traverser.getFunctions()) {
             traverser.visitFunction(funcDef);
         }
+        traverser.visitFunction(traverser.getMainFunction().into());
     }
 
     void registerFunction(String name, SymbolType type, List<FuncFormalParam> params) {

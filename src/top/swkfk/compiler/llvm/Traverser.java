@@ -5,6 +5,7 @@ import top.swkfk.compiler.frontend.ast.CompileUnit;
 import top.swkfk.compiler.frontend.ast.block.Block;
 import top.swkfk.compiler.frontend.ast.block.BlockItem;
 import top.swkfk.compiler.frontend.ast.declaration.function.FuncDef;
+import top.swkfk.compiler.frontend.ast.declaration.function.MainFuncDef;
 import top.swkfk.compiler.frontend.ast.declaration.object.ConstDecl;
 import top.swkfk.compiler.frontend.ast.declaration.object.ConstDef;
 import top.swkfk.compiler.frontend.ast.declaration.object.Decl;
@@ -46,6 +47,7 @@ import top.swkfk.compiler.llvm.value.instruction.IAllocate;
 import top.swkfk.compiler.llvm.value.instruction.IBinary;
 import top.swkfk.compiler.llvm.value.instruction.IBranch;
 import top.swkfk.compiler.llvm.value.instruction.ICall;
+import top.swkfk.compiler.llvm.value.instruction.IComparator;
 import top.swkfk.compiler.llvm.value.instruction.ILoad;
 import top.swkfk.compiler.llvm.value.instruction.IReturn;
 import top.swkfk.compiler.llvm.value.instruction.IStore;
@@ -73,6 +75,14 @@ class Traverser {
 
     List<FuncDef> getFunctions() {
         return ast.getFunctions();
+    }
+
+    MainFuncDef getMainFunction() {
+        return ast.getMainFunc();
+    }
+
+    void markGlobalVars(VarDef def) {
+        def.getSymbol().setValue(new Value("@" + def.getSymbol().getName(), new TyPtr(def.getSymbol().getType())));
     }
 
     void visitFunction(FuncDef funcDef) {
@@ -210,10 +220,10 @@ class Traverser {
         for (int i = 0; i < rel.getOps().size(); i++) {
             Value right = visitAddExpr(rel.getRights().get(i));
             switch (rel.getOps().get(i)) {
-                case Lt -> ret = builder.insertInstruction(new IBinary(BinaryOp.Lt, ret, right));
-                case Gt -> ret = builder.insertInstruction(new IBinary(BinaryOp.Gt, ret, right));
-                case Le -> ret = builder.insertInstruction(new IBinary(BinaryOp.Le, ret, right));
-                case Ge -> ret = builder.insertInstruction(new IBinary(BinaryOp.Ge, ret, right));
+                case Lt -> ret = builder.insertInstruction(new IComparator(BinaryOp.Lt, ret, right));
+                case Gt -> ret = builder.insertInstruction(new IComparator(BinaryOp.Gt, ret, right));
+                case Le -> ret = builder.insertInstruction(new IComparator(BinaryOp.Le, ret, right));
+                case Ge -> ret = builder.insertInstruction(new IComparator(BinaryOp.Ge, ret, right));
             }
         }
         return ret;
@@ -224,8 +234,8 @@ class Traverser {
         for (int i = 0; i < equ.getOps().size(); i++) {
             Value right = visitCondRel(equ.getRights().get(i));
             switch (equ.getOps().get(i)) {
-                case Eq -> ret = builder.insertInstruction(new IBinary(BinaryOp.Eq, ret, right));
-                case Ne -> ret = builder.insertInstruction(new IBinary(BinaryOp.Ne, ret, right));
+                case Eq -> ret = builder.insertInstruction(new IComparator(BinaryOp.Eq, ret, right));
+                case Ne -> ret = builder.insertInstruction(new IComparator(BinaryOp.Ne, ret, right));
             }
         }
         return ret;

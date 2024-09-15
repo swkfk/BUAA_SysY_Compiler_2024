@@ -7,14 +7,13 @@ import top.swkfk.compiler.llvm.value.Value;
 final public class ILoad extends User {
 
     public ILoad(Value pointer) {
-        super("%" + Value.counter.get(), pointer.getType());
+        super("%" + Value.counter.get(), ((TyPtr) pointer.getType()).getBase());
         assert pointer.getType().is("ptr") : "Only pointer type can be loaded";
         addOperand(pointer);
     }
 
     @Override
     public String toLLVM() {
-        return getName() + " = load " +
-            ((TyPtr) getType()).getBase() + ", " + getOperand(0);
+        return getName() + " = load " + getType() + ", " + getOperand(0);
     }
 }

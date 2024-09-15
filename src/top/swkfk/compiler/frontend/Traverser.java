@@ -146,10 +146,12 @@ public class Traverser {
                     visitVarInitValue(def.getInitial());
                     try {
                         // It is certain that the VarInitValue in global scope shall be a ConstInitValue
-                        if (def.getIndices().isEmpty()) {
-                            symbol.setConstantValue(new FixedValue(def.getInitial().getExpr().calculateConst()));
-                        } else {
-                            symbol.setConstantValue(FixedArray.from(((TyArray) ty).getIndices(), def.getInitial().into()));
+                        if (symbol.isGlobal()) {
+                            if (def.getIndices().isEmpty()) {
+                                symbol.setConstantValue(new FixedValue(def.getInitial().getExpr().calculateConst()));
+                            } else {
+                                symbol.setConstantValue(FixedArray.from(((TyArray) ty).getIndices(), def.getInitial().into()));
+                            }
                         }
                     } catch (Exception e) {
                         // Ignore the error, it will be reported by the error handler

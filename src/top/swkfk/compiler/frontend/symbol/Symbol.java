@@ -32,4 +32,8 @@ public class Symbol {
     public SymbolType getType() {
         return type;
     }
+
+    public boolean isGlobal() {
+        return isGlobal;
+    }
 }

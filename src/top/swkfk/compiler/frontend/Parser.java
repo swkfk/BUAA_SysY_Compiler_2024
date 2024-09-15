@@ -178,10 +178,10 @@ public class Parser {
 
     private MainFuncDef parseMainFuncDef() {
         consume(TokenType.Int);
-        consume(TokenType.SpMain);
+        Token identifier = consume(TokenType.SpMain);
         consume(TokenType.LParen);
         consume(TokenType.RParen);
-        return watch(new MainFuncDef(parseBlock()));
+        return watch(new MainFuncDef(identifier, parseBlock()));
     }
 
     private FuncType parseFuncType() {
