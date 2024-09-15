@@ -31,7 +31,9 @@ import top.swkfk.compiler.frontend.ast.statement.StmtAssign;
 import top.swkfk.compiler.frontend.ast.statement.StmtBlock;
 import top.swkfk.compiler.frontend.ast.statement.StmtExpr;
 import top.swkfk.compiler.frontend.ast.statement.StmtFor;
+import top.swkfk.compiler.frontend.ast.statement.StmtGetInt;
 import top.swkfk.compiler.frontend.ast.statement.StmtIf;
+import top.swkfk.compiler.frontend.ast.statement.StmtPrintf;
 import top.swkfk.compiler.frontend.ast.statement.StmtReturn;
 import top.swkfk.compiler.frontend.symbol.SymbolTable;
 import top.swkfk.compiler.frontend.symbol.type.TyPtr;
@@ -48,6 +50,8 @@ import top.swkfk.compiler.llvm.value.instruction.ILoad;
 import top.swkfk.compiler.llvm.value.instruction.IReturn;
 import top.swkfk.compiler.llvm.value.instruction.IStore;
 
+import java.util.Arrays;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
@@ -245,6 +249,7 @@ class Traverser {
 
     private final Stack<LoopStorage> localLoops = new Stack<>();
 
+    @SuppressWarnings("SpellCheckingInspection")
     void visitStmt(Stmt stmt) {
         switch (stmt.getType()) {
             case If -> {
@@ -327,7 +332,23 @@ class Traverser {
             }
             case Block -> visitBlock(((StmtBlock) stmt).getBlock());
             case Assign -> visitAssign(((StmtAssign) stmt).getLeft(), ((StmtAssign) stmt).getRight());
-            case Printf, GetInt -> { }  // TODO
+            case Printf -> {
+                Iterator<Value> args = ((StmtPrintf) stmt).getArgs().stream().map(this::visitExpr).iterator();
+                Arrays.stream(((StmtPrintf) stmt).getFormat().split("%d")).forEach(s -> {
+                        s.chars().forEach(c -> builder.insertInstruction(
+                                new ICall(builder.getExternalFunction("putch"), List.of(new ConstInteger(c)))
+                        ));
+                        if (args.hasNext()) {
+                            builder.insertInstruction(
+                                new ICall(builder.getExternalFunction("putint"), List.of(args.next()))
+                            );
+                        }
+                    }
+                );
+            }
+            case GetInt -> performAssign(((StmtGetInt) stmt).getLeft(), builder.insertInstruction(
+                new ICall(builder.getExternalFunction("getint"), List.of())
+            ));
             case Expr -> Optional.ofNullable(((StmtExpr) stmt).getExpr()).ifPresent(this::visitExpr);
         }
     }
@@ -337,18 +358,20 @@ class Traverser {
     }
 
     void visitAssign(LeftValue left, Expr right) {
-        Value value = visitExpr(right);
+        performAssign(left, visitExpr(right));
+    }
+
+    void performAssign(LeftValue left, Value right) {
         if (left.getIndices().isEmpty()) {
             builder.insertInstruction(
-                new IStore(value, left.getSymbol().getValue())
+                new IStore(right, left.getSymbol().getValue())
             );
         } else {
             builder.insertInstruction(
-                new IStore(value, builder.getGep(
+                new IStore(right, builder.getGep(
                     left.getSymbol(), left.getIndices().stream().map(this::visitExpr).toList()
                 ))
             );
         }
     }
-
 }

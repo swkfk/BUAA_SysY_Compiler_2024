@@ -133,6 +133,10 @@ public class IrBuilder {
         return block;
     }
 
+    SymbolFunction getExternalFunction(String name) {
+        return externalFunctions.get(name);
+    }
+
     User insertInstruction(User instruction) {
         return insertInstruction(insertPoint, instruction);
     }

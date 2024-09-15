@@ -36,6 +36,10 @@ final public class StmtPrintf extends Stmt {
         return c;
     }
 
+    public String getFormat() {
+        return format;
+    }
+
     public Token getToken() {
         return token;
     }
