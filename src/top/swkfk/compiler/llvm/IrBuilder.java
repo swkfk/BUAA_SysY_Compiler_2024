@@ -6,8 +6,10 @@ import top.swkfk.compiler.frontend.ast.declaration.function.FuncFormalParam;
 import top.swkfk.compiler.frontend.ast.declaration.object.ConstDecl;
 import top.swkfk.compiler.frontend.ast.declaration.object.Decl;
 import top.swkfk.compiler.frontend.ast.declaration.object.VarDecl;
+import top.swkfk.compiler.frontend.symbol.SymbolFunction;
 import top.swkfk.compiler.frontend.symbol.SymbolVariable;
 import top.swkfk.compiler.frontend.symbol.type.SymbolType;
+import top.swkfk.compiler.frontend.symbol.type.Ty;
 import top.swkfk.compiler.frontend.symbol.type.TyPtr;
 import top.swkfk.compiler.llvm.value.BasicBlock;
 import top.swkfk.compiler.llvm.value.Function;
@@ -21,6 +23,7 @@ import top.swkfk.compiler.llvm.value.instruction.IStore;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * It was to be like that: Traverser use this builder to build the IR module. However, for the
@@ -29,6 +32,20 @@ import java.util.List;
  */
 public class IrBuilder {
     private final Traverser traverser;
+
+    @SuppressWarnings("SpellCheckingInspection")
+    private final static Map<String, SymbolFunction> externalFunctions = Map.of(
+        "getint", new SymbolFunction("getint", Ty.I32),
+        "putint", new SymbolFunction("putint", Ty.Void) {{
+            addParameter(new SymbolVariable("_1_i32", Ty.I32, false));
+        }},
+        "putch", new SymbolFunction("putch", Ty.Void) {{
+            addParameter(new SymbolVariable("_1_i32", Ty.I32, false));
+        }},
+        "putstr", new SymbolFunction("putstr", Ty.Void) {{
+            addParameter(new SymbolVariable("_1_i8_star", new TyPtr(Ty.I8), false));
+        }}
+    );
 
     private final List<Function> functions;
     private final List<GlobalVariable> globalVariables;
@@ -147,6 +164,6 @@ public class IrBuilder {
     }
 
     public IrModule emit() {
-        return new IrModule(functions, globalVariables);
+        return new IrModule(functions, externalFunctions, globalVariables);
     }
 }

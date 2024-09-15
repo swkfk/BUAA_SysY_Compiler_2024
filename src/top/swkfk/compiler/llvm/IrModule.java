@@ -1,23 +1,31 @@
 package top.swkfk.compiler.llvm;
 
 import top.swkfk.compiler.Configure;
+import top.swkfk.compiler.frontend.symbol.SymbolFunction;
 import top.swkfk.compiler.llvm.value.Function;
 import top.swkfk.compiler.llvm.value.GlobalVariable;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 public class IrModule {
     private final List<Function> functions;
+    private final Map<String, SymbolFunction> externalFunctions;
     private final List<GlobalVariable> globalVariables;
 
-    public IrModule(List<Function> functions, List<GlobalVariable> globalVariables) {
+    public IrModule(
+        List<Function> functions,
+        Map<String, SymbolFunction> externalFunctions,
+        List<GlobalVariable> globalVariables
+    ) {
         this.functions = functions;
+        this.externalFunctions = externalFunctions;
         this.globalVariables = globalVariables;
     }
 
-    @SuppressWarnings("SpellCheckingInspection")
     public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append(";; Module: ").append(Configure.source).append("\n");
@@ -26,10 +34,16 @@ public class IrModule {
         sb.append(";; Compiled at: ").append(time).append("\n");
 
         sb.append("\n;; External Functions:\n");
-        sb.append("declare i32 @getint()\n");
-        sb.append("declare void @putint()\n");
-        sb.append("declare void @putch()\n");
-        sb.append("declare void @putstr(i8*)\n");
+        for (SymbolFunction externalFunction : externalFunctions.values()) {
+            sb.append("declare ")
+                .append(externalFunction.getType())
+                .append(" @").append(externalFunction.getName()).append("(")
+                .append(
+                    externalFunction.getParameters().stream()
+                        .map(f -> f.getType().toString())
+                        .collect(Collectors.joining(", "))
+                ).append(")\n");
+        }
 
         sb.append("\n;; Global Variables:\n");
         for (GlobalVariable globalVariable : globalVariables) {
