@@ -34,6 +34,7 @@ public class IrBuilder {
     private final List<GlobalVariable> globalVariables;
 
     private BasicBlock insertPoint;
+    private Function currentFunction;
 
     public IrBuilder(CompileUnit ast) {
         this.traverser = new Traverser(ast, this);
@@ -71,6 +72,7 @@ public class IrBuilder {
         Value.counter.reset();
         Function function = new Function(name, type);
         functions.add(function);
+        currentFunction = function;
 
         for (FuncFormalParam param : params) {
             param.getSymbol().setValue(function.addParam(param.getSymbol().getType()));
@@ -95,8 +97,31 @@ public class IrBuilder {
         }
     }
 
+    void setInsertPoint(BasicBlock block) {
+        insertPoint = block;
+    }
+
+    BasicBlock getInsertPoint() {
+        return insertPoint;
+    }
+
+    /**
+     * Create a new block and add it to the current function. WILL change the insert point.
+     * @return the new block
+     */
+    BasicBlock createBlock() {
+        BasicBlock block = new BasicBlock(currentFunction);
+        currentFunction.addBlock(block);
+        insertPoint = block;
+        return block;
+    }
+
     User insertInstruction(User instruction) {
-        insertPoint.addInstruction(instruction);
+        return insertInstruction(insertPoint, instruction);
+    }
+
+    User insertInstruction(BasicBlock block, User instruction) {
+        block.addInstruction(instruction);
         return instruction;
     }
 

@@ -24,6 +24,21 @@ final public class IBranch extends ITerminator {
         this.target = Either.right(new Pair<>(trueTarget, falseTarget));
     }
 
+    public void fillNullBlock(BasicBlock block) {
+        if (target.isRight()) {
+            if (target.getRight().first() == null) {
+                target.setRight(new Pair<>(block, target.getRight().second()));
+            }
+            if (target.getRight().second() == null) {
+                target.setRight(new Pair<>(target.getRight().first(), block));
+            }
+        } else {
+            if (target.getLeft() == null) {
+                target.setLeft(block);
+            }
+        }
+    }
+
     @Override
     public BasicBlock[] getSuccessors() {
         if (target.isLeft()) {

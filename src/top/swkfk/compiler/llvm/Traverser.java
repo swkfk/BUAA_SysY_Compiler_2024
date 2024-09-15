@@ -23,22 +23,35 @@ import top.swkfk.compiler.frontend.ast.logical.CondAnd;
 import top.swkfk.compiler.frontend.ast.logical.CondEqu;
 import top.swkfk.compiler.frontend.ast.logical.CondOr;
 import top.swkfk.compiler.frontend.ast.logical.CondRel;
+import top.swkfk.compiler.frontend.ast.misc.ForStmt;
 import top.swkfk.compiler.frontend.ast.misc.LeftValue;
 import top.swkfk.compiler.frontend.ast.misc.Number;
 import top.swkfk.compiler.frontend.ast.statement.Stmt;
+import top.swkfk.compiler.frontend.ast.statement.StmtAssign;
+import top.swkfk.compiler.frontend.ast.statement.StmtBlock;
+import top.swkfk.compiler.frontend.ast.statement.StmtExpr;
+import top.swkfk.compiler.frontend.ast.statement.StmtFor;
+import top.swkfk.compiler.frontend.ast.statement.StmtIf;
+import top.swkfk.compiler.frontend.ast.statement.StmtReturn;
 import top.swkfk.compiler.frontend.symbol.SymbolTable;
-import top.swkfk.compiler.frontend.symbol.type.Ty;
 import top.swkfk.compiler.frontend.symbol.type.TyPtr;
+import top.swkfk.compiler.helpers.LoopStorage;
+import top.swkfk.compiler.llvm.value.BasicBlock;
 import top.swkfk.compiler.llvm.value.Value;
 import top.swkfk.compiler.llvm.value.constants.ConstInteger;
 import top.swkfk.compiler.llvm.value.instruction.BinaryOp;
 import top.swkfk.compiler.llvm.value.instruction.IAllocate;
 import top.swkfk.compiler.llvm.value.instruction.IBinary;
+import top.swkfk.compiler.llvm.value.instruction.IBranch;
 import top.swkfk.compiler.llvm.value.instruction.ICall;
 import top.swkfk.compiler.llvm.value.instruction.ILoad;
+import top.swkfk.compiler.llvm.value.instruction.IReturn;
 import top.swkfk.compiler.llvm.value.instruction.IStore;
 
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Optional;
+import java.util.Stack;
 
 class Traverser {
     private final CompileUnit ast;
@@ -230,8 +243,112 @@ class Traverser {
         return visitCondOr(cond.getCondOr());
     }
 
-    void visitStmt(Stmt stmt) {
+    private final Stack<LoopStorage> localLoops = new Stack<>();
 
+    void visitStmt(Stmt stmt) {
+        switch (stmt.getType()) {
+            case If -> {
+                Value cond = visitCond(((StmtIf) stmt).getCondition());
+                BasicBlock originBlock = builder.getInsertPoint();
+                BasicBlock thenBlock = builder.createBlock();
+                visitStmt(((StmtIf) stmt).getThenStmt());
+                BasicBlock mergeBlock;
+                if (((StmtIf) stmt).getElseStmt() != null) {
+                    BasicBlock elseBlock = builder.createBlock();
+                    visitStmt(((StmtIf) stmt).getElseStmt());
+                    mergeBlock = builder.createBlock();
+                    builder.insertInstruction(
+                        originBlock, new IBranch(cond, thenBlock, elseBlock)
+                    );
+                    builder.insertInstruction(thenBlock, new IBranch(mergeBlock));
+                    builder.insertInstruction(elseBlock, new IBranch(mergeBlock));
+                } else {
+                    mergeBlock = builder.createBlock();
+                    builder.insertInstruction(thenBlock, new IBranch(mergeBlock));
+                    builder.insertInstruction(
+                        originBlock, new IBranch(cond, thenBlock, mergeBlock)
+                    );
+                }
+            }
+            case For -> {
+                StmtFor forStmt = (StmtFor) stmt;
+                // init
+                Optional.ofNullable(forStmt.getInit()).ifPresent(this::visitForStmt);
+
+                // cond
+                BasicBlock condBlock = builder.createBlock();
+                localLoops.add(new LoopStorage(condBlock, new LinkedList<>(), new LinkedList<>()));
+                Value cond;
+                if (forStmt.getCondition() != null) {
+                    cond = visitCond(forStmt.getCondition());
+                } else {
+                    cond = ConstInteger.logicOne;
+                }
+
+                // body
+                BasicBlock bodyBlock = builder.createBlock();
+                localLoops.lastElement().breaks().add((IBranch) builder.insertInstruction(
+                    condBlock,
+                    new IBranch(cond, bodyBlock, null)
+                ));
+                visitStmt(forStmt.getBody());
+
+                // update
+                BasicBlock updateBlock = builder.createBlock();
+                Optional.ofNullable(forStmt.getUpdate()).ifPresent(this::visitForStmt);
+                builder.insertInstruction(
+                    new IBranch(condBlock)
+                );
+
+                // after
+                BasicBlock exitBlock = builder.createBlock();
+
+                // replace the targets
+                localLoops.lastElement().replaceBreak(exitBlock);
+                localLoops.lastElement().replaceContinue(updateBlock);
+                localLoops.pop();
+            }
+            case Break -> localLoops.lastElement().breaks().add((IBranch) builder.insertInstruction(
+                new IBranch(null)
+            ));
+            case Continue -> localLoops.lastElement().continues().add((IBranch) builder.insertInstruction(
+                new IBranch(null)
+            ));
+            case Return -> {
+                if (((StmtReturn) stmt).getExpr() == null) {
+                    builder.insertInstruction(
+                        new IReturn()
+                    );
+                } else {
+                    builder.insertInstruction(
+                        new IReturn(visitExpr(((StmtReturn) stmt).getExpr()))
+                    );
+                }
+            }
+            case Block -> visitBlock(((StmtBlock) stmt).getBlock());
+            case Assign -> visitAssign(((StmtAssign) stmt).getLeft(), ((StmtAssign) stmt).getRight());
+            case Printf, GetInt -> { }  // TODO
+            case Expr -> Optional.ofNullable(((StmtExpr) stmt).getExpr()).ifPresent(this::visitExpr);
+        }
+    }
+
+    void visitForStmt(ForStmt forStmt) {
+        visitAssign(forStmt.getLeft(), forStmt.getRight());
+    }
+
+    void visitAssign(LeftValue left, Expr right) {
+        Value value = visitExpr(right);
+        if (left.getIndices().isEmpty()) {
+            builder.insertInstruction(
+                new IStore(value, left.getSymbol().getValue())
+            );
+        } else {
+            builder.insertInstruction(
+                new IStore(value, builder.getGep(
+                    left.getSymbol(), left.getIndices().stream().map(this::visitExpr).toList()
+                ))
+            );
+        }
     }
 
 }
