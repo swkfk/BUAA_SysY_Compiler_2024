@@ -37,6 +37,8 @@ import top.swkfk.compiler.frontend.ast.statement.StmtIf;
 import top.swkfk.compiler.frontend.ast.statement.StmtPrintf;
 import top.swkfk.compiler.frontend.ast.statement.StmtReturn;
 import top.swkfk.compiler.frontend.symbol.SymbolTable;
+import top.swkfk.compiler.frontend.symbol.type.SymbolType;
+import top.swkfk.compiler.frontend.symbol.type.TyArray;
 import top.swkfk.compiler.frontend.symbol.type.TyPtr;
 import top.swkfk.compiler.helpers.LoopStorage;
 import top.swkfk.compiler.llvm.value.BasicBlock;
@@ -164,7 +166,9 @@ class Traverser {
                 yield switch (unary.getOp()) {
                     case Plus -> value;
                     case Minus -> builder.insertInstruction(new IBinary(BinaryOp.SUB, ConstInteger.zero, value));
-                    case Not -> builder.insertInstruction(new IBinary(BinaryOp.XOR, ConstInteger.logicOne, value));
+                    case Not -> builder.insertInstruction(
+                        new IBinary(BinaryOp.XOR, new ConstInteger(1, value.getType()), value)
+                    );
                 };
             }
             case Primary -> visitPrimaryExpr(((ExprUnaryPrimary) expr).getPrimary());
@@ -183,9 +187,28 @@ class Traverser {
                         new ILoad(lVal.getSymbol().getValue())
                     );
                 } else {
-                    yield builder.getGep(
+                    Value pointer = builder.getGep(
                         lVal.getSymbol(), lVal.getIndices().stream().map(this::visitExpr).toList()
                     );
+                    int realDim = 0;
+                    SymbolType realType;
+                    if (lVal.getSymbol().getType().is("ptr")) {
+                        realDim++;
+                        realType = ((TyPtr) lVal.getSymbol().getType()).getBase();
+                    } else {
+                        realType = lVal.getSymbol().getType();
+                    }
+                    while (realType.is("array")) {
+                        realDim++;
+                        realType = ((TyArray) realType).getBase();
+                    }
+                    if (realDim == lVal.getIndices().size()) {
+                        yield builder.insertInstruction(
+                            new ILoad(pointer)
+                        );
+                    } else {
+                        yield pointer;
+                    }
                 }
             }
         };
