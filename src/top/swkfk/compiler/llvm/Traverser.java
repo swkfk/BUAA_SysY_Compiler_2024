@@ -5,6 +5,7 @@ import top.swkfk.compiler.frontend.ast.CompileUnit;
 import top.swkfk.compiler.frontend.ast.block.Block;
 import top.swkfk.compiler.frontend.ast.block.BlockItem;
 import top.swkfk.compiler.frontend.ast.declaration.function.FuncDef;
+import top.swkfk.compiler.frontend.ast.declaration.function.FuncType;
 import top.swkfk.compiler.frontend.ast.declaration.function.MainFuncDef;
 import top.swkfk.compiler.frontend.ast.declaration.object.ConstDecl;
 import top.swkfk.compiler.frontend.ast.declaration.object.ConstDef;
@@ -53,6 +54,7 @@ import top.swkfk.compiler.llvm.value.instruction.IComparator;
 import top.swkfk.compiler.llvm.value.instruction.ILoad;
 import top.swkfk.compiler.llvm.value.instruction.IReturn;
 import top.swkfk.compiler.llvm.value.instruction.IStore;
+import top.swkfk.compiler.llvm.value.instruction.ITerminator;
 
 import java.util.Arrays;
 import java.util.Iterator;
@@ -93,6 +95,12 @@ class Traverser {
         );
         builder.jumpToNewBlock();
         visitBlock(funcDef.getBody());
+        if (funcDef.getType().is(FuncType.Type.Void) &&
+            !(builder.getInsertPoint().getLastInstruction() instanceof ITerminator)) {
+            builder.insertInstruction(
+                new IReturn()
+            );
+        }
     }
 
     void visitDecl(Decl decl) {
