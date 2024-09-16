@@ -25,6 +25,11 @@ final public class BasicBlock extends Value {
         new DualLinkedList.Node<>(instruction).insertIntoTail(instructions);
     }
 
+    public User getLastInstruction() {
+        return instructions.isEmpty() ? null :
+            instructions.getTail().getData();
+    }
+
     public Function getParent() {
         return parent;
     }

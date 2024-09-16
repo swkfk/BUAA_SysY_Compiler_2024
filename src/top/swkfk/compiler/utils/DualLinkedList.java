@@ -22,6 +22,14 @@ final public class DualLinkedList<T> implements Iterable<DualLinkedList.Node<T>>
         return length == 0;
     }
 
+    public Node<T> getHead() {
+        return head;
+    }
+
+    public Node<T> getTail() {
+        return tail;
+    }
+
     public static class Node<T> {
         private final T data;
         private Node<T> prev;

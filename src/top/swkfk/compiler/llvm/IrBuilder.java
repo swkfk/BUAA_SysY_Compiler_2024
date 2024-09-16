@@ -20,6 +20,7 @@ import top.swkfk.compiler.llvm.value.instruction.IAllocate;
 import top.swkfk.compiler.llvm.value.instruction.IBranch;
 import top.swkfk.compiler.llvm.value.instruction.IGep;
 import top.swkfk.compiler.llvm.value.instruction.IStore;
+import top.swkfk.compiler.llvm.value.instruction.ITerminator;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -133,6 +134,11 @@ public class IrBuilder {
     BasicBlock createBlock() {
         BasicBlock block = new BasicBlock(currentFunction);
         currentFunction.addBlock(block);
+        if (!(insertPoint.getLastInstruction() instanceof ITerminator)) {
+            insertInstruction(
+                new IBranch(block)
+            );
+        }
         insertPoint = block;
         return block;
     }
@@ -146,6 +152,9 @@ public class IrBuilder {
     }
 
     User insertInstruction(BasicBlock block, User instruction) {
+        if (block.getLastInstruction() instanceof ITerminator) {
+            return instruction;
+        }
         block.addInstruction(instruction);
         return instruction;
     }
