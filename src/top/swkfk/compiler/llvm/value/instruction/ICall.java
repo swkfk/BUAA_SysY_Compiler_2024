@@ -29,7 +29,7 @@ final public class ICall extends User {
         }
         sb.append("@").append(function.getName()).append("(");
         sb.append(
-            getOperands().stream().map(arg -> arg.getType() + " " + arg).collect(Collectors.joining(", "))
+            getOperands().stream().map(Value::toString).collect(Collectors.joining(", "))
         );
         sb.append(")");
         return sb.toString();
