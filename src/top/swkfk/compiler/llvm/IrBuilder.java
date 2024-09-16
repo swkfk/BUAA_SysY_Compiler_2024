@@ -19,6 +19,7 @@ import top.swkfk.compiler.llvm.value.Value;
 import top.swkfk.compiler.llvm.value.instruction.IAllocate;
 import top.swkfk.compiler.llvm.value.instruction.IBranch;
 import top.swkfk.compiler.llvm.value.instruction.IGep;
+import top.swkfk.compiler.llvm.value.instruction.ILoad;
 import top.swkfk.compiler.llvm.value.instruction.IStore;
 import top.swkfk.compiler.llvm.value.instruction.ITerminator;
 
@@ -169,8 +170,11 @@ public class IrBuilder {
     }
 
     Value getGep(SymbolVariable symbol, List<Value> indices) {
+        Value loaded = symbol.isFromParam() ?
+            insertInstruction(new ILoad(symbol.getValue()))
+            : symbol.getValue();
         Value res = insertInstruction(
-            new IGep(symbol.getValue(), indices.get(0), symbol.isFromParam())
+            new IGep(loaded, indices.get(0), symbol.isFromParam())
         );
         for (int i = 1; i < indices.size(); i++) {
             res = insertInstruction(
