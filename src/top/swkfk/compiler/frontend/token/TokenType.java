@@ -11,6 +11,7 @@ public enum TokenType {
     // ****** Special symbols ******
     SpMain("MAINTK"),
     SpGetInt("GETINTTK"),
+    SpGetChar("GETCHARTK"),
     SpPrintf("PRINTFTK"),
     // ****** Normal keep words ******
     Return("RETURNTK"),
