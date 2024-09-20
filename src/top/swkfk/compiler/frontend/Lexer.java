@@ -247,7 +247,7 @@ public class Lexer {
         while ((chr = reader.read()) != '"') {
             if (chr == '%') {
                 chr = reader.read();
-                str.append('%').append(chr);
+                str.append('%').append((char) chr);
             } else if (chr == '\\') {
                 chr = reader.read();
                 assert escape.containsKey((char) chr) : "Invalid escape character `\\" + chr + "`.";
