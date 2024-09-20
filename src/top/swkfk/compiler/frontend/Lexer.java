@@ -118,12 +118,18 @@ public class Lexer {
         switch (chr) {
             case '|' -> {
                 chr = reader.read();
-                assert chr == '|' : "Only '||' is allowed.";
+                if (chr != '|') {
+                    errors.add(ErrorType.InvalidToken, location());
+                    reader.unread(chr);
+                }
                 addToken(TokenType.Or, "||", start);
             }
             case '&' -> {
                 chr = reader.read();
-                assert chr == '&' : "Only '&&' is allowed.";
+                if (chr != '&') {
+                    errors.add(ErrorType.InvalidToken, location());
+                    reader.unread(chr);
+                }
                 addToken(TokenType.And, "&&", start);
             }
             case '!' -> {

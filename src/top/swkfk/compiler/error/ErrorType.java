@@ -1,7 +1,8 @@
 package top.swkfk.compiler.error;
 
 public enum ErrorType {
-    InvalidFormatString("a"),
+    InvalidToken("a"),
+    InvalidFormatString("_"),
     DuplicatedDeclaration("b"),
     UndefinedReference("c"),
     MismatchedParameterCount("d"),
