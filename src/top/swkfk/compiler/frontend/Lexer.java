@@ -77,6 +77,13 @@ public class Lexer {
         entry(';', TokenType.Semicolon), entry(',', TokenType.Comma)
     );
 
+    public final static Map<Character, Character> escape = Map.ofEntries(
+        entry('a', '\u0007'), entry('b', '\b'), entry('f', '\f'),
+        entry('n', '\n'), entry('t', '\t'), entry('v', '\u000B'),
+        entry('\\', '\\'), entry('\'', '\''), entry('"', '"'),
+        entry('0', '\0')
+    );
+
     private final Reader reader;
     private final TokenStream tokens = new TokenStream();
 
@@ -103,6 +110,8 @@ public class Lexer {
                 scanIdentifier();
             } else if (chr == '"') {
                 scanString();
+            } else if (chr == '\'') {
+                scanChar();
             } else if (chr == '/') {
                 scanSlash();
             } else {
@@ -253,7 +262,22 @@ public class Lexer {
                 str.append((char) chr);
             }
         }
-        addToken(TokenType.FString, '"' + str.toString() + '"', start);
+        addToken(TokenType.FString, str.toString(), start);
+    }
+
+    private void scanChar() throws IOException {
+        int chr = reader.read();
+        assert chr == '\'' : "Invariant broken";
+        Pair<Integer, Integer> start = reader.location();
+        chr = reader.read();
+        if (chr == '\\') {
+            chr = reader.read();
+            assert escape.containsKey((char) chr) : "Invalid escape character `\\" + chr + "`.";
+            chr = escape.get((char) chr);
+        }
+        int nxt = reader.read();
+        assert nxt == '\'' : "Invalid character constant.";
+        addToken(TokenType.CharConst, String.valueOf((char) chr), start);
     }
 
     /**

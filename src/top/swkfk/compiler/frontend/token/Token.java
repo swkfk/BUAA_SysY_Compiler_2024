@@ -1,5 +1,6 @@
 package top.swkfk.compiler.frontend.token;
 
+import top.swkfk.compiler.frontend.Lexer;
 import top.swkfk.compiler.frontend.Navigation;
 
 import java.util.Arrays;
@@ -7,11 +8,21 @@ import java.util.Arrays;
 public record Token(TokenType type, String value, Navigation location) {
 
     public String toString() {
-        return type + " " + value.replace("\n", "\\n");
+        String value = this.value;
+        for (var entry : Lexer.escape.entrySet()) {
+            value = value.replace("" + entry.getValue(), "\\" + entry.getKey());
+        }
+        if (type == TokenType.FString) {
+            value = "\"" + value + "\"";
+        }
+        if (type == TokenType.CharConst) {
+            value = "'" + value + "'";
+        }
+        return type + " " + value;
     }
 
     public String toDebugString() {
-        return type + " " + value.replace("\n", "\\n") + " " + location;
+        return this + " " + location;
     }
 
     /**

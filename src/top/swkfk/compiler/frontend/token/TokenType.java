@@ -6,6 +6,7 @@ public enum TokenType {
     Ident("IDENFR"),
     // ****** Literals ******
     IntConst("INTCON"),
+    CharConst("CHRCON"),
     FString("STRCON"),
     // ****** Special symbols ******
     SpMain("MAINTK"),
