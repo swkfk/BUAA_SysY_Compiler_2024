@@ -1,3 +1,11 @@
+CONFIG = """\
+{
+    "programming language": "java",
+    "object code": "mips"
+}
+"""
+
+
 def ensure_path_submit():
     from pathlib import Path
 
@@ -37,6 +45,9 @@ def pack(*args):
             print(f"{' ' * (3 - len(percent))}{percent}% {relative}")
             zpf.write(file, arcname=relative)
             sleep(0.03)
+
+        print("--> \033[32mWriting config...\033[0m")
+        zpf.writestr("config.json", CONFIG)
 
 
 tasks = {
