@@ -24,48 +24,54 @@ public class Controller {
         if (Configure.debug.displayTokens) {
             System.err.println(tokens.toDebugString());
         }
-        // <Homework 2: Output the tokens>
-        // try (FileWriter writer = new FileWriter(Configure.target)) {
-        //     writer.write(tokens.toString());
-        // }
-        // System.exit(0);
-        // </Homework 2>
+        if (HomeworkConfig.hw == HomeworkConfig.Hw.Lexer) {
+            try (FileWriter writer = new FileWriter(errors.noError() ? Configure.target : Configure.error)) {
+                writer.write((errors.noError() ? tokens : errors).toString());
+            }
+            Controller.exit();
+        }
 
         // 2. Syntax analysis
-        // <Homework 3: Output the tokens with its AST>
-        // Configure.debug.displayTokensWithAst = true;
-        // </Homework 3>
+        if (HomeworkConfig.hw == HomeworkConfig.Hw.Syntax) {
+            Configure.debug.displayTokensWithAst = true;
+        }
         ParserWatcher watcher = new ParserWatcher();
         CompileUnit ast = new Parser(tokens, watcher).parse().emit();
-        // <Homework 3>
-        // try (FileWriter writer = new FileWriter(Configure.target)) {
-        //     writer.write(watcher.toString());
-        // }
-        // System.exit(0);
-        // </Homework 3>
+        if (HomeworkConfig.hw == HomeworkConfig.Hw.Syntax) {
+            try (FileWriter writer = new FileWriter(Configure.target)) {
+                writer.write(watcher.toString());
+            }
+            Controller.exit();
+        }
 
         // 3. Semantic analysis
         new Traverser(ast).spawn();  // --> SymbolTable
+        if (HomeworkConfig.hw == HomeworkConfig.Hw.Semantic) {
+            try (FileWriter writer = new FileWriter(Configure.error)) {
+                writer.write(errors.toString());
+            }
+            Controller.exit();
+        }
+
+        // 4. Intermediate code generation
+        IrModule module = new IrBuilder(ast).build().emit();
+        if (HomeworkConfig.hw == HomeworkConfig.Hw.Codegen) {
+            try (FileWriter writer = new FileWriter(Configure.target)) {
+                writer.write(module.toString());
+            }
+            Controller.exit();
+        }
+    }
+
+    private static void exit() {
         if (Configure.debug.displayErrors) {
+            System.err.println("==> Errors: ");
             System.err.println(errors.toDebugString());
         }
         if (Configure.debug.displaySymbols) {
             System.err.println(symbols);
         }
-        // <Homework 4>
-        // try (FileWriter writer = new FileWriter(Configure.target)) {
-        //     writer.write(errors.toString());
-        // }
-        // System.exit(0);
-        // </Homework 4>
 
-        // 4. Intermediate code generation
-        IrModule module = new IrBuilder(ast).build().emit();
-        // <Homework 5>
-        try (FileWriter writer = new FileWriter(Configure.target)) {
-            writer.write(module.toString());
-        }
         System.exit(0);
-        // </Homework 5>
     }
 }

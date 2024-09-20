@@ -3,7 +3,8 @@ package top.swkfk.compiler;
 public class Configure {
     @SuppressWarnings("SpellCheckingInspection")
     public static String source = "testfile.txt";
-    public static String target = "output.txt";
+    public static String target = HomeworkConfig.getTarget();
+    public static String error = "error.txt";
 
     public static class debug {
         public static boolean displayTokens = false;
@@ -31,6 +32,8 @@ public class Configure {
                 target = args[++i];
             } else if (args[i].equals("-debug")) {
                 debug.parse(args[++i]);
+            } else if (args[i].equals("-error")) {
+                error = args[++i];
             } else if (!args[i].startsWith("-")) {
                 source = args[i];
             }

@@ -18,6 +18,10 @@ final public class ErrorTable {
         errors.add(new ErrorEntry(type, navigation));
     }
 
+    public boolean noError() {
+        return errors.isEmpty();
+    }
+
     public String toString() {
         return errors.stream().sorted(Comparator.comparingInt(t0 -> Integer.parseInt(t0.toString().split(" ")[0])))
             .map(ErrorEntry::toString).collect(Collectors.joining("\n"));
