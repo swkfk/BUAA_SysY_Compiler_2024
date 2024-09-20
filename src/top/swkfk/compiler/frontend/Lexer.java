@@ -78,6 +78,9 @@ public class Lexer {
         entry(';', TokenType.Semicolon), entry(',', TokenType.Comma)
     );
 
+    /**
+     * Escape characters. Pay attention to the '\\', which is an escape character itself.
+     */
     public final static Map<Character, Character> escape = Map.ofEntries(
         entry('a', '\u0007'), entry('b', '\b'), entry('f', '\f'),
         entry('n', '\n'), entry('t', '\t'), entry('v', '\u000B'),
@@ -249,8 +252,6 @@ public class Lexer {
                 chr = reader.read();
                 assert escape.containsKey((char) chr) : "Invalid escape character `\\" + chr + "`.";
                 str.append(escape.get((char) chr));
-            } else if (chr != (char) 32 && chr != (char) 33 && (chr < (char) 40 || chr > (char) 126)) {
-                errors.add(ErrorType.InvalidFormatString, location());
             } else {
                 str.append((char) chr);
             }

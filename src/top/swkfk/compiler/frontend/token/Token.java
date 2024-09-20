@@ -9,7 +9,12 @@ public record Token(TokenType type, String value, Navigation location) {
 
     public String toString() {
         String value = this.value;
+        // We put the '\\' in the front of the escape characters to make it right.
+        value = value.replace("\\", "\\\\");
         for (var entry : Lexer.escape.entrySet()) {
+            if (entry.getKey() == '\\') {
+                continue;
+            }
             value = value.replace("" + entry.getValue(), "\\" + entry.getKey());
         }
         if (type == TokenType.StrConst) {
