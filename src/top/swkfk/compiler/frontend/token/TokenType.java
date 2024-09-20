@@ -7,7 +7,7 @@ public enum TokenType {
     // ****** Literals ******
     IntConst("INTCON"),
     CharConst("CHRCON"),
-    FString("STRCON"),
+    StrConst("STRCON"),
     // ****** Special symbols ******
     SpMain("MAINTK"),
     SpGetInt("GETINTTK"),

@@ -12,7 +12,7 @@ public record Token(TokenType type, String value, Navigation location) {
         for (var entry : Lexer.escape.entrySet()) {
             value = value.replace("" + entry.getValue(), "\\" + entry.getKey());
         }
-        if (type == TokenType.FString) {
+        if (type == TokenType.StrConst) {
             value = "\"" + value + "\"";
         }
         if (type == TokenType.CharConst) {

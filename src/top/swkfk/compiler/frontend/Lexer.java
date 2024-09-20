@@ -243,26 +243,18 @@ public class Lexer {
         while ((chr = reader.read()) != '"') {
             if (chr == '%') {
                 chr = reader.read();
-                if (chr != 'd') {
-                    errors.add(ErrorType.InvalidFormatString, location());
-                    continue;
-                }
-                str.append('%').append('d');
+                str.append('%').append(chr);
             } else if (chr == '\\') {
                 chr = reader.read();
-                if (chr != 'n') {
-                    reader.unread(chr);
-                    errors.add(ErrorType.InvalidFormatString, location());
-                    continue;
-                }
-                str.append('\n');
+                assert escape.containsKey((char) chr) : "Invalid escape character `\\" + chr + "`.";
+                str.append(escape.get((char) chr));
             } else if (chr != (char) 32 && chr != (char) 33 && (chr < (char) 40 || chr > (char) 126)) {
                 errors.add(ErrorType.InvalidFormatString, location());
             } else {
                 str.append((char) chr);
             }
         }
-        addToken(TokenType.FString, str.toString(), start);
+        addToken(TokenType.StrConst, str.toString(), start);
     }
 
     private void scanChar() throws IOException {

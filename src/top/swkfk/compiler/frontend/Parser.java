@@ -375,7 +375,7 @@ public class Parser {
         if (among(TokenType.SpPrintf)) {
             Token tk = consume(TokenType.SpPrintf);
             consume(TokenType.LParen);
-            StmtPrintf printf = new StmtPrintf(tk, consume(TokenType.FString).value());
+            StmtPrintf printf = new StmtPrintf(tk, consume(TokenType.StrConst).value());
             while (checkConsume(TokenType.Comma)) {
                 printf.addArg(parseExpr());
             }
