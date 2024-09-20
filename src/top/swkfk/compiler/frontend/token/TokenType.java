@@ -15,6 +15,7 @@ public enum TokenType {
     // ****** Normal keep words ******
     Return("RETURNTK"),
     Const("CONSTTK"),
+    Char("CHARTK"),
     Int("INTTK"),
     Void("VOIDTK"),
     For("FORTK"),

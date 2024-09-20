@@ -65,7 +65,8 @@ public class Lexer {
         entry("if", TokenType.If), entry("else", TokenType.Else),
         entry("for", TokenType.For), entry("return", TokenType.Return),
         entry("void", TokenType.Void), entry("main", TokenType.SpMain),
-        entry("printf", TokenType.SpPrintf), entry("getint", TokenType.SpGetInt)
+        entry("printf", TokenType.SpPrintf), entry("getint", TokenType.SpGetInt),
+        entry("char", TokenType.Char)
     );
 
     private final static Map<Character, TokenType> symbols = Map.ofEntries(
