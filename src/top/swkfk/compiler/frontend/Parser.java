@@ -261,7 +261,7 @@ public class Parser {
             consume(TokenType.RBracket);
         }
         consume(TokenType.Assign);
-        ConstInitValue initial = parseConstInitial();
+        ConstInitValue initial = parseConstInitial(false);
         return watch(new ConstDef(identifier, indices, initial));
     }
 
@@ -283,7 +283,7 @@ public class Parser {
             consume(TokenType.RBracket);
         }
         if (checkConsume(TokenType.Assign)) {
-            varDef.setInitial(parseVarInitial());
+            varDef.setInitial(parseVarInitial(false));
         }
         return watch(varDef);
     }
@@ -292,32 +292,40 @@ public class Parser {
         return watch(new ExprConst(parseAddExpr()));
     }
 
-    private ConstInitValue parseConstInitial() {
+    private ConstInitValue parseConstInitial(boolean inSub) {
         if (among(TokenType.StrConst)) {
             return watch(new ConstInitValue(consume(TokenType.StrConst).value()));
         }
         if (!checkConsume(TokenType.LBrace)) {
-            return watch(new ConstInitValue(parseConstExpr()));
+            if (!inSub) {
+                return watch(new ConstInitValue(parseConstExpr()));
+            } else {
+                return new ConstInitValue(parseConstExpr());
+            }
         }
         ConstInitValue constInitValue = new ConstInitValue();
         while (!among(TokenType.RBrace)) {
-            constInitValue.addSubInitializer(parseConstInitial());
+            constInitValue.addSubInitializer(parseConstInitial(true));
             checkConsume(TokenType.Comma);
         }
         consume(TokenType.RBrace);
         return watch(constInitValue);
     }
 
-    private VarInitValue parseVarInitial() {
+    private VarInitValue parseVarInitial(boolean inSub) {
         if (among(TokenType.StrConst)) {
             return watch(new VarInitValue(consume(TokenType.StrConst).value()));
         }
         if (!checkConsume(TokenType.LBrace)) {
-            return watch(new VarInitValue(parseExpr()));
+            if (!inSub) {
+                return watch(new VarInitValue(parseExpr()));
+            } else {
+                return new VarInitValue(parseExpr());
+            }
         }
         VarInitValue varInitValue = new VarInitValue();
         while (!among(TokenType.RBrace)) {
-            varInitValue.addSubInitializer(parseVarInitial());
+            varInitValue.addSubInitializer(parseVarInitial(true));
             checkConsume(TokenType.Comma);
         }
         consume(TokenType.RBrace);
