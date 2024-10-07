@@ -33,6 +33,7 @@ import top.swkfk.compiler.frontend.ast.logical.CondAnd;
 import top.swkfk.compiler.frontend.ast.logical.CondEqu;
 import top.swkfk.compiler.frontend.ast.logical.CondOr;
 import top.swkfk.compiler.frontend.ast.logical.CondRel;
+import top.swkfk.compiler.frontend.ast.misc.Char;
 import top.swkfk.compiler.frontend.ast.misc.ForStmt;
 import top.swkfk.compiler.frontend.ast.misc.FuncRealParams;
 import top.swkfk.compiler.frontend.ast.misc.LeftValue;
@@ -479,6 +480,10 @@ public class Parser {
         return watch(new ExprUnaryPrimary(parsePrimaryExpr()));
     }
 
+    private Char parseCharacter() {
+        return watch(new Char(next().value().charAt(0)));
+    }
+
     private ExprPrimary parsePrimaryExpr() {
         if (checkConsume(TokenType.LParen)) {
             Expr expr = parseExpr();
@@ -487,6 +492,9 @@ public class Parser {
         }
         if (among(TokenType.IntConst)) {
             return watch(new ExprPrimary(parseNumber()));
+        }
+        if (among(TokenType.CharConst)) {
+            return watch(new ExprPrimary(parseCharacter()));
         }
         return watch(new ExprPrimary(parseLVal()));
     }

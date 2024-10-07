@@ -1,6 +1,7 @@
 package top.swkfk.compiler.frontend.ast.expression;
 
 import top.swkfk.compiler.frontend.ast.ASTNode;
+import top.swkfk.compiler.frontend.ast.misc.Char;
 import top.swkfk.compiler.frontend.ast.misc.LeftValue;
 import top.swkfk.compiler.frontend.ast.misc.Number;
 import top.swkfk.compiler.frontend.symbol.type.SymbolType;
@@ -8,7 +9,7 @@ import top.swkfk.compiler.frontend.symbol.type.Ty;
 
 final public class ExprPrimary extends ASTNode {
     public enum Type {
-        Expr, LVal, Number
+        Expr, LVal, Number, Character
     }
 
     private final Type type;
@@ -29,6 +30,11 @@ final public class ExprPrimary extends ASTNode {
         this.value = number;
     }
 
+    public ExprPrimary(Char character) {
+        this.type = Type.Character;
+        this.value = character;
+    }
+
     public Type getType() {
         return type;
     }
@@ -42,6 +48,7 @@ final public class ExprPrimary extends ASTNode {
             case Expr -> ((Expr) value).getExpr().calculateConst();
             case LVal -> ((LeftValue) value).calculateConst();
             case Number -> ((Number) value).getValue();
+            case Character -> ((Char) value).getValue();
         };
     }
 
@@ -50,6 +57,7 @@ final public class ExprPrimary extends ASTNode {
             case Expr -> ((Expr) value).getExpr().calculateType();
             case LVal -> ((LeftValue) value).calculateType();
             case Number -> Ty.I32;
+            case Character -> Ty.I8;
         };
     }
 

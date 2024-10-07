@@ -25,6 +25,7 @@ import top.swkfk.compiler.frontend.ast.logical.CondAnd;
 import top.swkfk.compiler.frontend.ast.logical.CondEqu;
 import top.swkfk.compiler.frontend.ast.logical.CondOr;
 import top.swkfk.compiler.frontend.ast.logical.CondRel;
+import top.swkfk.compiler.frontend.ast.misc.Char;
 import top.swkfk.compiler.frontend.ast.misc.ForStmt;
 import top.swkfk.compiler.frontend.ast.misc.LeftValue;
 import top.swkfk.compiler.frontend.ast.misc.Number;
@@ -188,6 +189,7 @@ class Traverser {
         return switch (expr.getType()) {
             case Number -> new ConstInteger(((Number) expr.getValue()).getValue());
             case Expr -> visitExpr((Expr) expr.getValue());
+            case Character -> new ConstInteger(((Char) expr.getValue()).getValue());
             case LVal -> {
                 LeftValue lVal = (LeftValue) expr.getValue();
                 if (lVal.getIndices().isEmpty()) {

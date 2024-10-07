@@ -12,6 +12,11 @@ final public class ConstInteger extends Constant {
         this.value = value;
     }
 
+    public ConstInteger(char value) {
+        super(String.valueOf(value), Ty.I8);
+        this.value = value;
+    }
+
     public ConstInteger(int value, SymbolType type) {
         super(String.valueOf(value), type);
         this.value = value;
