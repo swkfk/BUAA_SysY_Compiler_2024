@@ -4,7 +4,7 @@ import top.swkfk.compiler.frontend.ast.ASTNode;
 
 final public class FuncType extends ASTNode {
     public enum Type {
-        Void, Int
+        Void, Int, Char
     }
 
     private final Type type;

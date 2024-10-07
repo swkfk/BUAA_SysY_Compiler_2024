@@ -45,6 +45,7 @@ import top.swkfk.compiler.frontend.ast.statement.StmtBreak;
 import top.swkfk.compiler.frontend.ast.statement.StmtContinue;
 import top.swkfk.compiler.frontend.ast.statement.StmtExpr;
 import top.swkfk.compiler.frontend.ast.statement.StmtFor;
+import top.swkfk.compiler.frontend.ast.statement.StmtGetChar;
 import top.swkfk.compiler.frontend.ast.statement.StmtGetInt;
 import top.swkfk.compiler.frontend.ast.statement.StmtIf;
 import top.swkfk.compiler.frontend.ast.statement.StmtPrintf;
@@ -187,8 +188,12 @@ public class Parser {
 
     private FuncType parseFuncType() {
         Token type = next();
-        assert type.among(TokenType.Int, TokenType.Void) : "Only support int or void type";
-        return watch(new FuncType(type.is(TokenType.Int) ? FuncType.Type.Int : FuncType.Type.Void));
+        assert type.among(TokenType.Int, TokenType.Void, TokenType.Char) : "Only support int, char or void type";
+        return watch(new FuncType(
+            type.is(TokenType.Int) ? FuncType.Type.Int : (
+                type.is(TokenType.Char) ? FuncType.Type.Char : FuncType.Type.Void
+            )
+        ));
     }
 
     private FuncDef parseFuncDef() {
@@ -204,7 +209,7 @@ public class Parser {
 
     private FuncFormalParams parseFuncFormalParams() {
         FuncFormalParams params = new FuncFormalParams();
-        while (among(TokenType.Int)) {
+        while (among(TokenType.Int, TokenType.Char)) {
             params.addParam(parseFuncFormalParam());
             checkConsume(TokenType.Comma);
         }
@@ -213,8 +218,8 @@ public class Parser {
 
     private FuncFormalParam parseFuncFormalParam() {
         Token type = next();
-        assert type.is(TokenType.Int) : "Only support int type";
-        BasicType paramType = new BasicType();
+        assert type.among(TokenType.Int, TokenType.Char) : "Only support int or char type";
+        BasicType paramType = BasicType.from(type.type());
         Token identifier = consume(TokenType.Ident);
         boolean isArray = among(TokenType.LBracket);
         FuncFormalParam param = new FuncFormalParam(paramType, identifier, isArray);
@@ -239,8 +244,8 @@ public class Parser {
 
     private ConstDecl parseConstDeclaration() {
         Token type = next();
-        assert type.is(TokenType.Int) : "Only support int type";
-        ConstDecl constDecl = new ConstDecl(new BasicType());
+        assert type.among(TokenType.Int, TokenType.Char) : "Only support int or char type";
+        ConstDecl constDecl = new ConstDecl(BasicType.from(type.type()));
         do {
             constDecl.addDef(parseConstDefinition());
         } while (checkConsume(TokenType.Comma));
@@ -262,8 +267,8 @@ public class Parser {
 
     private VarDecl parseVarDeclaration() {
         Token type = next();
-        assert type.is(TokenType.Int) : "Only support int type";
-        VarDecl varDecl = new VarDecl(new BasicType());
+        assert type.among(TokenType.Int, TokenType.Char) : "Only support int or char type";
+        VarDecl varDecl = new VarDecl(BasicType.from(type.type()));
         do {
             varDecl.addDef(parseVarDefinition());
         } while (checkConsume(TokenType.Comma));
@@ -324,7 +329,7 @@ public class Parser {
     }
 
     private BlockItem parseBlockItem() {
-        if (among(TokenType.Const, TokenType.Int)) {
+        if (among(TokenType.Const, TokenType.Int, TokenType.Char)) {
             return new BlockItem(parseDeclaration());
         }
         return new BlockItem(parseStmt());  // Skip watching
@@ -396,6 +401,12 @@ public class Parser {
                 consume(TokenType.RParen);
                 consume(TokenType.Semicolon);
                 return watch(new StmtGetInt(lVal));
+            }
+            if (checkConsume(TokenType.SpGetChar)) {
+                consume(TokenType.LParen);
+                consume(TokenType.RParen);
+                consume(TokenType.Semicolon);
+                return watch(new StmtGetChar(lVal));
             }
             Expr expr = parseExpr();
             consume(TokenType.Semicolon);
