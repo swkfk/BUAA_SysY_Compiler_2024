@@ -5,13 +5,13 @@ public class HomeworkConfig {
         Lexer, Syntax, Semantic, Codegen
     }
 
-    public static Hw hw = Hw.Lexer;
+    public static Hw hw = Hw.Syntax;
     //  Modify this  ^^  to change the homework  //
 
     public static String getTarget() {
         return switch (hw) {
             case Lexer -> "lexer.txt";
-            case Syntax, Semantic -> "syntax.txt";
+            case Syntax, Semantic -> "parser.txt";
             case Codegen -> "mips.txt";
         };
     }
