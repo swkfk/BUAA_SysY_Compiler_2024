@@ -38,8 +38,8 @@ public class Controller {
         ParserWatcher watcher = new ParserWatcher();
         CompileUnit ast = new Parser(tokens, watcher).parse().emit();
         if (HomeworkConfig.hw == HomeworkConfig.Hw.Syntax) {
-            try (FileWriter writer = new FileWriter(Configure.target)) {
-                writer.write(watcher.toString());
+            try (FileWriter writer = new FileWriter(errors.noError() ? Configure.target : Configure.error)) {
+                writer.write((errors.noError() ? watcher : errors).toString());
             }
             Controller.exit();
         }
