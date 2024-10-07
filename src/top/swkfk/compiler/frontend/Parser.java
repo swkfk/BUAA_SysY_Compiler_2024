@@ -293,6 +293,9 @@ public class Parser {
     }
 
     private ConstInitValue parseConstInitial() {
+        if (among(TokenType.StrConst)) {
+            return watch(new ConstInitValue(consume(TokenType.StrConst).value()));
+        }
         if (!checkConsume(TokenType.LBrace)) {
             return watch(new ConstInitValue(parseConstExpr()));
         }
@@ -306,6 +309,9 @@ public class Parser {
     }
 
     private VarInitValue parseVarInitial() {
+        if (among(TokenType.StrConst)) {
+            return watch(new VarInitValue(consume(TokenType.StrConst).value()));
+        }
         if (!checkConsume(TokenType.LBrace)) {
             return watch(new VarInitValue(parseExpr()));
         }

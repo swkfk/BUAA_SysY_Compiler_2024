@@ -10,23 +10,33 @@ import java.util.Objects;
 
 final public class VarInitValue extends ASTNode {
     public enum Type {
-        Initializer, SubInitializer
+        Initializer, SubInitializer, StringConst
     }
 
     private final Type type;
     private final Expr expr;
+    private final String stringConst;
     private final List<VarInitValue> subInitializers;
 
     public VarInitValue(Expr expr) {
         this.type = Type.Initializer;
         this.expr = expr;
+        this.stringConst = null;
         this.subInitializers = null;
     }
 
     public VarInitValue() {
         this.type = Type.SubInitializer;
         this.expr = null;
+        this.stringConst = null;
         this.subInitializers = new LinkedList<>();
+    }
+
+    public VarInitValue(String stringConst) {
+        this.type = Type.StringConst;
+        this.expr = null;
+        this.stringConst = stringConst;
+        this.subInitializers = null;
     }
 
     public Expr getExpr() {

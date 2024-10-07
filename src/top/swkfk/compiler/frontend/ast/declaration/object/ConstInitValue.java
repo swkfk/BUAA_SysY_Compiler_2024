@@ -8,23 +8,33 @@ import java.util.List;
 
 final public class ConstInitValue extends ASTNode {
     public enum Type {
-        Initializer, SubInitializer
+        Initializer, SubInitializer, StringConst
     }
 
     private final Type type;
     private final ExprConst expr;
+    private final String stringConst;
     private final List<ConstInitValue> subInitializers;
 
     public ConstInitValue(ExprConst expr) {
         this.type = Type.Initializer;
         this.expr = expr;
+        this.stringConst = null;
         this.subInitializers = null;
     }
 
     public ConstInitValue() {
         this.type = Type.SubInitializer;
         this.expr = null;
+        this.stringConst = null;
         this.subInitializers = new LinkedList<>();
+    }
+
+    public ConstInitValue(String stringConst) {
+        this.type = Type.StringConst;
+        this.expr = null;
+        this.stringConst = stringConst;
+        this.subInitializers = null;
     }
 
     public ExprConst getExpr() {
