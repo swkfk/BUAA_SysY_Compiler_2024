@@ -361,6 +361,21 @@ public class Parser {
         return new BlockItem(parseStmt());  // Skip watching
     }
 
+    private boolean tryParseAssign() {
+        if (!FirstSet.getFirst(LeftValue.class).contains(peekType())) {
+            return false;
+        }
+        try (BackTrace ignore = trace.save()) {
+            parseLVal();
+            if (!among(TokenType.Assign)) {
+                throw new IllegalStateException("Not an assignment");
+            }
+        } catch (Exception e) {
+            return false;
+        }
+        return true;
+    }
+
     private Stmt parseStmt() {
         if (among(TokenType.LBrace)) {
             return watch(new StmtBlock(parseBlock()));
@@ -416,11 +431,7 @@ public class Parser {
             consume(TokenType.Semicolon);
             return watch(printf);
         }
-        int i = 0;
-        while (!among(i, TokenType.Assign) && !among(i, TokenType.Semicolon)) {
-            i++;
-        }
-        if (among(i, TokenType.Assign)) {
+        if (tryParseAssign()) {
             LeftValue lVal = parseLVal();
             consume(TokenType.Assign);
             if (checkConsume(TokenType.SpGetInt)) {
