@@ -1,5 +1,7 @@
 package top.swkfk.compiler.frontend.token;
 
+import top.swkfk.compiler.utils.BackTrace;
+
 import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -7,7 +9,7 @@ import java.util.stream.Collectors;
 /**
  * Collect tokens and provide methods to access them.
  */
-public class TokenStream {
+public class TokenStream implements BackTrace.Traceable {
     private final List<Token> tks = new LinkedList<>();
     private int index = 0;
 
@@ -138,5 +140,15 @@ public class TokenStream {
      */
     public String toDebugString() {
         return tks.stream().map(Token::toDebugString).collect(Collectors.joining("\n"));
+    }
+
+    @Override
+    public Object save() {
+        return index;
+    }
+
+    @Override
+    public void restore(Object state) {
+        index = (int) state;
     }
 }

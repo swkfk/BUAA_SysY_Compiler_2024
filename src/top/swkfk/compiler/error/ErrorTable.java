@@ -1,13 +1,14 @@
 package top.swkfk.compiler.error;
 
 import top.swkfk.compiler.frontend.Navigation;
+import top.swkfk.compiler.utils.BackTrace;
 
 import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-final public class ErrorTable {
+final public class ErrorTable implements BackTrace.Traceable {
     private final List<ErrorEntry> errors;
 
     public ErrorTable() {
@@ -29,5 +30,18 @@ final public class ErrorTable {
 
     public String toDebugString() {
         return errors.stream().map(ErrorEntry::toDebugString).collect(Collectors.joining("\n"));
+    }
+
+    @Override
+    public Object save() {
+        return errors.size();
+    }
+
+    @Override
+    public void restore(Object state) {
+        int size = (int) state;
+        while (errors.size() > size) {
+            errors.remove(errors.size() - 1);
+        }
     }
 }

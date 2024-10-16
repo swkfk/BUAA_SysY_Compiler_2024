@@ -55,12 +55,13 @@ import top.swkfk.compiler.frontend.token.Token;
 import top.swkfk.compiler.frontend.token.TokenStream;
 import top.swkfk.compiler.frontend.token.TokenType;
 import top.swkfk.compiler.helpers.ParserWatcher;
+import top.swkfk.compiler.utils.BackTrace;
 
 import java.util.LinkedList;
 import java.util.List;
 
 public class Parser {
-    private ErrorTable errors = Controller.errors;
+    private final ErrorTable errors = Controller.errors;
     private final CompileUnit ast;
 
     /* =-=-=-=-=-= <tokens-wrapper> =-=-=-=-=-= */
@@ -160,10 +161,16 @@ public class Parser {
 
     /* =-=-=-=-=-= </tokens-wrapper> =-=-=-=-=-= */
 
+    /**
+     * The check point for backtracking. Use it to try-parse and recover from errors.
+     */
+    private final BackTrace trace;
+
     public Parser(TokenStream tokens, ParserWatcher watcher) {
         this.__tokens = tokens;
         this.__watcher = watcher;
         this.ast = new CompileUnit();
+        this.trace = new BackTrace(errors, __tokens, __watcher);
     }
 
     public Parser parse() {
