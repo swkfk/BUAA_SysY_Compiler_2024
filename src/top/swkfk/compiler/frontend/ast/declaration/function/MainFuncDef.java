@@ -26,7 +26,7 @@ final public class MainFuncDef extends ASTNode {
 
     public FuncDef into() {
         return new FuncDef(new FuncType(FuncType.Type.Int), identifier, new FuncFormalParams(), block) {{
-            setSymbol(new SymbolFunction("main", Ty.I32));
+            setSymbol(new SymbolFunction("main", Ty.I32, -1));
         }};
     }
 }

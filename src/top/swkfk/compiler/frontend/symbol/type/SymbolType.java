@@ -25,4 +25,20 @@ abstract public class SymbolType {
         }
         return Ty.Void;
     }
+
+    public static String getDisplayString(SymbolType type) {
+        if (type.is("int")) {
+            return "Int";
+        } else if (type.is("char")) {
+            return "Char";
+        } else if (type.is("array")) {
+            return getDisplayString(((TyArray) type).getBase()) + "Array";
+        } else if (type.is("ptr")) {
+            return getDisplayString(((TyPtr) type).getBase()) + "Array";
+        } else if (type.is("void")) {
+            return "Void";
+        } else {
+            throw new RuntimeException("Unknown type: " + type);
+        }
+    }
 }

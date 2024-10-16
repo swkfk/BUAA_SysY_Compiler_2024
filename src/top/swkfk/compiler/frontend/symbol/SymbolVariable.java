@@ -19,8 +19,8 @@ final public class SymbolVariable extends Symbol {
      */
     private boolean fromParam = false;
 
-    public SymbolVariable(String name, SymbolType type, boolean isGlobal) {
-        super(name, type, isGlobal);
+    public SymbolVariable(String name, SymbolType type, boolean isGlobal, int symbolTableIndex) {
+        super(name, type, isGlobal, symbolTableIndex);
     }
 
     public void setConstantValue(FixedValue value) {
@@ -56,10 +56,16 @@ final public class SymbolVariable extends Symbol {
     }
 
     @Override
-    public String toString() {
+    public String toDebugString() {
         if (!hasFixedValue()) {
-            return super.toString();
+            return super.toDebugString();
         }
-        return super.toString() + " = " + constantValue;
+        return super.toDebugString() + " = " + constantValue;
+    }
+
+    @Override
+    public String toString() {
+        String type = (hasFixedValue() ? "Const" : "") + SymbolType.getDisplayString(getType());
+        return super.toString() + " " + type;
     }
 }

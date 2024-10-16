@@ -47,8 +47,8 @@ public class Controller {
         // 3. Semantic analysis
         new Traverser(ast).spawn();  // --> SymbolTable
         if (HomeworkConfig.hw == HomeworkConfig.Hw.Semantic) {
-            try (FileWriter writer = new FileWriter(Configure.error)) {
-                writer.write(errors.toString());
+            try (FileWriter writer = new FileWriter(errors.noError() ? Configure.target : Configure.error)) {
+                writer.write((errors.noError() ? symbols.toString() : errors).toString());
             }
             Controller.exit();
         }
@@ -69,7 +69,7 @@ public class Controller {
             System.err.println(errors.toDebugString());
         }
         if (Configure.debug.displaySymbols) {
-            System.err.println(symbols);
+            System.err.println(symbols.toDebugString());
         }
 
         System.exit(0);

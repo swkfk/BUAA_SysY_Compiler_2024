@@ -10,8 +10,8 @@ public class SymbolFunction extends Symbol {
 
     private final List<SymbolVariable> parameters;
 
-    public SymbolFunction(String name, SymbolType type) {
-        super(name, type, true);
+    public SymbolFunction(String name, SymbolType type, int symbolTableIndex) {
+        super(name, type, true, symbolTableIndex);
         parameters = new LinkedList<>();
     }
 
@@ -19,9 +19,9 @@ public class SymbolFunction extends Symbol {
         parameters.add(parameter);
     }
 
-    public String toString() {
-        return super.toString() + " (" +
-            parameters.stream().map(Symbol::toString).collect(Collectors.joining(", ")) +
+    public String toDebugString() {
+        return super.toDebugString() + " (" +
+            parameters.stream().map(Symbol::toDebugString).collect(Collectors.joining(", ")) +
             ")";
     }
 

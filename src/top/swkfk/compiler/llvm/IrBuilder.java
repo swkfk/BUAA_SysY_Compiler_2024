@@ -37,15 +37,15 @@ public class IrBuilder {
 
     @SuppressWarnings("SpellCheckingInspection")
     private final static Map<String, SymbolFunction> externalFunctions = Map.of(
-        "getint", new SymbolFunction("getint", Ty.I32),
-        "putint", new SymbolFunction("putint", Ty.Void) {{
-            addParameter(new SymbolVariable("_1_i32", Ty.I32, false));
+        "getint", new SymbolFunction("getint", Ty.I32, -1),
+        "putint", new SymbolFunction("putint", Ty.Void, -1) {{
+            addParameter(new SymbolVariable("_1_i32", Ty.I32, false, -1));
         }},
-        "putch", new SymbolFunction("putch", Ty.Void) {{
-            addParameter(new SymbolVariable("_1_i32", Ty.I32, false));
+        "putch", new SymbolFunction("putch", Ty.Void, -1) {{
+            addParameter(new SymbolVariable("_1_i32", Ty.I32, false, -1));
         }},
-        "putstr", new SymbolFunction("putstr", Ty.Void) {{
-            addParameter(new SymbolVariable("_1_i8_star", new TyPtr(Ty.I8), false));
+        "putstr", new SymbolFunction("putstr", Ty.Void, -1) {{
+            addParameter(new SymbolVariable("_1_i8_star", new TyPtr(Ty.I8), false, -1));
         }}
     );
 

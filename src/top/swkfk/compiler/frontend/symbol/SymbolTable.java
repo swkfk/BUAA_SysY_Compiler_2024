@@ -3,15 +3,21 @@ package top.swkfk.compiler.frontend.symbol;
 import top.swkfk.compiler.frontend.ast.declaration.function.FuncType;
 import top.swkfk.compiler.frontend.symbol.type.SymbolType;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Stack;
 import java.util.stream.Collectors;
 
 final public class SymbolTable {
+    private static int counter = 1;  // Global scope is 1
+
     private final Map<String, SymbolVariable> allVariables;
     private final Map<String, SymbolFunction> allFunctions;
     private final Stack<Map<String, SymbolVariable>> stack;
+
+    private final List<Symbol> outputList = new ArrayList<>();
 
     public SymbolTable() {
         allVariables = new HashMap<>();
@@ -22,6 +28,7 @@ final public class SymbolTable {
     }
 
     public void newScope() {
+        counter++;
         stack.push(new HashMap<>());
     }
 
@@ -45,9 +52,10 @@ final public class SymbolTable {
         if (stack.peek().containsKey(name) || allFunctions.containsKey(name) || bumpKeepIdentifier(name) ) {
             return null;
         }
-        SymbolVariable variable = new SymbolVariable(name, type, stack.size() == 1);
+        SymbolVariable variable = new SymbolVariable(name, type, stack.size() == 1, counter);
         allVariables.put(name, variable);
         stack.peek().put(name, variable);
+        outputList.add(variable);
         return variable;
     }
 
@@ -71,7 +79,7 @@ final public class SymbolTable {
         if (allFunctions.containsKey(name) || getVariable(name) != null || bumpKeepIdentifier(name)) {
             return null;
         }
-        SymbolFunction function = new SymbolFunction(name, SymbolType.from(type));
+        SymbolFunction function = new SymbolFunction(name, SymbolType.from(type), counter);
         allFunctions.put(name, function);
         return function;
     }
@@ -91,11 +99,16 @@ final public class SymbolTable {
         return parameter;
     }
 
-    public String toString() {
+    public String toDebugString() {
         return "==> Variables: \n" +
-            allVariables.values().stream().map(Symbol::toString).collect(Collectors.joining("\n"))
+            allVariables.values().stream().map(Symbol::toDebugString).collect(Collectors.joining("\n"))
             + "\n==> Functions: \n" +
-            allFunctions.values().stream().map(SymbolFunction::toString).collect(Collectors.joining("\n"))
+            allFunctions.values().stream().map(SymbolFunction::toDebugString).collect(Collectors.joining("\n"))
             ;
+    }
+
+    public String toString() {
+        outputList.sort(Symbol::compareTo);
+        return outputList.stream().map(Symbol::toString).collect(Collectors.joining("\n"));
     }
 }
