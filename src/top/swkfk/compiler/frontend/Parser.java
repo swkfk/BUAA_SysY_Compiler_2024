@@ -4,6 +4,7 @@ import top.swkfk.compiler.Controller;
 import top.swkfk.compiler.error.ErrorTable;
 import top.swkfk.compiler.error.ErrorType;
 import top.swkfk.compiler.frontend.ast.CompileUnit;
+import top.swkfk.compiler.frontend.ast.FirstSet;
 import top.swkfk.compiler.frontend.ast.block.Block;
 import top.swkfk.compiler.frontend.ast.block.BlockItem;
 import top.swkfk.compiler.frontend.ast.declaration.BasicType;
@@ -142,6 +143,10 @@ public class Parser {
      */
     private boolean among(int next, TokenType... types) {
         return __tokens.peek(next).among(types);
+    }
+
+    private TokenType peekType() {
+        return __tokens.peek().type();
     }
 
     private boolean eof() {
@@ -385,12 +390,13 @@ public class Parser {
         }
         if (among(TokenType.Return)) {
             Token tk = consume(TokenType.Return);
-            if (checkConsume(TokenType.Semicolon)) {
-                return watch(new StmtReturn(tk));
+            if (FirstSet.getFirst(Expr.class).contains(peekType())) {
+                Expr expr = parseExpr();
+                consume(TokenType.Semicolon);
+                return watch(new StmtReturn(expr, tk));
             }
-            Expr expr = parseExpr();
             consume(TokenType.Semicolon);
-            return watch(new StmtReturn(expr, tk));
+            return watch(new StmtReturn(tk));
         }
         if (among(TokenType.SpPrintf)) {
             Token tk = consume(TokenType.SpPrintf);
