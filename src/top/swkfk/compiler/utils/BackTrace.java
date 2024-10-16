@@ -2,7 +2,7 @@ package top.swkfk.compiler.utils;
 
 import java.util.Stack;
 
-final public class BackTrace {
+final public class BackTrace implements AutoCloseable {
 
     public interface Traceable {
         /**
@@ -25,12 +25,13 @@ final public class BackTrace {
         this.objects = objects;
     }
 
-    public void save() {
+    public BackTrace save() {
         Object[] state = new Object[objects.length];
         for (int i = 0; i < objects.length; i++) {
             state[i] = objects[i].save();
         }
         states.push(state);
+        return this;
     }
 
     public void restore() {
@@ -38,5 +39,10 @@ final public class BackTrace {
         for (int i = 0; i < objects.length; i++) {
             objects[i].restore(state[i]);
         }
+    }
+
+    @Override
+    public void close() {
+        restore();
     }
 }
