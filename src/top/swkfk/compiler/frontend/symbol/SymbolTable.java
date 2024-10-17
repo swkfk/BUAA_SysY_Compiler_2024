@@ -55,7 +55,7 @@ final public class SymbolTable {
      * @return The mangled name of the variable
      */
     public SymbolVariable addVariable(String name, SymbolType type) {
-        if (stack.peek().containsKey(name) || allFunctions.containsKey(name) || bumpKeepIdentifier(name) ) {
+        if (stack.peek().containsKey(name) || bumpKeepIdentifier(name)) {
             return null;
         }
         SymbolVariable variable = new SymbolVariable(name, type, stack.size() == 1, stackOfScopeId.peek());
@@ -82,7 +82,7 @@ final public class SymbolTable {
     }
 
     public SymbolFunction addFunction(String name, FuncType type) {
-        if (allFunctions.containsKey(name) || getVariable(name) != null || bumpKeepIdentifier(name)) {
+        if (stack.peek().containsKey(name) || bumpKeepIdentifier(name)) {
             return null;
         }
         SymbolFunction function = new SymbolFunction(name, SymbolType.from(type), stackOfScopeId.peek());
