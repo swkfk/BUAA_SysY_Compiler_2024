@@ -25,6 +25,11 @@ public class SymbolFunction extends Symbol {
             ")";
     }
 
+    @Override
+    public String toString() {
+        return super.toString() + " " + SymbolType.getDisplayString(getType()) + "Func";
+    }
+
     public List<SymbolVariable> getParameters() {
         return parameters;
     }

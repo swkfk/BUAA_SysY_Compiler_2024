@@ -14,6 +14,9 @@ abstract public class SymbolType {
         if (funcType.is(FuncType.Type.Int)) {
             return Ty.I32;
         }
+        if (funcType.is(FuncType.Type.Char)) {
+            return Ty.I8;
+        }
         return Ty.Void;
     }
 
