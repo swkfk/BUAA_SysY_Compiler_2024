@@ -65,7 +65,7 @@ final public class SymbolVariable extends Symbol {
 
     @Override
     public String toString() {
-        String type = (hasFixedValue() ? "Const" : "") + SymbolType.getDisplayString(getType());
+        String type = (isConst() ? "Const" : "") + SymbolType.getDisplayString(getType());
         return super.toString() + " " + type;
     }
 }
