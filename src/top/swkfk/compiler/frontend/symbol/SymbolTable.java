@@ -82,7 +82,7 @@ final public class SymbolTable {
     }
 
     public SymbolFunction addFunction(String name, FuncType type) {
-        if (stack.peek().containsKey(name) || bumpKeepIdentifier(name)) {
+        if (stack.peek().containsKey(name) || allFunctions.containsKey(name) || bumpKeepIdentifier(name)) {
             return null;
         }
         SymbolFunction function = new SymbolFunction(name, SymbolType.from(type), stackOfScopeId.peek());

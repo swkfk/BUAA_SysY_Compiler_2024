@@ -54,6 +54,7 @@ import top.swkfk.compiler.frontend.symbol.type.TyPtr;
 
 import java.util.LinkedList;
 import java.util.Optional;
+import java.util.stream.IntStream;
 
 /**
  * A simple traverser to build the symbol table.
@@ -100,6 +101,7 @@ public class Traverser {
             }
             symbols.exitScope();
         }
+        // main function
         symbols.newScope();
         returnIntFound = false;
         notAllowIntReturn = false;
@@ -177,6 +179,7 @@ public class Traverser {
     }
 
     private void visitStmt(Stmt stmt) {
+        boolean localReturnIntFound = false;  // Just find the final stmt to find the int return value
         switch (stmt.getType()) {
             case If -> {
                 visitCond(((StmtIf) stmt).getCondition());
@@ -200,14 +203,15 @@ public class Traverser {
             }
             case Return -> {
                 if (((StmtReturn) stmt).getExpr() != null) {
-                    returnIntFound = true;
+                    localReturnIntFound = true;
                     if (notAllowIntReturn) {
                         errors.add(ErrorType.MismatchedReturnType, ((StmtReturn) stmt).getToken().location());
                     }
                     visitExpr(((StmtReturn) stmt).getExpr());
                 }
             }
-            case Expr -> Optional.ofNullable(((StmtExpr) stmt).getExpr()).ifPresent(this::visitExpr);
+            case Expr ->
+                Optional.ofNullable(((StmtExpr) stmt).getExpr()).ifPresent(this::visitExpr);
             case Assign -> {
                 visitLeftValue(((StmtAssign) stmt).getLeft());
                 Optional.ofNullable(((StmtAssign) stmt).getLeft().getSymbol()).ifPresent(
@@ -235,6 +239,7 @@ public class Traverser {
                 }
             }
         }
+        returnIntFound = localReturnIntFound;
     }
 
     private void visitForStmt(ForStmt forStmt) {
@@ -324,12 +329,12 @@ public class Traverser {
                 if (call.getParams().size() != call.getSymbol().getParameters().size()) {
                     errors.add(ErrorType.MismatchedParameterCount, call.getIdentifier().location());
                 } else {
-                    for (int i = 0; i < call.getParams().size(); i++) {
-                        SymbolType fType = call.getSymbol().getParameters().get(i).getType();
-                        SymbolType rType = call.getParams().get(i).calculateType();
-                        if (!fType.compatible(rType)) {
-                            errors.add(ErrorType.MismatchedParameterType, call.getIdentifier().location());
-                        }
+                    if (IntStream.range(0, call.getParams().size()).anyMatch(
+                        i ->
+                            !call.getSymbol().getParameters().get(i).getType()
+                                .compatible(call.getParams().get(i).calculateType())
+                    )) {
+                        errors.add(ErrorType.MismatchedParameterType, call.getIdentifier().location());
                     }
                 }
             }
@@ -338,7 +343,8 @@ public class Traverser {
 
     private void visitPrimaryExpr(ExprPrimary primary) {
         switch (primary.getType()) {
-            case Number -> {}
+            case Number -> {
+            }
             case LVal -> visitLeftValue((LeftValue) primary.getValue());
             case Expr -> visitExpr((Expr) primary.getValue());
         }
