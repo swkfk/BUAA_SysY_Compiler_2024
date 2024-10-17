@@ -1,5 +1,6 @@
 package top.swkfk.compiler.frontend.symbol;
 
+import top.swkfk.compiler.frontend.symbol.type.SymbolQualifier;
 import top.swkfk.compiler.frontend.symbol.type.SymbolType;
 
 public class Symbol implements Comparable<Symbol> {
@@ -12,6 +13,16 @@ public class Symbol implements Comparable<Symbol> {
     private final String mangle;
     private final SymbolType type;
     private final boolean isGlobal;
+
+    private final SymbolQualifier qualifier = new SymbolQualifier();
+
+    public void setConst() {
+        qualifier.setConst();
+    }
+
+    public boolean isConst() {
+        return qualifier.isConst();
+    }
 
     protected Symbol(String name, SymbolType type, boolean isGlobal, int symbolTableIndex) {
         this.name = name;

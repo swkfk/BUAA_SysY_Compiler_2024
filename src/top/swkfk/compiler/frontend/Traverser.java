@@ -116,11 +116,11 @@ public class Traverser {
             for (ConstDef def : constDecl.getDefs()) {
                 def.getIndices().forEach(this::visitExprConst);
                 SymbolType ty = TyArray.from(constDecl.getType().into(), def.getIndices());
-                ty.setConst();
                 SymbolVariable symbol = symbols.addVariable(def.getIdentifier().value(), ty);
                 if (symbol == null) {
                     errors.add(ErrorType.DuplicatedDeclaration, def.getIdentifier().location());
                 } else {
+                    symbol.setConst();
                     visitConstInitValue(def.getInitial());
                     try {
                         if (def.getIndices().isEmpty()) {
@@ -218,7 +218,7 @@ public class Traverser {
                 visitLeftValue(((StmtAssign) stmt).getLeft());
                 Optional.ofNullable(((StmtAssign) stmt).getLeft().getSymbol()).ifPresent(
                     symbol -> {
-                        if (symbol.getType().isConst()) {
+                        if (symbol.isConst()) {
                             errors.add(ErrorType.AssignToConstant, ((StmtAssign) stmt).getLeft().getIdentifier().location());
                         }
                     }
