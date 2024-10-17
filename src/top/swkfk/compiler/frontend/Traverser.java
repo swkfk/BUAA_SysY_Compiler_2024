@@ -176,25 +176,19 @@ public class Traverser {
         }
     }
 
-    private void visitNewScopeStmt(Stmt stmt) {
-        symbols.newScope();
-        visitStmt(stmt);
-        symbols.exitScope();
-    }
-
     private void visitStmt(Stmt stmt) {
         switch (stmt.getType()) {
             case If -> {
                 visitCond(((StmtIf) stmt).getCondition());
-                visitNewScopeStmt(((StmtIf) stmt).getThenStmt());
-                Optional.ofNullable(((StmtIf) stmt).getElseStmt()).ifPresent(this::visitNewScopeStmt);
+                visitStmt(((StmtIf) stmt).getThenStmt());
+                Optional.ofNullable(((StmtIf) stmt).getElseStmt()).ifPresent(this::visitStmt);
             }
             case For -> {
                 loopDepth++;
                 Optional.ofNullable(((StmtFor) stmt).getInit()).ifPresent(this::visitForStmt);
                 Optional.ofNullable(((StmtFor) stmt).getCondition()).ifPresent(this::visitCond);
                 Optional.ofNullable(((StmtFor) stmt).getUpdate()).ifPresent(this::visitForStmt);
-                visitNewScopeStmt(((StmtFor) stmt).getBody());
+                visitStmt(((StmtFor) stmt).getBody());
                 loopDepth--;
             }
             case GetInt -> visitLeftValue(((StmtGetInt) stmt).getLeft());
@@ -225,7 +219,11 @@ public class Traverser {
                 );
                 visitExpr(((StmtAssign) stmt).getRight());
             }
-            case Block -> visitBlock(((StmtBlock) stmt).getBlock());
+            case Block -> {
+                symbols.newScope();
+                visitBlock(((StmtBlock) stmt).getBlock());
+                symbols.exitScope();
+            }
             case Break -> {
                 if (loopDepth == 0) {
                     errors.add(ErrorType.InvalidLoopControl, ((StmtBreak) stmt).getToken().location());

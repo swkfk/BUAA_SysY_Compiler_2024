@@ -16,6 +16,7 @@ final public class SymbolTable {
     private final Map<String, SymbolVariable> allVariables;
     private final Map<String, SymbolFunction> allFunctions;
     private final Stack<Map<String, SymbolVariable>> stack;
+    private final Stack<Integer> stackOfScopeId;
 
     private final List<Symbol> outputList = new ArrayList<>();
 
@@ -25,15 +26,20 @@ final public class SymbolTable {
         stack = new Stack<>() {{
             push(new HashMap<>()); // Global scope
         }};
+        stackOfScopeId = new Stack<>() {{
+            push(1); // Global scope
+        }};
     }
 
     public void newScope() {
         counter++;
         stack.push(new HashMap<>());
+        stackOfScopeId.push(counter);
     }
 
     public void exitScope() {
         stack.pop();
+        stackOfScopeId.pop();
     }
 
     @SuppressWarnings("SpellCheckingInspection")
@@ -52,7 +58,7 @@ final public class SymbolTable {
         if (stack.peek().containsKey(name) || allFunctions.containsKey(name) || bumpKeepIdentifier(name) ) {
             return null;
         }
-        SymbolVariable variable = new SymbolVariable(name, type, stack.size() == 1, counter);
+        SymbolVariable variable = new SymbolVariable(name, type, stack.size() == 1, stackOfScopeId.peek());
         allVariables.put(name, variable);
         stack.peek().put(name, variable);
         outputList.add(variable);
@@ -79,7 +85,7 @@ final public class SymbolTable {
         if (allFunctions.containsKey(name) || getVariable(name) != null || bumpKeepIdentifier(name)) {
             return null;
         }
-        SymbolFunction function = new SymbolFunction(name, SymbolType.from(type), counter);
+        SymbolFunction function = new SymbolFunction(name, SymbolType.from(type), stackOfScopeId.peek());
         allFunctions.put(name, function);
         outputList.add(function);
         return function;
