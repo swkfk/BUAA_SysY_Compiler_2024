@@ -55,4 +55,8 @@ final public class FuncFormalParam extends ASTNode {
     public SymbolVariable getSymbol() {
         return symbol;
     }
+
+    public BasicType getType() {
+        return type;
+    }
 }

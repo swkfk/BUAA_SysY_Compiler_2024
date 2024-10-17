@@ -74,7 +74,7 @@ public class Traverser {
     public void spawn() {
         ast.getDeclarations().forEach(this::registerDecl);
         for (FuncDef func : ast.getFunctions()) {
-            SymbolFunction symbolFunc = symbols.addFunction( func.getIdentifier().value(), func.getType());
+            SymbolFunction symbolFunc = symbols.addFunction(func.getIdentifier().value(), func.getType());
             if (symbolFunc == null) {
                 errors.add(ErrorType.DuplicatedDeclaration, func.getIdentifier().location());
                 continue;
@@ -84,7 +84,7 @@ public class Traverser {
             symbols.newScope();
             for (FuncFormalParam param : func.getParams()) {
                 SymbolVariable symbolParam = symbols.addParameter(
-                    symbolFunc, param.getIdentifier().value(), TyArray.from(param.getIndices())
+                    symbolFunc, param.getIdentifier().value(), TyArray.from(param.getType().into(), param.getIndices())
                 );
                 if (symbolParam == null) {
                     errors.add(ErrorType.DuplicatedDeclaration, param.getIdentifier().location());
@@ -93,7 +93,7 @@ public class Traverser {
                 }
             }
             returnIntFound = false;
-            notAllowIntReturn = !func.getType().is(FuncType.Type.Int);
+            notAllowIntReturn = !func.getType().is(FuncType.Type.Int) && !func.getType().is(FuncType.Type.Char);
             visitBlock(func.getBody());
             if (!returnIntFound && !func.getType().is(FuncType.Type.Void)) {
                 errors.add(ErrorType.MissingReturnStatement, func.getBody().getEndToken().location());
@@ -115,7 +115,7 @@ public class Traverser {
             ConstDecl constDecl = (ConstDecl) decl.getDeclaration();
             for (ConstDef def : constDecl.getDefs()) {
                 def.getIndices().forEach(this::visitExprConst);
-                SymbolType ty = TyArray.from(def.getIndices());
+                SymbolType ty = TyArray.from(constDecl.getType().into(), def.getIndices());
                 ty.setConst();
                 SymbolVariable symbol = symbols.addVariable(def.getIdentifier().value(), ty);
                 if (symbol == null) {
@@ -138,7 +138,7 @@ public class Traverser {
             VarDecl varDecl = (VarDecl) decl.getDeclaration();
             for (VarDef def : varDecl.getDefs()) {
                 def.getIndices().forEach(this::visitExprConst);
-                SymbolType ty = TyArray.from(def.getIndices());
+                SymbolType ty = TyArray.from(varDecl.getType().into(), def.getIndices());
                 SymbolVariable symbol = symbols.addVariable(def.getIdentifier().value(), ty);
                 if (symbol == null) {
                     errors.add(ErrorType.DuplicatedDeclaration, def.getIdentifier().location());
@@ -276,17 +276,19 @@ public class Traverser {
         if (init == null) {
             return;
         }
-        if (init.getExpr() == null) {
+        if (init.getSubInitializers() != null) {
             init.getSubInitializers().forEach(this::visitVarInitValue);
-        } else {
+        }
+        if (init.getExpr() != null) {
             visitExpr(init.getExpr());
         }
     }
 
     private void visitConstInitValue(ConstInitValue init) {
-        if (init.getExpr() == null) {
+        if (init.getSubInitializers() != null) {
             init.getSubInitializers().forEach(this::visitConstInitValue);
-        } else {
+        }
+        if (init.getExpr() != null) {
             visitExprConst(init.getExpr());
         }
     }
@@ -327,7 +329,7 @@ public class Traverser {
                     for (int i = 0; i < call.getParams().size(); i++) {
                         SymbolType fType = call.getSymbol().getParameters().get(i).getType();
                         SymbolType rType = call.getParams().get(i).calculateType();
-                        if (!fType.equals(rType)) {
+                        if (!fType.compatible(rType)) {
                             errors.add(ErrorType.MismatchedParameterType, call.getIdentifier().location());
                         }
                     }

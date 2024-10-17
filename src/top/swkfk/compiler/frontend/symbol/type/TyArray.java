@@ -37,11 +37,10 @@ final public class TyArray extends SymbolType {
 
     /**
      * Create an array or a basic i32 type from a list of indices.
-     * @param indices The list of indices, empty means a basic i32 type.
+     * @param indices The list of indices, empty means a basic type.
      * @return The created type.
      */
-    public static SymbolType from(List<ExprConst> indices) {
-        SymbolType base = Ty.I32;
+    public static SymbolType from(SymbolType base, List<ExprConst> indices) {
         for (int i = indices.size() - 1; i >= 0; i--) {
             if (indices.get(i) == null) {
                 base = new TyPtr(base);

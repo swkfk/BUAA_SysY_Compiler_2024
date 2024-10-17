@@ -27,4 +27,8 @@ final public class VarDecl extends ASTNode {
     protected String getName() {
         return "<VarDecl>";
     }
+
+    public BasicType getType() {
+        return type;
+    }
 }

@@ -81,6 +81,7 @@ final public class SymbolTable {
         }
         SymbolFunction function = new SymbolFunction(name, SymbolType.from(type), counter);
         allFunctions.put(name, function);
+        outputList.add(function);
         return function;
     }
 

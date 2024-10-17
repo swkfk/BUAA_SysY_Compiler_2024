@@ -27,9 +27,9 @@ abstract public class SymbolType {
     }
 
     public static String getDisplayString(SymbolType type) {
-        if (type.is("int")) {
+        if (type.is("i32")) {
             return "Int";
-        } else if (type.is("char")) {
+        } else if (type.is("i8")) {
             return "Char";
         } else if (type.is("array")) {
             return getDisplayString(((TyArray) type).getBase()) + "Array";
@@ -40,5 +40,9 @@ abstract public class SymbolType {
         } else {
             throw new RuntimeException("Unknown type: " + type);
         }
+    }
+
+    public boolean compatible(SymbolType other) {
+        return this.equals(other) || (this.is("int") && other.is("int"));
     }
 }

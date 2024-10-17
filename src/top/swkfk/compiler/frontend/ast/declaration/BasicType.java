@@ -1,6 +1,8 @@
 package top.swkfk.compiler.frontend.ast.declaration;
 
 import top.swkfk.compiler.frontend.ast.ASTNode;
+import top.swkfk.compiler.frontend.symbol.type.SymbolType;
+import top.swkfk.compiler.frontend.symbol.type.Ty;
 import top.swkfk.compiler.frontend.token.TokenType;
 
 final public class BasicType extends ASTNode {
@@ -10,7 +12,7 @@ final public class BasicType extends ASTNode {
 
     private final Type type;
 
-    public BasicType(Type type) {
+    private BasicType(Type type) {
         this.type = type;
     }
 
@@ -19,6 +21,13 @@ final public class BasicType extends ASTNode {
             case Int -> new BasicType(Type.Int);
             case Char -> new BasicType(Type.Char);
             default -> throw new IllegalStateException("Unexpected value: " + type);
+        };
+    }
+
+    public SymbolType into() {
+        return switch (type) {
+            case Int -> Ty.I32;
+            case Char -> Ty.I8;
         };
     }
 
