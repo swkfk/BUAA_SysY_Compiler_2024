@@ -29,7 +29,10 @@ final public class StmtPrintf extends Stmt {
     public int getFormatArgCount() {
         int c = 0;
         for (int i = 0; i < format.length(); i++) {
-            if (format.charAt(i) == '%') {
+            if (format.charAt(i) == '%' &&
+                i + 1 < format.length() &&
+                (format.charAt(i + 1) == 'd' || format.charAt(i + 1) == 'c')
+            ) {
                 c++;
             }
         }
