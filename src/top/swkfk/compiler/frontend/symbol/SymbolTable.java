@@ -71,7 +71,9 @@ final public class SymbolTable {
      * @return The variable if found, null otherwise
      */
     public SymbolVariable getVariable(String name) {
-        for (Map<String, SymbolVariable> variables : stack) {
+        var iter = stack.listIterator(stack.size());
+        while (iter.hasPrevious()) {
+            var variables = iter.previous();
             if (variables.containsKey(name)) {
                 SymbolVariable var = variables.get(name);
                 assert var.getName().equals(name) : "Inconsistent variable name for `" + name + "`";

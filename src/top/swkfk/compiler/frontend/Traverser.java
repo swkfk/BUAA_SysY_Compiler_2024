@@ -38,6 +38,7 @@ import top.swkfk.compiler.frontend.ast.statement.StmtBreak;
 import top.swkfk.compiler.frontend.ast.statement.StmtContinue;
 import top.swkfk.compiler.frontend.ast.statement.StmtExpr;
 import top.swkfk.compiler.frontend.ast.statement.StmtFor;
+import top.swkfk.compiler.frontend.ast.statement.StmtGetChar;
 import top.swkfk.compiler.frontend.ast.statement.StmtGetInt;
 import top.swkfk.compiler.frontend.ast.statement.StmtIf;
 import top.swkfk.compiler.frontend.ast.statement.StmtPrintf;
@@ -48,9 +49,7 @@ import top.swkfk.compiler.frontend.symbol.SymbolFunction;
 import top.swkfk.compiler.frontend.symbol.SymbolTable;
 import top.swkfk.compiler.frontend.symbol.SymbolVariable;
 import top.swkfk.compiler.frontend.symbol.type.SymbolType;
-import top.swkfk.compiler.frontend.symbol.type.Ty;
 import top.swkfk.compiler.frontend.symbol.type.TyArray;
-import top.swkfk.compiler.frontend.symbol.type.TyPtr;
 
 import java.util.LinkedList;
 import java.util.Optional;
@@ -178,6 +177,21 @@ public class Traverser {
         }
     }
 
+    /**
+     * Visit the left value in the assignment-like statement. It will check the const-assign error.
+     * @param left The left value to visit
+     */
+    private void visitAssignLikeLeftValue(LeftValue left) {
+        visitLeftValue(left);
+        Optional.ofNullable(left.getSymbol()).ifPresent(
+            symbol -> {
+                if (symbol.isConst()) {
+                    errors.add(ErrorType.AssignToConstant, left.getIdentifier().location());
+                }
+            }
+        );
+    }
+
     private void visitStmt(Stmt stmt) {
         boolean localReturnIntFound = false;  // Just find the final stmt to find the int return value
         switch (stmt.getType()) {
@@ -194,7 +208,8 @@ public class Traverser {
                 visitStmt(((StmtFor) stmt).getBody());
                 loopDepth--;
             }
-            case GetInt -> visitLeftValue(((StmtGetInt) stmt).getLeft());
+            case GetInt -> visitAssignLikeLeftValue(((StmtGetInt) stmt).getLeft());
+            case GetChar -> visitAssignLikeLeftValue(((StmtGetChar) stmt).getLeft());
             case Printf -> {
                 if (((StmtPrintf) stmt).getArgs().size() != ((StmtPrintf) stmt).getFormatArgCount()) {
                     errors.add(ErrorType.MismatchedFormatArgument, ((StmtPrintf) stmt).getToken().location());
@@ -213,14 +228,7 @@ public class Traverser {
             case Expr ->
                 Optional.ofNullable(((StmtExpr) stmt).getExpr()).ifPresent(this::visitExpr);
             case Assign -> {
-                visitLeftValue(((StmtAssign) stmt).getLeft());
-                Optional.ofNullable(((StmtAssign) stmt).getLeft().getSymbol()).ifPresent(
-                    symbol -> {
-                        if (symbol.isConst()) {
-                            errors.add(ErrorType.AssignToConstant, ((StmtAssign) stmt).getLeft().getIdentifier().location());
-                        }
-                    }
-                );
+                visitAssignLikeLeftValue(((StmtAssign) stmt).getLeft());
                 visitExpr(((StmtAssign) stmt).getRight());
             }
             case Block -> {
@@ -243,7 +251,7 @@ public class Traverser {
     }
 
     private void visitForStmt(ForStmt forStmt) {
-        visitLeftValue(forStmt.getLeft());
+        visitAssignLikeLeftValue(forStmt.getLeft());
         visitExpr(forStmt.getRight());
     }
 
