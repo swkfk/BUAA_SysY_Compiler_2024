@@ -125,6 +125,7 @@ public class Traverser {
                     visitConstInitValue(def.getInitial());
                     try {
                         if (def.getIndices().isEmpty()) {
+                            // It is impossible that the def.getInitial() is null
                             symbol.setConstantValue(new FixedValue(def.getInitial().getExpr().calculate()));
                         } else {
                             symbol.setConstantValue(FixedArray.from(((TyArray) ty).getIndices(), def.getInitial()));
@@ -149,9 +150,18 @@ public class Traverser {
                         // It is certain that the VarInitValue in global scope shall be a ConstInitValue
                         if (symbol.isGlobal()) {
                             if (def.getIndices().isEmpty()) {
-                                symbol.setConstantValue(new FixedValue(def.getInitial().getExpr().calculateConst()));
+                                VarInitValue init = def.getInitial();
+                                if (init == null) {
+                                    symbol.setConstantValue(new FixedValue(0));
+                                } else {
+                                    symbol.setConstantValue(new FixedValue(
+                                        init.getExpr().calculateConst()
+                                    ));
+                                }
                             } else {
-                                symbol.setConstantValue(FixedArray.from(((TyArray) ty).getIndices(), def.getInitial().into()));
+                                symbol.setConstantValue(
+                                    FixedArray.from(((TyArray) ty).getIndices(), def.getInitial().into())
+                                );
                             }
                         }
                     } catch (Exception e) {
