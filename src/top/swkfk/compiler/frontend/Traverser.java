@@ -126,9 +126,9 @@ public class Traverser {
                     try {
                         if (def.getIndices().isEmpty()) {
                             // It is impossible that the def.getInitial() is null
-                            symbol.setConstantValue(new FixedValue(def.getInitial().getExpr().calculate()));
+                            symbol.setConstantValue(new FixedValue(def.getInitial().getExpr().calculate(), ty));
                         } else {
-                            symbol.setConstantValue(FixedArray.from(((TyArray) ty).getIndices(), def.getInitial()));
+                            symbol.setConstantValue(FixedArray.from(((TyArray) ty).getIndices(), def.getInitial(), ty.getFinalBaseType()));
                         }
                     } catch (Exception e) {
                         // Ignore the error, it will be reported by the error handler
@@ -152,15 +152,15 @@ public class Traverser {
                             if (def.getIndices().isEmpty()) {
                                 VarInitValue init = def.getInitial();
                                 if (init == null) {
-                                    symbol.setConstantValue(new FixedValue(0));
+                                    symbol.setConstantValue(new FixedValue(0, ty));
                                 } else {
                                     symbol.setConstantValue(new FixedValue(
-                                        init.getExpr().calculateConst()
+                                        init.getExpr().calculateConst(), ty
                                     ));
                                 }
                             } else {
                                 symbol.setConstantValue(
-                                    FixedArray.from(((TyArray) ty).getIndices(), def.getInitial().into())
+                                    FixedArray.from(((TyArray) ty).getIndices(), def.getInitial().into(), ty.getFinalBaseType())
                                 );
                             }
                         }

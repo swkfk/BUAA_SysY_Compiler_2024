@@ -45,6 +45,10 @@ final public class ConstInitValue extends ASTNode {
         return subInitializers;
     }
 
+    public String getStringConst() {
+        return stringConst;
+    }
+
     public void addSubInitializer(ConstInitValue subInitializer) {
         assert subInitializers != null : "Only sub-initializer can add a sub-initializer.";
         subInitializers.add(subInitializer);

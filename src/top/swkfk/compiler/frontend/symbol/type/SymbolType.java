@@ -39,4 +39,14 @@ abstract public class SymbolType {
     public boolean compatible(SymbolType other) {
         return this.equals(other) || (this.is("int") && other.is("int"));
     }
+
+    public SymbolType getFinalBaseType() {
+        if (this.is("array")) {
+            return ((TyArray) this).getBase().getFinalBaseType();
+        } else if (this.is("ptr")) {
+            return ((TyPtr) this).getBase().getFinalBaseType();
+        } else {
+            return this;
+        }
+    }
 }

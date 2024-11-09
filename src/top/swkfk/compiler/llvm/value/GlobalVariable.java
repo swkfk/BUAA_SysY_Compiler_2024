@@ -63,7 +63,7 @@ final public class GlobalVariable extends Value {
         StringBuilder sb = new StringBuilder();
         sb.append("@").append(getName()).append(" = dso_local global ");
         if (initializer.isLeft()) {
-            sb.append(getType()).append(" ").append(initializer.getLeft());
+            sb.append(initializer.getLeft());
         } else {
             sb.append(ArrayInitialString.into(getType(), initializer.getRight()));
         }

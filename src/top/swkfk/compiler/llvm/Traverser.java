@@ -40,6 +40,7 @@ import top.swkfk.compiler.frontend.ast.statement.StmtPrintf;
 import top.swkfk.compiler.frontend.ast.statement.StmtReturn;
 import top.swkfk.compiler.frontend.symbol.SymbolTable;
 import top.swkfk.compiler.frontend.symbol.type.SymbolType;
+import top.swkfk.compiler.frontend.symbol.type.Ty;
 import top.swkfk.compiler.frontend.symbol.type.TyArray;
 import top.swkfk.compiler.frontend.symbol.type.TyPtr;
 import top.swkfk.compiler.helpers.LoopStorage;
@@ -189,7 +190,7 @@ class Traverser {
         return switch (expr.getType()) {
             case Number -> new ConstInteger(((Number) expr.getValue()).getValue());
             case Expr -> visitExpr((Expr) expr.getValue());
-            case Character -> new ConstInteger(((Char) expr.getValue()).getValue());
+            case Character -> new ConstInteger(((Char) expr.getValue()).getValue(), Ty.I8);
             case LVal -> {
                 LeftValue lVal = (LeftValue) expr.getValue();
                 if (lVal.getIndices().isEmpty()) {

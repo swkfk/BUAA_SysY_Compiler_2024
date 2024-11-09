@@ -23,7 +23,7 @@ final public class ArrayInitialString {
         StringBuilder sb = new StringBuilder();
         if (!ty.is("array")) {
             if (init.getOrDefault(start, ConstInteger.zero).equals(ConstInteger.zero)) {
-                return new Pair<>("i32 0", true);
+                return new Pair<>(ty.getFinalBaseType() + " 0", true);
             } else {
                 return new Pair<>(init.get(start).toString(), false);
             }
@@ -37,7 +37,7 @@ final public class ArrayInitialString {
 
         innerBuilder.append("[");
         for (int i = 0; i < tyArray.getLength(); i++) {
-            Pair<String, Boolean> res = work(tyBase, init, start + i * tyBase.sizeof() / Ty.I32.sizeof());
+            Pair<String, Boolean> res = work(tyBase, init, start + i * tyBase.sizeof() / ty.getFinalBaseType().sizeof());
             innerBuilder.append(res.first());
             if (i != tyArray.getLength() - 1) {
                 innerBuilder.append(", ");

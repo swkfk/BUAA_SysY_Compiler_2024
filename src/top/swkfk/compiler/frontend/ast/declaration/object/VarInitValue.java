@@ -65,14 +65,16 @@ final public class VarInitValue extends ASTNode {
     }
 
     public ConstInitValue into() {
-        if (type == Type.Initializer) {
-            return new ConstInitValue(new ExprConst(Objects.requireNonNull(expr).getExpr()));
-        } else {
-            ConstInitValue subInitVals = new ConstInitValue();
-            for (VarInitValue subInit : Objects.requireNonNull(subInitializers)) {
-                subInitVals.addSubInitializer(subInit.into());
+        return switch (type) {
+            case Initializer -> new ConstInitValue(new ExprConst(Objects.requireNonNull(expr).getExpr()));
+            case SubInitializer -> {
+                ConstInitValue subInitVals = new ConstInitValue();
+                for (VarInitValue subInit : Objects.requireNonNull(subInitializers)) {
+                    subInitVals.addSubInitializer(subInit.into());
+                }
+                yield subInitVals;
             }
-            return subInitVals;
-        }
+            case StringConst -> new ConstInitValue(stringConst);
+        };
     }
 }
