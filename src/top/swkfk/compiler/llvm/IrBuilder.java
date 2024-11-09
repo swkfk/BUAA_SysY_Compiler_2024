@@ -71,7 +71,10 @@ public class IrBuilder {
         for (Decl decl : traverser.getGlobalVariables()) {
             if (decl.getType().equals(Decl.Type.Const)) {
                 globalVariables.addAll(((ConstDecl) decl.getDeclaration()).getDefs().stream().map(
-                    GlobalVariable::from
+                    def -> {
+                        traverser.markGlobalVars(def);
+                        return GlobalVariable.from(def);
+                    }
                 ).toList());
             } else {
                 globalVariables.addAll(((VarDecl) decl.getDeclaration()).getDefs().stream().map(

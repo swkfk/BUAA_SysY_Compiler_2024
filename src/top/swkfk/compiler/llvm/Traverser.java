@@ -91,6 +91,10 @@ class Traverser {
         def.getSymbol().setValue(new Value("@" + def.getSymbol().getName(), new TyPtr(def.getSymbol().getType())));
     }
 
+    void markGlobalVars(ConstDef def) {
+        def.getSymbol().setValue(new Value("@" + def.getSymbol().getName(), new TyPtr(def.getSymbol().getType())));
+    }
+
     void visitFunction(FuncDef funcDef) {
         builder.registerFunction(
             funcDef.getSymbol().getName(), funcDef.getSymbol().getType(), funcDef.getParams()
