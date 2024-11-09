@@ -43,6 +43,7 @@ import top.swkfk.compiler.frontend.symbol.type.SymbolType;
 import top.swkfk.compiler.frontend.symbol.type.Ty;
 import top.swkfk.compiler.frontend.symbol.type.TyArray;
 import top.swkfk.compiler.frontend.symbol.type.TyPtr;
+import top.swkfk.compiler.helpers.Compatibility;
 import top.swkfk.compiler.helpers.LoopStorage;
 import top.swkfk.compiler.llvm.value.BasicBlock;
 import top.swkfk.compiler.llvm.value.Value;
@@ -73,6 +74,7 @@ class Traverser {
     Traverser(CompileUnit ast, IrBuilder builder) {
         this.ast = ast;
         this.builder = builder;
+        Compatibility.setBuilder(builder::insertInstruction);
     }
 
     List<Decl> getGlobalVariables() {
@@ -281,13 +283,13 @@ class Traverser {
 
     Value visitCondAnd(CondAnd and) {
         return and.getCondEquList().stream().map(this::visitCondEqu).reduce(
-            (a, b) -> builder.insertInstruction(new IBinary(BinaryOp.AND, a, b))
+            (a, b) -> builder.insertInstruction(new IBinary(BinaryOp.AND, Compatibility.unityIntoBoolean(a, b)))
         ).orElse(ConstInteger.logicOne);
     }
 
     Value visitCondOr(CondOr or) {
         return or.getCondAndList().stream().map(this::visitCondAnd).reduce(
-            (a, b) -> builder.insertInstruction(new IBinary(BinaryOp.OR, a, b))
+            (a, b) -> builder.insertInstruction(new IBinary(BinaryOp.OR, Compatibility.unityIntoBoolean(a, b)))
         ).orElse(ConstInteger.logicZero);
     }
 

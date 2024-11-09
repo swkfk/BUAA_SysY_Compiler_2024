@@ -7,6 +7,10 @@ final public class IBinary extends User {
 
     private final BinaryOp opcode;
 
+    public IBinary(BinaryOp opcode, Value[] operands) {
+        this(opcode, operands[0], operands[1]);
+    }
+
     public IBinary(BinaryOp opcode, Value lhs, Value rhs) {
         super("%" + Value.counter.get(), lhs.getType());
         assert lhs.getType() == rhs.getType() : "The type of lhs and rhs should be the same";
