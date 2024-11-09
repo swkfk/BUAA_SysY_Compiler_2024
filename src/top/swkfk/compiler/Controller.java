@@ -55,7 +55,7 @@ public class Controller {
 
         // 4. Intermediate code generation
         IrModule module = new IrBuilder(ast).build().emit();
-        if (HomeworkConfig.hw == HomeworkConfig.Hw.Codegen) {
+        if (HomeworkConfig.hw == HomeworkConfig.Hw.CodegenI) {
             try (FileWriter writer = new FileWriter(Configure.target)) {
                 writer.write(module.toString());
             }

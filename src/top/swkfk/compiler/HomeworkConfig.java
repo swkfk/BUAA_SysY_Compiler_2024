@@ -2,10 +2,10 @@ package top.swkfk.compiler;
 
 public class HomeworkConfig {
     public enum Hw {
-        Lexer, Syntax, Semantic, Codegen
+        Lexer, Syntax, Semantic, CodegenI, CodegenII
     }
 
-    public static Hw hw = Hw.Semantic;
+    public static Hw hw = Hw.CodegenI;
     //  Modify this  ^^  to change the homework  //
 
     public static String getTarget() {
@@ -13,7 +13,8 @@ public class HomeworkConfig {
             case Lexer -> "lexer.txt";
             case Syntax -> "parser.txt";
             case Semantic -> "symbol.txt";
-            case Codegen -> "mips.txt";
+            case CodegenI -> "llvm_ir.txt";
+            case CodegenII -> "mips.txt";
         };
     }
 }
