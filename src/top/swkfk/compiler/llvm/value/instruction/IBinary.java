@@ -23,6 +23,6 @@ final public class IBinary extends User {
     @Override
     public String toLLVM() {
         return getName() + " = " + opcode.getOpcode() + " " + getType() + " " +
-            getOperand(0) + ", " + getOperand(1);
+            getOperand(0).getName() + ", " + getOperand(1).getName();
     }
 }

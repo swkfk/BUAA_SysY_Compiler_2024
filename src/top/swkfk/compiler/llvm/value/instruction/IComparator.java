@@ -19,7 +19,7 @@ final public class IComparator extends User {
 
     @Override
     public String toLLVM() {
-        return getName() + " = " + opcode.getOpcode() + " " + getType() + " " +
-            getOperand(0) + ", " + getOperand(1);
+        return getName() + " = " + opcode.getOpcode() + " " + getOperand(0).getType() + " " +
+            getOperand(0).getName() + ", " + getOperand(1).getName();
     }
 }
