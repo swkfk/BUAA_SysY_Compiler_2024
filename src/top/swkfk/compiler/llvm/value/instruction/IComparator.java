@@ -8,6 +8,10 @@ final public class IComparator extends User {
 
     private final BinaryOp opcode;
 
+    public IComparator(BinaryOp opcode, Value[] operands) {
+        this(opcode, operands[0], operands[1]);
+    }
+
     public IComparator(BinaryOp opcode, Value lhs, Value rhs) {
         super("%" + Value.counter.get(), Ty.I1);
         assert lhs.getType() == rhs.getType() : "The type of lhs and rhs should be the same";
