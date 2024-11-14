@@ -34,6 +34,7 @@ import top.swkfk.compiler.frontend.ast.statement.StmtAssign;
 import top.swkfk.compiler.frontend.ast.statement.StmtBlock;
 import top.swkfk.compiler.frontend.ast.statement.StmtExpr;
 import top.swkfk.compiler.frontend.ast.statement.StmtFor;
+import top.swkfk.compiler.frontend.ast.statement.StmtGetChar;
 import top.swkfk.compiler.frontend.ast.statement.StmtGetInt;
 import top.swkfk.compiler.frontend.ast.statement.StmtIf;
 import top.swkfk.compiler.frontend.ast.statement.StmtPrintf;
@@ -451,7 +452,9 @@ class Traverser {
                     if (format.charAt(i) == '%' && i < format.length() - 1 && "dc".indexOf(format.charAt(i + 1)) >= 0) {
                         String function = format.charAt(i + 1) == 'd' ? "putint" : "putch";
                         builder.insertInstruction(
-                            new ICall(builder.getExternalFunction(function), List.of(args.next()))
+                            new ICall(builder.getExternalFunction(function), List.of(
+                                Compatibility.unityIntoInteger(args.next())
+                            ))
                         );
                         i++;
                     } else {
@@ -464,6 +467,11 @@ class Traverser {
             case GetInt -> performAssign(((StmtGetInt) stmt).getLeft(), builder.insertInstruction(
                 new ICall(builder.getExternalFunction("getint"), List.of())
             ));
+            case GetChar -> performAssign(((StmtGetChar) stmt).getLeft(),
+                Compatibility.unityIntoInteger(Ty.I8, builder.insertInstruction(
+                    new ICall(builder.getExternalFunction("getchar"), List.of())
+                ))[0]
+            );
             case Expr -> Optional.ofNullable(((StmtExpr) stmt).getExpr()).ifPresent(this::visitExpr);
         }
     }

@@ -38,6 +38,7 @@ public class IrBuilder {
     @SuppressWarnings("SpellCheckingInspection")
     private final static Map<String, SymbolFunction> externalFunctions = Map.of(
         "getint", new SymbolFunction("getint", Ty.I32, -1),
+        "getchar", new SymbolFunction("getchar", Ty.I32, -1),
         "putint", new SymbolFunction("putint", Ty.Void, -1) {{
             addParameter(new SymbolVariable("_1_i32", Ty.I32, false, -1));
         }},
