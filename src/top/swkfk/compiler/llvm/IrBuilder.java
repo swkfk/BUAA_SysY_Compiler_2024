@@ -156,7 +156,15 @@ public class IrBuilder {
     }
 
     User insertInstruction(BasicBlock block, User instruction) {
+        // Create a new block will add a direct jump instruction to the old block if there
+        // is no terminator in it. But sometimes, we need to insert a terminator instruction
+        // after create a new block. So we need to check if the last instruction is a terminator.
+        // If it is, we should remove it and add the new terminator instruction.
         if (block.getLastInstruction() instanceof ITerminator) {
+            if (instruction instanceof ITerminator) {
+                block.removeLastInstruction();
+                block.addInstruction(instruction);
+            }
             return instruction;
         }
         block.addInstruction(instruction);
