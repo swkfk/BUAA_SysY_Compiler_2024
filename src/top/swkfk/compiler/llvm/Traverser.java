@@ -61,11 +61,9 @@ import top.swkfk.compiler.llvm.value.instruction.IReturn;
 import top.swkfk.compiler.llvm.value.instruction.IStore;
 import top.swkfk.compiler.llvm.value.instruction.ITerminator;
 
-import java.util.Arrays;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.Stack;
 
@@ -157,8 +155,8 @@ class Traverser {
         for (int i = 0; i < expr.getOps().size(); i++) {
             Value right = visitMulExpr(expr.getRights().get(i));
             switch (expr.getOps().get(i)) {
-                case ADD -> now = builder.insertInstruction(new IBinary(BinaryOp.ADD, Compatibility.unityIntoI32(now, right)));
-                case SUB -> now = builder.insertInstruction(new IBinary(BinaryOp.SUB, Compatibility.unityIntoI32(now, right)));
+                case ADD -> now = builder.insertInstruction(new IBinary(BinaryOp.ADD, Compatibility.unityIntoInteger(now, right)));
+                case SUB -> now = builder.insertInstruction(new IBinary(BinaryOp.SUB, Compatibility.unityIntoInteger(now, right)));
             }
         }
         return now;
@@ -169,9 +167,9 @@ class Traverser {
         for (int i = 0; i < expr.getOps().size(); i++) {
             Value right = visitUnaryExpr(expr.getRights().get(i));
             switch (expr.getOps().get(i)) {
-                case MUL -> now = builder.insertInstruction(new IBinary(BinaryOp.MUL, Compatibility.unityIntoI32(now, right)));
-                case DIV -> now = builder.insertInstruction(new IBinary(BinaryOp.DIV, Compatibility.unityIntoI32(now, right)));
-                case MOD -> now = builder.insertInstruction(new IBinary(BinaryOp.MOD, Compatibility.unityIntoI32(now, right)));
+                case MUL -> now = builder.insertInstruction(new IBinary(BinaryOp.MUL, Compatibility.unityIntoInteger(now, right)));
+                case DIV -> now = builder.insertInstruction(new IBinary(BinaryOp.DIV, Compatibility.unityIntoInteger(now, right)));
+                case MOD -> now = builder.insertInstruction(new IBinary(BinaryOp.MOD, Compatibility.unityIntoInteger(now, right)));
             }
         }
         return now;
@@ -184,7 +182,7 @@ class Traverser {
                 Value value = visitUnaryExpr(unary.getExpr());
                 yield switch (unary.getOp()) {
                     case Plus -> value;
-                    case Minus -> builder.insertInstruction(new IBinary(BinaryOp.SUB, ConstInteger.zero, Compatibility.unityIntoI32(value)[0]));
+                    case Minus -> builder.insertInstruction(new IBinary(BinaryOp.SUB, ConstInteger.zero, Compatibility.unityIntoInteger(value)[0]));
                     case Not -> Compatibility.unityIntoBoolean(
                         builder.insertInstruction(new IBinary(BinaryOp.XOR, new ConstInteger(1, value.getType()), value))
                     )[0];
@@ -263,10 +261,10 @@ class Traverser {
         for (int i = 0; i < rel.getOps().size(); i++) {
             Value right = visitAddExpr(rel.getRights().get(i));
             switch (rel.getOps().get(i)) {
-                case Lt -> ret = builder.insertInstruction(new IComparator(BinaryOp.Lt, Compatibility.unityIntoI32(ret, right)));
-                case Gt -> ret = builder.insertInstruction(new IComparator(BinaryOp.Gt, Compatibility.unityIntoI32(ret, right)));
-                case Le -> ret = builder.insertInstruction(new IComparator(BinaryOp.Le, Compatibility.unityIntoI32(ret, right)));
-                case Ge -> ret = builder.insertInstruction(new IComparator(BinaryOp.Ge, Compatibility.unityIntoI32(ret, right)));
+                case Lt -> ret = builder.insertInstruction(new IComparator(BinaryOp.Lt, Compatibility.unityIntoInteger(ret, right)));
+                case Gt -> ret = builder.insertInstruction(new IComparator(BinaryOp.Gt, Compatibility.unityIntoInteger(ret, right)));
+                case Le -> ret = builder.insertInstruction(new IComparator(BinaryOp.Le, Compatibility.unityIntoInteger(ret, right)));
+                case Ge -> ret = builder.insertInstruction(new IComparator(BinaryOp.Ge, Compatibility.unityIntoInteger(ret, right)));
             }
         }
         return ret;
@@ -277,8 +275,8 @@ class Traverser {
         for (int i = 0; i < equ.getOps().size(); i++) {
             Value right = visitCondRel(equ.getRights().get(i));
             switch (equ.getOps().get(i)) {
-                case Eq -> ret = builder.insertInstruction(new IComparator(BinaryOp.Eq, Compatibility.unityIntoI32(ret, right)));
-                case Ne -> ret = builder.insertInstruction(new IComparator(BinaryOp.Ne, Compatibility.unityIntoI32(ret, right)));
+                case Eq -> ret = builder.insertInstruction(new IComparator(BinaryOp.Eq, Compatibility.unityIntoInteger(ret, right)));
+                case Ne -> ret = builder.insertInstruction(new IComparator(BinaryOp.Ne, Compatibility.unityIntoInteger(ret, right)));
             }
         }
         return ret;

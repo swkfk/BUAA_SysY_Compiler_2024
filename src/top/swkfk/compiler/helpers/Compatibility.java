@@ -1,5 +1,6 @@
 package top.swkfk.compiler.helpers;
 
+import top.swkfk.compiler.frontend.symbol.type.SymbolType;
 import top.swkfk.compiler.frontend.symbol.type.Ty;
 import top.swkfk.compiler.llvm.value.User;
 import top.swkfk.compiler.llvm.value.Value;
@@ -28,12 +29,16 @@ final public class Compatibility {
         }).toArray(Value[]::new);
     }
 
-    public static Value[] unityIntoI32(Value... values) {
+    public static Value[] unityIntoInteger(Value... values) {
+        return unityIntoInteger(Ty.I32, values);
+    }
+
+    public static Value[] unityIntoInteger(SymbolType target, Value... values) {
         return Stream.of(values).map(value -> {
-            if (value.getType().is("i32")) {
+            if (value.getType().equals(target)) {
                 return value;
             } else {
-                return builder.apply(new IConvert(Ty.I32, value));
+                return builder.apply(new IConvert(target, value));
             }
         }).toArray(Value[]::new);
     }
