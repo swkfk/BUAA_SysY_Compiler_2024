@@ -306,20 +306,20 @@ class Traverser {
             case If -> {
                 Value cond = Compatibility.unityIntoBoolean(visitCond(((StmtIf) stmt).getCondition()))[0];
                 BasicBlock originBlock = builder.getInsertPoint();
-                BasicBlock thenBlock = builder.createBlock();
+                BasicBlock thenBlock = builder.createBlock(false);
                 visitStmt(((StmtIf) stmt).getThenStmt());
                 BasicBlock mergeBlock;
                 if (((StmtIf) stmt).getElseStmt() != null) {
-                    BasicBlock elseBlock = builder.createBlock();
+                    BasicBlock elseBlock = builder.createBlock(false);
                     visitStmt(((StmtIf) stmt).getElseStmt());
-                    mergeBlock = builder.createBlock();
+                    mergeBlock = builder.createBlock(true);
                     builder.insertInstruction(
                         originBlock, new IBranch(cond, thenBlock, elseBlock)
                     );
                     builder.insertInstruction(thenBlock, new IBranch(mergeBlock));
                     builder.insertInstruction(elseBlock, new IBranch(mergeBlock));
                 } else {
-                    mergeBlock = builder.createBlock();
+                    mergeBlock = builder.createBlock(true);
                     builder.insertInstruction(thenBlock, new IBranch(mergeBlock));
                     builder.insertInstruction(
                         originBlock, new IBranch(cond, thenBlock, mergeBlock)
@@ -332,7 +332,7 @@ class Traverser {
                 Optional.ofNullable(forStmt.getInit()).ifPresent(this::visitForStmt);
 
                 // cond
-                BasicBlock condBlock = builder.createBlock();
+                BasicBlock condBlock = builder.createBlock(true);
                 localLoops.add(new LoopStorage(condBlock, new LinkedList<>(), new LinkedList<>()));
                 Value cond;
                 if (forStmt.getCondition() != null) {
@@ -342,7 +342,7 @@ class Traverser {
                 }
 
                 // body
-                BasicBlock bodyBlock = builder.createBlock();
+                BasicBlock bodyBlock = builder.createBlock(false);
                 localLoops.lastElement().breaks().add((IBranch) builder.insertInstruction(
                     condBlock,
                     new IBranch(cond, bodyBlock, null)
@@ -350,14 +350,14 @@ class Traverser {
                 visitStmt(forStmt.getBody());
 
                 // update
-                BasicBlock updateBlock = builder.createBlock();
+                BasicBlock updateBlock = builder.createBlock(true);
                 Optional.ofNullable(forStmt.getUpdate()).ifPresent(this::visitForStmt);
                 builder.insertInstruction(
                     new IBranch(condBlock)
                 );
 
                 // after
-                BasicBlock exitBlock = builder.createBlock();
+                BasicBlock exitBlock = builder.createBlock(false);
 
                 // replace the targets
                 localLoops.lastElement().replaceBreak(exitBlock);

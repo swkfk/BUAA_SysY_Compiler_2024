@@ -137,12 +137,14 @@ public class IrBuilder {
 
     /**
      * Create a new block and add it to the current function. WILL change the insert point.
+     * @param autoFallThroughInto whether to add a branch instruction in the origin
+     *                       insertPoint to jump into the new block
      * @return the new block
      */
-    BasicBlock createBlock() {
+    BasicBlock createBlock(boolean autoFallThroughInto) {
         BasicBlock block = new BasicBlock(currentFunction);
         currentFunction.addBlock(block);
-        if (!(insertPoint.getLastInstruction() instanceof ITerminator)) {
+        if (autoFallThroughInto && !(insertPoint.getLastInstruction() instanceof ITerminator)) {
             insertInstruction(
                 new IBranch(block)
             );
@@ -165,10 +167,6 @@ public class IrBuilder {
         // after create a new block. So we need to check if the last instruction is a terminator.
         // If it is, we should remove it and add the new terminator instruction.
         if (block.getLastInstruction() instanceof ITerminator) {
-            if (instruction instanceof ITerminator) {
-                block.removeLastInstruction();
-                block.addInstruction(instruction);
-            }
             return instruction;
         }
         block.addInstruction(instruction);
