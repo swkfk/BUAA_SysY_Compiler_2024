@@ -308,19 +308,21 @@ class Traverser {
                 BasicBlock originBlock = builder.getInsertPoint();
                 BasicBlock thenBlock = builder.createBlock(false);
                 visitStmt(((StmtIf) stmt).getThenStmt());
+                BasicBlock thenEndBlock = builder.getInsertPoint();
                 BasicBlock mergeBlock;
                 if (((StmtIf) stmt).getElseStmt() != null) {
                     BasicBlock elseBlock = builder.createBlock(false);
                     visitStmt(((StmtIf) stmt).getElseStmt());
-                    mergeBlock = builder.createBlock(true);
+                    BasicBlock elseEndBlock = builder.getInsertPoint();
+                    mergeBlock = builder.createBlock(false);
                     builder.insertInstruction(
                         originBlock, new IBranch(cond, thenBlock, elseBlock)
                     );
-                    builder.insertInstruction(thenBlock, new IBranch(mergeBlock));
-                    builder.insertInstruction(elseBlock, new IBranch(mergeBlock));
+                    builder.insertInstruction(thenEndBlock, new IBranch(mergeBlock));
+                    builder.insertInstruction(elseEndBlock, new IBranch(mergeBlock));
                 } else {
-                    mergeBlock = builder.createBlock(true);
-                    builder.insertInstruction(thenBlock, new IBranch(mergeBlock));
+                    mergeBlock = builder.createBlock(false);
+                    builder.insertInstruction(thenEndBlock, new IBranch(mergeBlock));
                     builder.insertInstruction(
                         originBlock, new IBranch(cond, thenBlock, mergeBlock)
                     );
