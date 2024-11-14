@@ -185,7 +185,7 @@ class Traverser {
                     case Plus -> value;
                     case Minus -> builder.insertInstruction(new IBinary(BinaryOp.SUB, ConstInteger.zero, Compatibility.unityIntoInteger(value)[0]));
                     case Not -> Compatibility.unityIntoBoolean(
-                        builder.insertInstruction(new IBinary(BinaryOp.XOR, new ConstInteger(1, value.getType()), value))
+                        builder.insertInstruction(new IComparator(BinaryOp.Eq, new ConstInteger(0, value.getType()), value))
                     )[0];
                 };
             }
