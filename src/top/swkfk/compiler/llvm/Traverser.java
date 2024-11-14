@@ -56,6 +56,7 @@ import top.swkfk.compiler.llvm.value.instruction.ICall;
 import top.swkfk.compiler.llvm.value.instruction.IComparator;
 import top.swkfk.compiler.llvm.value.instruction.IConvert;
 import top.swkfk.compiler.llvm.value.instruction.ILoad;
+import top.swkfk.compiler.llvm.value.instruction.IPhi;
 import top.swkfk.compiler.llvm.value.instruction.IReturn;
 import top.swkfk.compiler.llvm.value.instruction.IStore;
 import top.swkfk.compiler.llvm.value.instruction.ITerminator;
@@ -64,6 +65,7 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Stack;
 
@@ -282,16 +284,69 @@ class Traverser {
         return ret;
     }
 
+    private void fillShortcutBranch(BasicBlock currentBlock, List<BasicBlock> intermediateBlocks) {
+        BasicBlock mergeBlock = builder.createBlock(false);
+        builder.insertInstruction(currentBlock, new IBranch(mergeBlock));
+        for (BasicBlock block : intermediateBlocks) {
+            if (block.getLastInstruction() instanceof IBranch branch) {
+                branch.fillNullBlock(mergeBlock);
+            }
+        }
+    }
+
     Value visitCondAnd(CondAnd and) {
-        return and.getCondEquList().stream().map(this::visitCondEqu).reduce(
-            (a, b) -> builder.insertInstruction(new IBinary(BinaryOp.AND, Compatibility.unityIntoBoolean(a, b)))
-        ).orElse(ConstInteger.logicOne);
+        List<CondEqu> list = and.getCondEquList();
+        if (list.size() == 1) {
+            return visitCondEqu(list.get(0));
+        }
+        List<BasicBlock> intermediateBlocks = new LinkedList<>();
+        BasicBlock currentBlock = builder.getInsertPoint();
+        for (CondEqu equExpr : list) {
+            Value cond = Compatibility.unityIntoBoolean(visitCondEqu(equExpr))[0];
+            BasicBlock nextBlock = builder.createBlock(false);
+            builder.insertInstruction(
+                currentBlock, new IBranch(cond, nextBlock, null)
+            );
+            intermediateBlocks.add(currentBlock);
+            currentBlock = nextBlock;
+        }
+        fillShortcutBranch(currentBlock, intermediateBlocks);
+        IPhi phi = new IPhi(Ty.I1);
+        for (BasicBlock block : intermediateBlocks) {
+            phi.addIncoming(block, ConstInteger.logicZero);
+        }
+        phi.addIncoming(currentBlock, ConstInteger.logicOne);
+        // Now the insert point is the merge block
+        builder.insertInstruction(phi);
+        return phi;
     }
 
     Value visitCondOr(CondOr or) {
-        return or.getCondAndList().stream().map(this::visitCondAnd).reduce(
-            (a, b) -> builder.insertInstruction(new IBinary(BinaryOp.OR, Compatibility.unityIntoBoolean(a, b)))
-        ).orElse(ConstInteger.logicZero);
+        List<CondAnd> list = or.getCondAndList();
+        if (list.size() == 1) {
+            return visitCondAnd(list.get(0));
+        }
+        List<BasicBlock> intermediateBlocks = new LinkedList<>();
+        BasicBlock currentBlock = builder.getInsertPoint();
+        for (CondAnd andExpr : list) {
+            Value cond = Compatibility.unityIntoBoolean(visitCondAnd(andExpr))[0];
+            BasicBlock nextBlock = builder.createBlock(false);
+            builder.insertInstruction(
+                currentBlock, new IBranch(cond, null, nextBlock)
+            );
+            intermediateBlocks.add(currentBlock);
+            currentBlock = nextBlock;
+        }
+        fillShortcutBranch(currentBlock, intermediateBlocks);
+        // Insert the phi operator
+        IPhi phi = new IPhi(Ty.I1);
+        for (BasicBlock block : intermediateBlocks) {
+            phi.addIncoming(block, ConstInteger.logicOne);
+        }
+        phi.addIncoming(currentBlock, ConstInteger.logicZero);
+        // Now the insert point is the merge block
+        builder.insertInstruction(phi);
+        return phi;
     }
 
     Value visitCond(Cond cond) {

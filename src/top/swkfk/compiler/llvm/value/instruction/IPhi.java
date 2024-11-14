@@ -25,9 +25,9 @@ final public class IPhi extends User {
 
     @Override
     public String toLLVM() {
-        return getName() + " = phi " + getType() +
-            " [" + incoming.stream().map(
-                pair -> pair.second().getName() + ", %" + pair.first().getName()
-            ).collect(Collectors.joining(", ")) + "]";
+        return getName() + " = phi " + getType() + " " +
+            incoming.stream().map(
+                pair -> "[ " + pair.second().getName() + ", %" + pair.first().getName() + " ]"
+            ).collect(Collectors.joining(", "));
     }
 }
