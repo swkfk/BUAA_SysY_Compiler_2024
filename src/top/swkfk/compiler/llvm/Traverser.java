@@ -303,6 +303,7 @@ class Traverser {
         BasicBlock currentBlock = builder.getInsertPoint();
         for (CondEqu equExpr : list) {
             Value cond = Compatibility.unityIntoBoolean(visitCondEqu(equExpr))[0];
+            currentBlock = builder.getInsertPoint();
             BasicBlock nextBlock = builder.createBlock(false);
             builder.insertInstruction(
                 currentBlock, new IBranch(cond, nextBlock, null)
@@ -330,6 +331,7 @@ class Traverser {
         BasicBlock currentBlock = builder.getInsertPoint();
         for (CondAnd andExpr : list) {
             Value cond = Compatibility.unityIntoBoolean(visitCondAnd(andExpr))[0];
+            currentBlock = builder.getInsertPoint();
             BasicBlock nextBlock = builder.createBlock(false);
             builder.insertInstruction(
                 currentBlock, new IBranch(cond, null, nextBlock)
@@ -397,11 +399,12 @@ class Traverser {
                 } else {
                     cond = ConstInteger.logicOne;
                 }
+                BasicBlock condEndBlock = builder.getInsertPoint();
 
                 // body
                 BasicBlock bodyBlock = builder.createBlock(false);
                 localLoops.lastElement().breaks().add((IBranch) builder.insertInstruction(
-                    condBlock,
+                    condEndBlock,
                     new IBranch(cond, bodyBlock, null)
                 ));
                 visitStmt(forStmt.getBody());
@@ -409,6 +412,7 @@ class Traverser {
                 // update
                 BasicBlock updateBlock = builder.createBlock(true);
                 Optional.ofNullable(forStmt.getUpdate()).ifPresent(this::visitForStmt);
+                BasicBlock updateEndBlock = builder.getInsertPoint();
                 builder.insertInstruction(
                     new IBranch(condBlock)
                 );
@@ -418,7 +422,7 @@ class Traverser {
 
                 // replace the targets
                 localLoops.lastElement().replaceBreak(exitBlock);
-                localLoops.lastElement().replaceContinue(updateBlock);
+                localLoops.lastElement().replaceContinue(updateEndBlock);
                 localLoops.pop();
             }
             case Break -> localLoops.lastElement().breaks().add((IBranch) builder.insertInstruction(
