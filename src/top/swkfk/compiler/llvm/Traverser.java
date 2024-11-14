@@ -304,7 +304,7 @@ class Traverser {
     void visitStmt(Stmt stmt) {
         switch (stmt.getType()) {
             case If -> {
-                Value cond = visitCond(((StmtIf) stmt).getCondition());
+                Value cond = Compatibility.unityIntoBoolean(visitCond(((StmtIf) stmt).getCondition()))[0];
                 BasicBlock originBlock = builder.getInsertPoint();
                 BasicBlock thenBlock = builder.createBlock();
                 visitStmt(((StmtIf) stmt).getThenStmt());
@@ -314,7 +314,7 @@ class Traverser {
                     visitStmt(((StmtIf) stmt).getElseStmt());
                     mergeBlock = builder.createBlock();
                     builder.insertInstruction(
-                        originBlock, new IBranch(Compatibility.unityIntoBoolean(cond)[0], thenBlock, elseBlock)
+                        originBlock, new IBranch(cond, thenBlock, elseBlock)
                     );
                     builder.insertInstruction(thenBlock, new IBranch(mergeBlock));
                     builder.insertInstruction(elseBlock, new IBranch(mergeBlock));
@@ -322,7 +322,7 @@ class Traverser {
                     mergeBlock = builder.createBlock();
                     builder.insertInstruction(thenBlock, new IBranch(mergeBlock));
                     builder.insertInstruction(
-                        originBlock, new IBranch(Compatibility.unityIntoBoolean(cond)[0], thenBlock, mergeBlock)
+                        originBlock, new IBranch(cond, thenBlock, mergeBlock)
                     );
                 }
             }
