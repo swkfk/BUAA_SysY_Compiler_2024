@@ -94,6 +94,10 @@ public class IrBuilder {
         traverser.visitFunction(traverser.getMainFunction().into());
     }
 
+    public Function getCurrentFunction() {
+        return currentFunction;
+    }
+
     void registerFunction(String name, SymbolType type, List<FuncFormalParam> params) {
         Value.counter.reset();
         Function function = new Function(name, type);

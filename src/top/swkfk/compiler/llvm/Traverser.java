@@ -54,6 +54,7 @@ import top.swkfk.compiler.llvm.value.instruction.IBinary;
 import top.swkfk.compiler.llvm.value.instruction.IBranch;
 import top.swkfk.compiler.llvm.value.instruction.ICall;
 import top.swkfk.compiler.llvm.value.instruction.IComparator;
+import top.swkfk.compiler.llvm.value.instruction.IConvert;
 import top.swkfk.compiler.llvm.value.instruction.ILoad;
 import top.swkfk.compiler.llvm.value.instruction.IReturn;
 import top.swkfk.compiler.llvm.value.instruction.IStore;
@@ -375,9 +376,11 @@ class Traverser {
                         new IReturn()
                     );
                 } else {
-                    builder.insertInstruction(
-                        new IReturn(visitExpr(((StmtReturn) stmt).getExpr()))
-                    );
+                    Value ret = visitExpr(((StmtReturn) stmt).getExpr());
+                    if (!builder.getCurrentFunction().getType().equals(ret.getType())) {
+                        ret = builder.insertInstruction(new IConvert(builder.getCurrentFunction().getType(), ret));
+                    }
+                    builder.insertInstruction(new IReturn(ret));
                 }
             }
             case Block -> visitBlock(((StmtBlock) stmt).getBlock());
