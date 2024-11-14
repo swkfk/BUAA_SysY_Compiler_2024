@@ -384,17 +384,20 @@ class Traverser {
             case Assign -> visitAssign(((StmtAssign) stmt).getLeft(), ((StmtAssign) stmt).getRight());
             case Printf -> {
                 Iterator<Value> args = ((StmtPrintf) stmt).getArgs().stream().map(this::visitExpr).iterator();
-                Arrays.stream(((StmtPrintf) stmt).getFormat().split("%d")).forEach(s -> {
-                        s.chars().forEach(c -> builder.insertInstruction(
-                                new ICall(builder.getExternalFunction("putch"), List.of(new ConstInteger(c)))
-                        ));
-                        if (args.hasNext()) {
-                            builder.insertInstruction(
-                                new ICall(builder.getExternalFunction("putint"), List.of(args.next()))
-                            );
-                        }
+                String format = ((StmtPrintf) stmt).getFormat();
+                for (int i = 0; i < format.length(); i++) {
+                    if (format.charAt(i) == '%' && i < format.length() - 1 && "dc".indexOf(format.charAt(i + 1)) >= 0) {
+                        String function = format.charAt(i + 1) == 'd' ? "putint" : "putch";
+                        builder.insertInstruction(
+                            new ICall(builder.getExternalFunction(function), List.of(args.next()))
+                        );
+                        i++;
+                    } else {
+                        builder.insertInstruction(
+                            new ICall(builder.getExternalFunction("putch"), List.of(new ConstInteger((int) format.charAt(i))))
+                        );
                     }
-                );
+                }
             }
             case GetInt -> performAssign(((StmtGetInt) stmt).getLeft(), builder.insertInstruction(
                 new ICall(builder.getExternalFunction("getint"), List.of())
