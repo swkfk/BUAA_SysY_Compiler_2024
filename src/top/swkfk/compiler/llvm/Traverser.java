@@ -313,7 +313,7 @@ class Traverser {
                     visitStmt(((StmtIf) stmt).getElseStmt());
                     mergeBlock = builder.createBlock();
                     builder.insertInstruction(
-                        originBlock, new IBranch(cond, thenBlock, elseBlock)
+                        originBlock, new IBranch(Compatibility.unityIntoBoolean(cond)[0], thenBlock, elseBlock)
                     );
                     builder.insertInstruction(thenBlock, new IBranch(mergeBlock));
                     builder.insertInstruction(elseBlock, new IBranch(mergeBlock));
@@ -321,7 +321,7 @@ class Traverser {
                     mergeBlock = builder.createBlock();
                     builder.insertInstruction(thenBlock, new IBranch(mergeBlock));
                     builder.insertInstruction(
-                        originBlock, new IBranch(cond, thenBlock, mergeBlock)
+                        originBlock, new IBranch(Compatibility.unityIntoBoolean(cond)[0], thenBlock, mergeBlock)
                     );
                 }
             }
@@ -335,7 +335,7 @@ class Traverser {
                 localLoops.add(new LoopStorage(condBlock, new LinkedList<>(), new LinkedList<>()));
                 Value cond;
                 if (forStmt.getCondition() != null) {
-                    cond = visitCond(forStmt.getCondition());
+                    cond = Compatibility.unityIntoBoolean(visitCond(forStmt.getCondition()))[0];
                 } else {
                     cond = ConstInteger.logicOne;
                 }
