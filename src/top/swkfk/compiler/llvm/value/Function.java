@@ -19,7 +19,8 @@ final public class Function extends Value {
      */
     public Function(String name, SymbolType type) {
         super(name, type);
-        assert type.is("void") || type.is("i32") : "Function return type must be void or i32";
+        assert type.is("void") || type.is("i32") || type.is("i8") :
+            "Function return type must be void or i32 or i8";
         this.blocks = new DualLinkedList<>();
         this.params = new LinkedList<>();
     }
