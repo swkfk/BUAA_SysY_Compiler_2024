@@ -2,6 +2,7 @@ package top.swkfk.compiler.helpers;
 
 import top.swkfk.compiler.frontend.symbol.type.SymbolType;
 import top.swkfk.compiler.frontend.symbol.type.Ty;
+import top.swkfk.compiler.frontend.symbol.type.TyPtr;
 import top.swkfk.compiler.llvm.value.User;
 import top.swkfk.compiler.llvm.value.Value;
 import top.swkfk.compiler.llvm.value.constants.ConstInteger;
@@ -41,5 +42,10 @@ final public class Compatibility {
                 return builder.apply(new IConvert(target, value));
             }
         }).toArray(Value[]::new);
+    }
+
+    public static Value[] unityIntoPointer(Value pointer, Value... values) {
+        assert pointer.getType().is("ptr") : "Expected pointer type in compatibility";
+        return unityIntoInteger(((TyPtr) pointer.getType()).getBase(), values);
     }
 }

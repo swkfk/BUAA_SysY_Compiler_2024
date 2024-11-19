@@ -120,8 +120,10 @@ class Traverser {
                     new IAllocate(new TyPtr(def.getSymbol().getType()))
                 ));
                 if (def.getSymbol().getConstantValue().isLeft()) {
+                    Value pointer = def.getSymbol().getValue();
+                    Value value = Compatibility.unityIntoPointer(pointer, def.getSymbol().getConstantValue().getLeft().into())[0];
                     builder.insertInstruction(
-                        new IStore(def.getSymbol().getConstantValue().getLeft().into(), def.getSymbol().getValue())
+                        new IStore(value, pointer)
                     );
                 } else {
                     // TODO
@@ -137,8 +139,10 @@ class Traverser {
                 }
                 // Handle the initial value
                 if (def.getInitial().getExpr() != null) {
+                    Value pointer = def.getSymbol().getValue();
+                    Value value = Compatibility.unityIntoPointer(pointer, visitExpr(def.getInitial().getExpr()))[0];
                     builder.insertInstruction(
-                        new IStore(visitExpr(def.getInitial().getExpr()), def.getSymbol().getValue())
+                        new IStore(value, pointer)
                     );
                 } else {
                     // TODO
@@ -487,16 +491,17 @@ class Traverser {
     }
 
     void performAssign(LeftValue left, Value right) {
+        Value pointer;
         if (left.getIndices().isEmpty()) {
-            builder.insertInstruction(
-                new IStore(right, left.getSymbol().getValue())
-            );
+            pointer = left.getSymbol().getValue();
         } else {
-            builder.insertInstruction(
-                new IStore(right, builder.getGep(
-                    left.getSymbol(), left.getIndices().stream().map(this::visitExpr).toList()
-                ))
+            pointer = builder.getGep(
+                left.getSymbol(), left.getIndices().stream().map(this::visitExpr).toList()
             );
         }
+        Value value = Compatibility.unityIntoPointer(pointer, right)[0];
+        builder.insertInstruction(
+            new IStore(value, pointer)
+        );
     }
 }
