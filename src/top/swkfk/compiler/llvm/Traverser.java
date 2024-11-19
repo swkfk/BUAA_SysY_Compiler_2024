@@ -206,9 +206,16 @@ class Traverser {
             case LVal -> {
                 LeftValue lVal = (LeftValue) expr.getValue();
                 if (lVal.getIndices().isEmpty()) {
-                    yield builder.insertInstruction(
-                        new ILoad(lVal.getSymbol().getValue())
-                    );
+                    if (lVal.getSymbol().getType().is("array")) {
+                        yield builder.getGep(
+                            // Pay attention to this line
+                            lVal.getSymbol(), List.of(new ConstInteger(0))
+                        );
+                    } else {
+                        yield builder.insertInstruction(
+                            new ILoad(lVal.getSymbol().getValue())
+                        );
+                    }
                 } else {
                     Value pointer = builder.getGep(
                         lVal.getSymbol(), lVal.getIndices().stream().map(this::visitExpr).toList()
