@@ -109,7 +109,7 @@ public class IrBuilder {
             param.getSymbol().setValue(function.addParam(param.getSymbol().getType()));
         }
 
-        BasicBlock entry = new BasicBlock(function);
+        BasicBlock entry = new BasicBlock(function, "Function Entry");
         function.addBlock(entry);
         insertPoint = entry;
 
@@ -142,8 +142,8 @@ public class IrBuilder {
      *                       insertPoint to jump into the new block
      * @return the new block
      */
-    BasicBlock createBlock(boolean autoFallThroughInto) {
-        BasicBlock block = new BasicBlock(currentFunction);
+    BasicBlock createBlock(boolean autoFallThroughInto, String comment) {
+        BasicBlock block = new BasicBlock(currentFunction, comment);
         currentFunction.addBlock(block);
         if (autoFallThroughInto && !(insertPoint.getLastInstruction() instanceof ITerminator)) {
             insertInstruction(
@@ -152,6 +152,10 @@ public class IrBuilder {
         }
         insertPoint = block;
         return block;
+    }
+
+    BasicBlock createBlock(boolean autoFallThroughInto) {
+        return createBlock(autoFallThroughInto, "");
     }
 
     SymbolFunction getExternalFunction(String name) {
@@ -174,8 +178,8 @@ public class IrBuilder {
         return instruction;
     }
 
-    void jumpToNewBlock() {
-        BasicBlock block = new BasicBlock(insertPoint.getParent());
+    void jumpToNewBlock(String comment) {
+        BasicBlock block = new BasicBlock(insertPoint.getParent(), comment);
         insertPoint.getParent().addBlock(block);
         insertInstruction(
             new IBranch(block)

@@ -103,7 +103,7 @@ class Traverser {
         builder.registerFunction(
             funcDef.getSymbol().getName(), funcDef.getSymbol().getType(), funcDef.getParams()
         );
-        builder.jumpToNewBlock();
+        builder.jumpToNewBlock("First Block of Function `" + funcDef.getSymbol().getName() + "`");
         visitBlock(funcDef.getBody());
         if (funcDef.getType().is(FuncType.Type.Void) &&
             !(builder.getInsertPoint().getLastInstruction() instanceof ITerminator)) {
@@ -284,7 +284,7 @@ class Traverser {
     }
 
     private void fillShortcutBranch(BasicBlock currentBlock, List<BasicBlock> intermediateBlocks) {
-        BasicBlock mergeBlock = builder.createBlock(false);
+        BasicBlock mergeBlock = builder.createBlock(false, "Shortcut Merge Block");
         builder.insertInstruction(currentBlock, new IBranch(mergeBlock));
         for (BasicBlock block : intermediateBlocks) {
             if (block.getLastInstruction() instanceof IBranch branch) {
@@ -303,7 +303,7 @@ class Traverser {
         for (CondEqu equExpr : list) {
             Value cond = Compatibility.unityIntoBoolean(visitCondEqu(equExpr))[0];
             currentBlock = builder.getInsertPoint();
-            BasicBlock nextBlock = builder.createBlock(false);
+            BasicBlock nextBlock = builder.createBlock(false, "Shortcut Block for And");
             builder.insertInstruction(
                 currentBlock, new IBranch(cond, nextBlock, null)
             );
@@ -331,7 +331,7 @@ class Traverser {
         for (CondAnd andExpr : list) {
             Value cond = Compatibility.unityIntoBoolean(visitCondAnd(andExpr))[0];
             currentBlock = builder.getInsertPoint();
-            BasicBlock nextBlock = builder.createBlock(false);
+            BasicBlock nextBlock = builder.createBlock(false, "Shortcut Block for Or");
             builder.insertInstruction(
                 currentBlock, new IBranch(cond, null, nextBlock)
             );
@@ -362,22 +362,22 @@ class Traverser {
             case If -> {
                 Value cond = Compatibility.unityIntoBoolean(visitCond(((StmtIf) stmt).getCondition()))[0];
                 BasicBlock originBlock = builder.getInsertPoint();
-                BasicBlock thenBlock = builder.createBlock(false);
+                BasicBlock thenBlock = builder.createBlock(false, "If Then Block");
                 visitStmt(((StmtIf) stmt).getThenStmt());
                 BasicBlock thenEndBlock = builder.getInsertPoint();
                 BasicBlock mergeBlock;
                 if (((StmtIf) stmt).getElseStmt() != null) {
-                    BasicBlock elseBlock = builder.createBlock(false);
+                    BasicBlock elseBlock = builder.createBlock(false, "If Else Block");
                     visitStmt(((StmtIf) stmt).getElseStmt());
                     BasicBlock elseEndBlock = builder.getInsertPoint();
-                    mergeBlock = builder.createBlock(false);
+                    mergeBlock = builder.createBlock(false, "If Merge Block");
                     builder.insertInstruction(
                         originBlock, new IBranch(cond, thenBlock, elseBlock)
                     );
                     builder.insertInstruction(thenEndBlock, new IBranch(mergeBlock));
                     builder.insertInstruction(elseEndBlock, new IBranch(mergeBlock));
                 } else {
-                    mergeBlock = builder.createBlock(false);
+                    mergeBlock = builder.createBlock(false, "If Merge Block");
                     builder.insertInstruction(thenEndBlock, new IBranch(mergeBlock));
                     builder.insertInstruction(
                         originBlock, new IBranch(cond, thenBlock, mergeBlock)
@@ -390,7 +390,7 @@ class Traverser {
                 Optional.ofNullable(forStmt.getInit()).ifPresent(this::visitForStmt);
 
                 // cond
-                BasicBlock condBlock = builder.createBlock(true);
+                BasicBlock condBlock = builder.createBlock(true, "For Cond Block");
                 localLoops.add(new LoopStorage(condBlock, new LinkedList<>(), new LinkedList<>()));
                 Value cond;
                 if (forStmt.getCondition() != null) {
@@ -401,7 +401,7 @@ class Traverser {
                 BasicBlock condEndBlock = builder.getInsertPoint();
 
                 // body
-                BasicBlock bodyBlock = builder.createBlock(false);
+                BasicBlock bodyBlock = builder.createBlock(false, "For Body Block");
                 localLoops.lastElement().breaks().add((IBranch) builder.insertInstruction(
                     condEndBlock,
                     new IBranch(cond, bodyBlock, null)
@@ -409,7 +409,7 @@ class Traverser {
                 visitStmt(forStmt.getBody());
 
                 // update
-                BasicBlock updateBlock = builder.createBlock(true);
+                BasicBlock updateBlock = builder.createBlock(true, "For Update Block");
                 Optional.ofNullable(forStmt.getUpdate()).ifPresent(this::visitForStmt);
                 BasicBlock updateEndBlock = builder.getInsertPoint();
                 builder.insertInstruction(
@@ -417,7 +417,7 @@ class Traverser {
                 );
 
                 // after
-                BasicBlock exitBlock = builder.createBlock(false);
+                BasicBlock exitBlock = builder.createBlock(false, "For Exit Block");
 
                 // replace the targets
                 localLoops.lastElement().replaceBreak(exitBlock);

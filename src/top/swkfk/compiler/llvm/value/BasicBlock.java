@@ -5,16 +5,26 @@ import top.swkfk.compiler.utils.DualLinkedList;
 final public class BasicBlock extends Value {
     private final Function parent;
     private final DualLinkedList<User> instructions;
+    private String comment = "";
 
-    public BasicBlock(Function parent) {
+    public BasicBlock(Function parent, String comment) {
         super("" + Value.counter.get(), null);
         this.instructions = new DualLinkedList<>();
         this.parent = parent;
+        this.comment = comment;
+    }
+
+    public void appendComment(String comment) {
+        this.comment += comment;
     }
 
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        sb.append("  ").append(getName()).append(":\n");
+        sb.append("  ").append(getName()).append(":");
+        if (!comment.isEmpty()) {
+            sb.append("\t\t\t; ").append(comment);
+        }
+        sb.append("\n");
         for (DualLinkedList.Node<User> node : instructions) {
             sb.append("    ").append(node.getData().toLLVM()).append("\n");
         }
