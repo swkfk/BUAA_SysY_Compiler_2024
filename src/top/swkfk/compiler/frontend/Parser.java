@@ -380,17 +380,19 @@ public class Parser {
         if (among(TokenType.LBrace)) {
             return watch(new StmtBlock(parseBlock()));
         }
-        if (checkConsume(TokenType.If)) {
+        if (among(TokenType.If)) {
+            Token ifTk = consume(TokenType.If);
             consume(TokenType.LParen);
             Cond cond = parseCond();
             consume(TokenType.RParen);
             Stmt thenStmt = parseStmt();
             if (checkConsume(TokenType.Else)) {
-                return watch(new StmtIf(cond, thenStmt, parseStmt()));
+                return watch(new StmtIf(cond, thenStmt, parseStmt(), ifTk.location()));
             }
-            return watch(new StmtIf(cond, thenStmt));
+            return watch(new StmtIf(cond, thenStmt, ifTk.location()));
         }
-        if (checkConsume(TokenType.For)) {
+        if (among(TokenType.For)) {
+            Token forTk = consume(TokenType.For);
             consume(TokenType.LParen);
             ForStmt forStmt = among(TokenType.Semicolon) ? null : parseForStmt();
             consume(TokenType.Semicolon);
@@ -398,7 +400,7 @@ public class Parser {
             consume(TokenType.Semicolon);
             ForStmt update = among(TokenType.RParen) ? null : parseForStmt();
             consume(TokenType.RParen);
-            return watch(new StmtFor(forStmt, cond, update, parseStmt()));
+            return watch(new StmtFor(forStmt, cond, update, parseStmt(), forTk.location()));
         }
         if (among(TokenType.Break)) {
             Token tk = consume(TokenType.Break);
