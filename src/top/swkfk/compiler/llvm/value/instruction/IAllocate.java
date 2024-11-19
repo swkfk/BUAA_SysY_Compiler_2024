@@ -16,6 +16,6 @@ final public class IAllocate extends User {
     @Override
     @SuppressWarnings("SpellCheckingInspection")
     public String toLLVM() {
-        return getName() + " = alloca " + ((TyPtr) getType()).toString();
+        return getName() + " = alloca " + ((TyPtr) getType()).getBase().toString();
     }
 }
