@@ -159,9 +159,15 @@ public class Traverser {
                                     ));
                                 }
                             } else {
-                                symbol.setConstantValue(
-                                    FixedArray.from(((TyArray) ty).getIndices(), def.getInitial().into(), ty.getFinalBaseType())
-                                );
+                                if (def.getInitial() != null) {
+                                    symbol.setConstantValue(
+                                        FixedArray.from(((TyArray) ty).getIndices(), def.getInitial().into(), ty.getFinalBaseType())
+                                    );
+                                } else {
+                                    symbol.setConstantValue(
+                                        new FixedArray(((TyArray) ty).getIndices(), ty.getFinalBaseType())
+                                    );
+                                }
                             }
                         }
                     } catch (Exception e) {
