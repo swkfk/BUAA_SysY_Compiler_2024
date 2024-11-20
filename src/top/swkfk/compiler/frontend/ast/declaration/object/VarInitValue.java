@@ -54,9 +54,17 @@ final public class VarInitValue extends ASTNode {
         return subInitializers;
     }
 
+    public String getStringConst() {
+        return stringConst;
+    }
+
     public void addSubInitializer(VarInitValue subInitializer) {
         assert subInitializers != null : "Only sub-initializer can add a sub-initializer.";
         subInitializers.add(subInitializer);
+    }
+
+    public Type getType() {
+        return type;
     }
 
     @Override

@@ -12,6 +12,7 @@ import top.swkfk.compiler.frontend.ast.declaration.object.ConstDef;
 import top.swkfk.compiler.frontend.ast.declaration.object.Decl;
 import top.swkfk.compiler.frontend.ast.declaration.object.VarDecl;
 import top.swkfk.compiler.frontend.ast.declaration.object.VarDef;
+import top.swkfk.compiler.frontend.ast.declaration.object.VarInitValue;
 import top.swkfk.compiler.frontend.ast.expression.Expr;
 import top.swkfk.compiler.frontend.ast.expression.ExprAdd;
 import top.swkfk.compiler.frontend.ast.expression.ExprMul;
@@ -138,14 +139,38 @@ class Traverser {
                     continue;
                 }
                 // Handle the initial value
-                if (def.getInitial().getExpr() != null) {
+                if (def.getInitial().getType() == VarInitValue.Type.Initializer) {
                     Value pointer = def.getSymbol().getValue();
                     Value value = Compatibility.unityIntoPointer(pointer, visitExpr(def.getInitial().getExpr()))[0];
                     builder.insertInstruction(
                         new IStore(value, pointer)
                     );
-                } else {
-                    // TODO
+                } else if (def.getInitial().getType() == VarInitValue.Type.SubInitializer) {
+                    List<VarInitValue> initializers = def.getInitial().getSubInitializers();
+                    int length = def.getIndices().get(0).calculate();
+                    for (int i = 0; i < length; i++) {
+                        Expr index = new Expr(new ExprAdd(new ExprMul(new ExprUnaryPrimary(new ExprPrimary(new Number(i))))));
+                        Expr value;
+                        if (i < initializers.size()) {
+                            // Pay attention to this line. Assume only one dimension.
+                            value = initializers.get(i).getExpr();
+                        } else {
+                            value = new Expr(new ExprAdd(new ExprMul(new ExprUnaryPrimary(new ExprPrimary(new Number(0))))));
+                        }
+                        performAssign(
+                            new LeftValue(def.getSymbol(), List.of(index)),
+                            visitExpr(value)
+                        );
+                    }
+                } else if (def.getInitial().getType() == VarInitValue.Type.StringConst) {
+                    String stringConst = def.getInitial().getStringConst() + "\0";
+                    for (int i = 0; i < stringConst.length(); i++) {
+                        Expr index = new Expr(new ExprAdd(new ExprMul(new ExprUnaryPrimary(new ExprPrimary(new Number(i))))));
+                        Value value = new ConstInteger(stringConst.charAt(i), Ty.I8);
+                        performAssign(
+                            new LeftValue(def.getSymbol(), List.of(index)), value
+                        );
+                    }
                 }
             }
         }

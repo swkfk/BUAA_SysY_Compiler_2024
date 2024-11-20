@@ -25,6 +25,12 @@ final public class LeftValue extends ASTNode {
         this.indices = new LinkedList<>();
     }
 
+    public LeftValue(SymbolVariable symbol, List<Expr> indices) {
+        this.identifier = null;
+        this.symbol = symbol;
+        this.indices = indices;
+    }
+
     public void addIndex(Expr index) {
         indices.add(index);
     }
