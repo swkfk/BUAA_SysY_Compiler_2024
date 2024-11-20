@@ -42,6 +42,7 @@ import top.swkfk.compiler.frontend.ast.statement.StmtIf;
 import top.swkfk.compiler.frontend.ast.statement.StmtPrintf;
 import top.swkfk.compiler.frontend.ast.statement.StmtReturn;
 import top.swkfk.compiler.frontend.symbol.SymbolTable;
+import top.swkfk.compiler.frontend.symbol.SymbolVariable;
 import top.swkfk.compiler.frontend.symbol.type.SymbolType;
 import top.swkfk.compiler.frontend.symbol.type.Ty;
 import top.swkfk.compiler.frontend.symbol.type.TyArray;
@@ -133,25 +134,16 @@ class Traverser {
                     int length = def.getIndices().get(0).calculate();
                     for (int i = 0; i < length; i++) {
                         Value pointer = builder.getGep(def.getSymbol(), List.of(new ConstInteger(i)));
-                        Value value;
-                        if (i < initializers.size()) {
-                            value = new ConstInteger(initializers.get(i).getExpr().calculate());
-                        } else {
-                            value = new ConstInteger(0, def.getSymbol().getType().getFinalBaseType());
-                        }
+                        Value value = new ConstInteger(
+                            (i < initializers.size() ? initializers.get(i).getExpr().calculate() : 0),
+                            def.getSymbol().getType().getFinalBaseType()
+                        );
                         builder.insertInstruction(
                             new IStore(value, pointer)
                         );
                     }
                 } else if (def.getInitial().getType() == ConstInitValue.Type.StringConst) {
-                    String stringConst = def.getInitial().getStringConst() + "\0";
-                    for (int i = 0; i < stringConst.length(); i++) {
-                        Value pointer = builder.getGep(def.getSymbol(), List.of(new ConstInteger(i)));
-                        Value value = new ConstInteger(stringConst.charAt(i), Ty.I8);
-                        builder.insertInstruction(
-                            new IStore(value, pointer)
-                        );
-                    }
+                    fillStringInitializer(def.getSymbol(), def.getIndices().get(0).calculate(), def.getInitial().getStringConst());
                 }
             }
         } else {
@@ -173,7 +165,7 @@ class Traverser {
                     List<VarInitValue> initializers = def.getInitial().getSubInitializers();
                     int length = def.getIndices().get(0).calculate();
                     for (int i = 0; i < length; i++) {
-                        Expr index = new Expr(new ExprAdd(new ExprMul(new ExprUnaryPrimary(new ExprPrimary(new Number(i))))));
+                        Value pointer = builder.getGep(def.getSymbol(), List.of(new ConstInteger(i)));
                         Expr value;
                         if (i < initializers.size()) {
                             // Pay attention to this line. Assume only one dimension.
@@ -181,22 +173,26 @@ class Traverser {
                         } else {
                             value = new Expr(new ExprAdd(new ExprMul(new ExprUnaryPrimary(new ExprPrimary(new Number(0))))));
                         }
-                        performAssign(
-                            new LeftValue(def.getSymbol(), List.of(index)),
-                            visitExpr(value)
+                        builder.insertInstruction(
+                            new IStore(Compatibility.unityIntoPointer(pointer, visitExpr(value))[0], pointer)
                         );
                     }
                 } else if (def.getInitial().getType() == VarInitValue.Type.StringConst) {
-                    String stringConst = def.getInitial().getStringConst() + "\0";
-                    for (int i = 0; i < stringConst.length(); i++) {
-                        Expr index = new Expr(new ExprAdd(new ExprMul(new ExprUnaryPrimary(new ExprPrimary(new Number(i))))));
-                        Value value = new ConstInteger(stringConst.charAt(i), Ty.I8);
-                        performAssign(
-                            new LeftValue(def.getSymbol(), List.of(index)), value
-                        );
-                    }
+                    fillStringInitializer(def.getSymbol(), def.getIndices().get(0).calculate(), def.getInitial().getStringConst());
                 }
             }
+        }
+    }
+
+    private void fillStringInitializer(SymbolVariable symbol, int length, String string) {
+        for (int i = 0; i < length; i++) {
+            Value pointer = builder.getGep(symbol, List.of(new ConstInteger(i)));
+            Value value = new ConstInteger(
+                (i < string.length() ? string.charAt(i) : 0), Ty.I8
+            );
+            builder.insertInstruction(
+                new IStore(value, pointer)
+            );
         }
     }
 
