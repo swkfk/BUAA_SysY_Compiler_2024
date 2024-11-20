@@ -5,7 +5,7 @@ public class HomeworkConfig {
         Lexer, Syntax, Semantic, CodegenI, CodegenII
     }
 
-    public static Hw hw = Hw.CodegenI;
+    public static Hw hw = Hw.CodegenII;
     //  Modify this  ^^  to change the homework  //
 
     public static String getTarget() {

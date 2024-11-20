@@ -5,6 +5,8 @@ import top.swkfk.compiler.frontend.symbol.SymbolFunction;
 import top.swkfk.compiler.llvm.value.Function;
 import top.swkfk.compiler.llvm.value.GlobalVariable;
 
+import java.io.FileWriter;
+import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
@@ -56,5 +58,28 @@ public class IrModule {
         }
 
         return sb.toString();
+    }
+
+    public List<Function> getFunctions() {
+        return functions;
+    }
+
+    public IrModule runPass(Pass pass) {
+        pass.run(this);
+        if (Configure.debug.displayPassVerbose) {
+            try (FileWriter writer = new FileWriter(
+                Configure.passTarget
+                    // Assume to be a '.' in the target file name
+                    .replace("%(filename)", Configure.target.substring(0, Configure.target.lastIndexOf('.')))
+                    .replace("%(pass-id)", String.format("%02d", pass.getPassID()))
+                    .replace("%(pass-name)", pass.getName())
+            )) {
+                writer.write(";; After pass: " + pass.getName() + "\n");
+                writer.write(this.toString());
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        }
+        return this;
     }
 }

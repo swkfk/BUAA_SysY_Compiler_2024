@@ -35,6 +35,14 @@ final public class Function extends Value {
         return param;
     }
 
+    public List<Value> getParams() {
+        return params;
+    }
+
+    public DualLinkedList<BasicBlock> getBlocks() {
+        return blocks;
+    }
+
     public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append("define dso_local ").append(getType()).append(" @").append(getName()).append("(");

@@ -23,7 +23,7 @@ public class Archiver {
     private static final String config = """
 {
     "programming language": "java",
-    "object code": "llvm"
+    "object code": "mips"
 }
 """;
 

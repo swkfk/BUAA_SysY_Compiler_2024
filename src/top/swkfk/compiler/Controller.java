@@ -1,5 +1,7 @@
 package top.swkfk.compiler;
 
+import top.swkfk.compiler.arch.ArchModule;
+import top.swkfk.compiler.arch.mips.MipsModule;
 import top.swkfk.compiler.error.ErrorTable;
 import top.swkfk.compiler.frontend.Lexer;
 import top.swkfk.compiler.frontend.Parser;
@@ -10,6 +12,7 @@ import top.swkfk.compiler.frontend.token.TokenStream;
 import top.swkfk.compiler.llvm.IrBuilder;
 import top.swkfk.compiler.llvm.IrModule;
 import top.swkfk.compiler.helpers.ParserWatcher;
+import top.swkfk.compiler.llvm.transforms.Hello;
 
 import java.io.FileWriter;
 import java.io.IOException;
@@ -18,7 +21,7 @@ public class Controller {
     public static final ErrorTable errors = new ErrorTable();
     public static final SymbolTable symbols = new SymbolTable();
 
-    public static void frontend() throws IOException {
+    public static void run() throws IOException {
         // 1. Lexical analysis
         TokenStream tokens = new Lexer(Configure.source).lex().emit();
         if (Configure.debug.displayTokens) {
@@ -58,6 +61,27 @@ public class Controller {
         if (HomeworkConfig.hw == HomeworkConfig.Hw.CodegenI) {
             try (FileWriter writer = new FileWriter(Configure.target)) {
                 writer.write(module.toString());
+            }
+            Controller.exit();
+        }
+
+        // 5. Intermediate code optimization
+        if (Configure.optimize) {
+            module.runPass(new Hello());
+        }
+
+        // 6. Machine Code generation
+        ArchModule arch = switch (Configure.arch) {
+            case mips -> new MipsModule();
+        };
+        arch.runParseIr(module)
+            .runRemovePhi()
+            .runVirtualOptimize()
+            .runRegisterAllocation()
+            .runPhysicalOptimize();
+        if (HomeworkConfig.hw == HomeworkConfig.Hw.CodegenII) {
+            try (FileWriter writer = new FileWriter(Configure.target)) {
+                writer.write(arch.toString());
             }
             Controller.exit();
         }
