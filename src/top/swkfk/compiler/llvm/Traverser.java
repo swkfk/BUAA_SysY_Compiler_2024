@@ -482,12 +482,18 @@ class Traverser {
                 localLoops.lastElement().replaceContinue(updateEndBlock);
                 localLoops.pop();
             }
-            case Break -> localLoops.lastElement().breaks().add((IBranch) builder.insertInstruction(
-                new IBranch(null)
-            ));
-            case Continue -> localLoops.lastElement().continues().add((IBranch) builder.insertInstruction(
-                new IBranch(null)
-            ));
+            case Break -> {
+                localLoops.lastElement().breaks().add((IBranch) builder.insertInstruction(
+                    new IBranch(null)
+                ));
+                builder.createBlock(false, "Dummy Block for Break");
+            }
+            case Continue -> {
+                localLoops.lastElement().continues().add((IBranch) builder.insertInstruction(
+                    new IBranch(null)
+                ));
+                builder.createBlock(false, "Dummy Block for Continue");
+            }
             case Return -> {
                 if (((StmtReturn) stmt).getExpr() == null) {
                     builder.insertInstruction(

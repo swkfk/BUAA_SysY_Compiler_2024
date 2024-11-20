@@ -12,7 +12,7 @@ final public class ICall extends User {
 
     public ICall(SymbolFunction function, List<Value> arguments) {
         // If the function return 'void', we will ignore its value name.
-        super("%" + Value.counter.get(), function.getType());
+        super(function.getType().is("void") ? "" : ("%" + Value.counter.get()), function.getType());
         this.function = function;
         for (Value arg : arguments) {
             addOperand(arg);
