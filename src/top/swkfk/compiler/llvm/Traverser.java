@@ -9,6 +9,7 @@ import top.swkfk.compiler.frontend.ast.declaration.function.FuncType;
 import top.swkfk.compiler.frontend.ast.declaration.function.MainFuncDef;
 import top.swkfk.compiler.frontend.ast.declaration.object.ConstDecl;
 import top.swkfk.compiler.frontend.ast.declaration.object.ConstDef;
+import top.swkfk.compiler.frontend.ast.declaration.object.ConstInitValue;
 import top.swkfk.compiler.frontend.ast.declaration.object.Decl;
 import top.swkfk.compiler.frontend.ast.declaration.object.VarDecl;
 import top.swkfk.compiler.frontend.ast.declaration.object.VarDef;
@@ -57,6 +58,7 @@ import top.swkfk.compiler.llvm.value.instruction.IBranch;
 import top.swkfk.compiler.llvm.value.instruction.ICall;
 import top.swkfk.compiler.llvm.value.instruction.IComparator;
 import top.swkfk.compiler.llvm.value.instruction.IConvert;
+import top.swkfk.compiler.llvm.value.instruction.IGep;
 import top.swkfk.compiler.llvm.value.instruction.ILoad;
 import top.swkfk.compiler.llvm.value.instruction.IPhi;
 import top.swkfk.compiler.llvm.value.instruction.IReturn;
@@ -120,14 +122,36 @@ class Traverser {
                 def.getSymbol().setValue(builder.insertInstruction(
                     new IAllocate(new TyPtr(def.getSymbol().getType()))
                 ));
-                if (def.getSymbol().getConstantValue().isLeft()) {
+                if (def.getInitial().getType() == ConstInitValue.Type.Initializer) {
                     Value pointer = def.getSymbol().getValue();
                     Value value = Compatibility.unityIntoPointer(pointer, def.getSymbol().getConstantValue().getLeft().into())[0];
                     builder.insertInstruction(
                         new IStore(value, pointer)
                     );
-                } else {
-                    // TODO
+                } else if (def.getInitial().getType() == ConstInitValue.Type.SubInitializer) {
+                    List<ConstInitValue> initializers = def.getInitial().getSubInitializers();
+                    int length = def.getIndices().get(0).calculate();
+                    for (int i = 0; i < length; i++) {
+                        Value pointer = builder.getGep(def.getSymbol(), List.of(new ConstInteger(i)));
+                        Value value;
+                        if (i < initializers.size()) {
+                            value = new ConstInteger(initializers.get(i).getExpr().calculate());
+                        } else {
+                            value = new ConstInteger(0, def.getSymbol().getType().getFinalBaseType());
+                        }
+                        builder.insertInstruction(
+                            new IStore(value, pointer)
+                        );
+                    }
+                } else if (def.getInitial().getType() == ConstInitValue.Type.StringConst) {
+                    String stringConst = def.getInitial().getStringConst() + "\0";
+                    for (int i = 0; i < stringConst.length(); i++) {
+                        Value pointer = builder.getGep(def.getSymbol(), List.of(new ConstInteger(i)));
+                        Value value = new ConstInteger(stringConst.charAt(i), Ty.I8);
+                        builder.insertInstruction(
+                            new IStore(value, pointer)
+                        );
+                    }
                 }
             }
         } else {
