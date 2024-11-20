@@ -25,7 +25,7 @@ final public class MipsIBrEqu extends MipsInstruction {
 
     @Override
     public MipsOperand[] getOperands() {
-        return new MipsOperand[] {lhs, rhs};
+        return new MipsOperand[] {lhs, rhs, target};
     }
 
     @Override

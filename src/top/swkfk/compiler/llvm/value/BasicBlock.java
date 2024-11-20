@@ -18,6 +18,10 @@ final public class BasicBlock extends Value {
         this.comment += comment;
     }
 
+    public DualLinkedList<User> getInstructions() {
+        return instructions;
+    }
+
     public String toString() {
         StringBuilder sb = new StringBuilder();
         sb.append("  ").append(getName()).append(":");

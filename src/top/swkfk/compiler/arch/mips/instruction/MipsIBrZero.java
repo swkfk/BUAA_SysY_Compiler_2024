@@ -26,7 +26,7 @@ final public class MipsIBrZero extends MipsInstruction {
 
     @Override
     public MipsOperand[] getOperands() {
-        return new MipsOperand[] {operand};
+        return new MipsOperand[] {operand, target};
     }
 
     @Override
