@@ -3,15 +3,12 @@ package top.swkfk.compiler.arch.mips.instruction;
 import top.swkfk.compiler.arch.mips.operand.MipsOperand;
 import top.swkfk.compiler.arch.mips.operand.MipsPhysicalRegister;
 import top.swkfk.compiler.arch.mips.operand.MipsVirtualRegister;
+import top.swkfk.compiler.helpers.Comments;
 
 import java.util.Map;
 
 public abstract class MipsInstruction {
-    private String comment = "";
-
-    public final void appendComment(String comment) {
-        this.comment += comment;
-    }
+    public final Comments comment = new Comments("    ## ");
 
     /**
      * Get the operands list of the instruction.
@@ -78,6 +75,11 @@ public abstract class MipsInstruction {
      * @return The MIPS assembly code including the comment of the instruction.
      */
     public final String toString() {
-        return toMips() + (comment.isEmpty() ? "" : "\t\t# " + comment);
+        String comment = this.comment.toString();
+        if (comment.isEmpty()) {
+            return "    " + toMips();
+        } else {
+            return comment + "\n    " + toMips();
+        }
     }
 }

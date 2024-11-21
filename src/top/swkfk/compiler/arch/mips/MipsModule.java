@@ -37,13 +37,14 @@ public class MipsModule implements ArchModule {
     }
 
     private void parseBlock(BasicBlock block, MipsFunction mipsFunction) {
-        MipsBlock mipsBlock = new MipsBlock();
+        MipsBlock mipsBlock = new MipsBlock(block);
         mipsFunction.addBlock(mipsBlock);
         block.getInstructions().forEach(node -> parseInstruction(node.getData(), mipsBlock));
     }
 
     private void parseInstruction(User instruction, MipsBlock mipsBlock) {
         // TODO
+        mipsBlock.reservedComment = instruction.toLLVM();
         mipsBlock.addInstruction(new MipsINop());
     }
 

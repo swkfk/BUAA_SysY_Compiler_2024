@@ -13,7 +13,7 @@ final public class Hello extends Pass {
     public void run(IrModule module) {
         debug("Hello, world!");
         module.getFunctions().forEach(
-            f -> f.getBlocks().getHead().getData().appendComment(" ^_^ Hello, world!")
+            f -> f.getBlocks().getHead().getData().comment.append(" ^_^ Hello, world!")
         );
     }
 }
