@@ -3,7 +3,9 @@ package top.swkfk.compiler.llvm.value;
 import top.swkfk.compiler.frontend.symbol.type.SymbolType;
 import top.swkfk.compiler.llvm.Use;
 import top.swkfk.compiler.helpers.GlobalCounter;
+import top.swkfk.compiler.llvm.value.constants.ConstInteger;
 
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.IntStream;
@@ -49,5 +51,28 @@ public class Value {
 
     public String toString() {
         return type + " " + name;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof Value) {
+            return name.equals(((Value) obj).name);
+        }
+        return false;
+    }
+
+    @Override
+    public int hashCode() {
+        return name.hashCode();
+    }
+
+    /**
+     * Judge all values are constant integer. Normally used in constant folding or generating the mips
+     * code to avoid instructions list addiu $$, 1, 2.
+     * @param values values to be judged
+     * @return whether all values are constant integer
+     */
+    public static boolean allConstInteger(Value... values) {
+        return Arrays.stream(values).allMatch(value -> value instanceof ConstInteger);
     }
 }

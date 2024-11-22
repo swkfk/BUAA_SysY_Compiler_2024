@@ -22,6 +22,10 @@ final public class ConstInteger extends Constant {
         this.value = value;
     }
 
+    public int getValue() {
+        return value;
+    }
+
     @Override
     public boolean equals(Object obj) {
         if (obj instanceof ConstInteger) {

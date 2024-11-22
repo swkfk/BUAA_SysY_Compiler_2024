@@ -3,6 +3,7 @@ package top.swkfk.compiler.arch.mips;
 import top.swkfk.compiler.Configure;
 import top.swkfk.compiler.arch.ArchModule;
 import top.swkfk.compiler.arch.mips.instruction.MipsINop;
+import top.swkfk.compiler.arch.mips.process.MipsGenerator;
 import top.swkfk.compiler.llvm.IrModule;
 import top.swkfk.compiler.llvm.value.BasicBlock;
 import top.swkfk.compiler.llvm.value.Function;
@@ -27,25 +28,28 @@ public class MipsModule implements ArchModule {
     }
 
     private void parseFunction(Function function) {
+        MipsGenerator generator = new MipsGenerator();
         MipsFunction mipsFunction = new MipsFunction(function.getName());
         functions.add(mipsFunction);
+        // TODO: calculate the parameter size
         MipsBlock entry = new MipsBlock();
         mipsFunction.addBlock(entry);
         for (DualLinkedList.Node<BasicBlock> node : function.getBlocks()) {
-            parseBlock(node.getData(), mipsFunction);
+            parseBlock(node.getData(), mipsFunction, generator);
         }
+        // TODO: fill the entry block
     }
 
-    private void parseBlock(BasicBlock block, MipsFunction mipsFunction) {
+    private void parseBlock(BasicBlock block, MipsFunction mipsFunction, MipsGenerator generator) {
         MipsBlock mipsBlock = new MipsBlock(block);
         mipsFunction.addBlock(mipsBlock);
-        block.getInstructions().forEach(node -> parseInstruction(node.getData(), mipsBlock));
+        block.getInstructions().forEach(node -> parseInstruction(node.getData(), mipsBlock, generator));
     }
 
-    private void parseInstruction(User instruction, MipsBlock mipsBlock) {
-        // TODO
+    private void parseInstruction(User instruction, MipsBlock mipsBlock, MipsGenerator generator) {
         mipsBlock.reservedComment = instruction.toLLVM();
-        mipsBlock.addInstruction(new MipsINop());
+        generator.run(instruction).forEach(mipsBlock::addInstruction);
+        mipsBlock.reservedComment = null;  // Maybe there are no instruction added
     }
 
     @Override

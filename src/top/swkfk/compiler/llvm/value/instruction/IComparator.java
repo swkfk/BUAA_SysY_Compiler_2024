@@ -21,6 +21,10 @@ final public class IComparator extends User {
         this.opcode = opcode;
     }
 
+    public BinaryOp getOpcode() {
+        return opcode;
+    }
+
     @Override
     public String toLLVM() {
         return getName() + " = " + opcode.getOpcode() + " " + getOperand(0).getType() + " " +

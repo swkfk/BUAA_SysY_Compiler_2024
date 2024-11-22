@@ -1,5 +1,8 @@
 package top.swkfk.compiler.llvm.value.instruction;
 
+import top.swkfk.compiler.llvm.value.Value;
+import top.swkfk.compiler.llvm.value.constants.ConstInteger;
+
 public enum BinaryOp {
 
     ADD("add"),
@@ -31,5 +34,25 @@ public enum BinaryOp {
 
     public String getOpcode() {
         return opcode;
+    }
+
+    public int calculate(int lhs, int rhs) {
+        return switch (this) {
+            case ADD -> lhs + rhs;
+            case SUB -> lhs - rhs;
+            case MUL -> lhs * rhs;
+            case DIV -> lhs / rhs;
+            case MOD -> lhs % rhs;
+            case AND -> lhs & rhs;
+            case OR -> lhs | rhs;
+            case XOR -> lhs ^ rhs;
+            case Separator -> throw new RuntimeException("Separator is not a valid operator");
+            case Eq -> lhs == rhs ? 1 : 0;
+            case Ne -> lhs != rhs ? 1 : 0;
+            case Lt -> lhs < rhs ? 1 : 0;
+            case Le -> lhs <= rhs ? 1 : 0;
+            case Gt -> lhs > rhs ? 1 : 0;
+            case Ge -> lhs >= rhs ? 1 : 0;
+        };
     }
 }
