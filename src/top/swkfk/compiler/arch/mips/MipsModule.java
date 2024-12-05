@@ -30,17 +30,24 @@ public class MipsModule implements ArchModule {
     }
 
     private void parseFunction(Function function) {
-        MipsGenerator generator = new MipsGenerator(function.getBlocks(), functionMap);
+        MipsBlock entry = new MipsBlock();
+        MipsBlock exit = new MipsBlock();
+
+        MipsGenerator generator = new MipsGenerator(function.getBlocks(), functionMap, exit);
         MipsFunction mipsFunction = new MipsFunction(function.getName());
         functions.add(mipsFunction);
         functionMap.put(function, mipsFunction);
         // TODO: calculate the parameter size
-        MipsBlock entry = new MipsBlock();
+
         mipsFunction.addBlock(entry);
         for (DualLinkedList.Node<BasicBlock> node : function.getBlocks()) {
             parseBlock(node.getData(), mipsFunction, generator);
         }
         // TODO: fill the entry block
+
+        mipsFunction.addBlock(exit);
+
+        // TODO: fill the exit block
     }
 
     private void parseBlock(BasicBlock block, MipsFunction mipsFunction, MipsGenerator generator) {

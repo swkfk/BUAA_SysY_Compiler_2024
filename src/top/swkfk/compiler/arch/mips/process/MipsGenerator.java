@@ -27,6 +27,7 @@ import top.swkfk.compiler.llvm.value.instruction.IBranch;
 import top.swkfk.compiler.llvm.value.instruction.ICall;
 import top.swkfk.compiler.llvm.value.instruction.IComparator;
 import top.swkfk.compiler.llvm.value.instruction.ILoad;
+import top.swkfk.compiler.llvm.value.instruction.IReturn;
 import top.swkfk.compiler.llvm.value.instruction.IStore;
 import top.swkfk.compiler.utils.DualLinkedList;
 import top.swkfk.compiler.utils.Pair;
@@ -40,11 +41,13 @@ final public class MipsGenerator {
     private final Map<Value, MipsVirtualRegister> valueMap = new HashMap<>();
     private final Map<BasicBlock, MipsBlock> blockMap = new HashMap<>();
     private final Map<Function, MipsFunction> functionMap;
+    private final MipsBlock exitBlock;
     private int stackSize = 0;
 
-    public MipsGenerator(DualLinkedList<BasicBlock> blocks, Map<Function, MipsFunction> functionMap) {
+    public MipsGenerator(DualLinkedList<BasicBlock> blocks, Map<Function, MipsFunction> functionMap, MipsBlock exit) {
         blocks.forEach(node -> blockMap.put(node.getData(), new MipsBlock(node.getData())));
         this.functionMap = functionMap;
+        this.exitBlock = exit;
     }
 
     public MipsBlock blockLLVM2Mips(BasicBlock block) {
@@ -148,6 +151,22 @@ final public class MipsGenerator {
             }
             list.add(new MipsIJump(MipsIJump.X.jal, functionMap.get(call.getFunction()).getEntryBlock()));
             return list;
+        }
+        if (instruction instanceof IReturn ret) {
+            if (ret.getOperands().isEmpty()) {
+                return List.of(new MipsIJump(MipsIJump.X.j, exitBlock));
+            }
+            if (ret.getOperand(0) instanceof ConstInteger integer) {
+                return List.of(
+                    new MipsIBinary(MipsIBinary.X.addiu, MipsPhysicalRegister.v0, MipsPhysicalRegister.zero, new MipsImmediate(integer.getValue())),
+                    new MipsIJump(MipsIJump.X.j, exitBlock)
+                );
+            }
+            MipsVirtualRegister register = new MipsVirtualRegister();
+            return List.of(
+                new MipsIBinary(MipsIBinary.X.addiu, register, eliminateImmediate(List.of(), ret.getOperand(0)), new MipsImmediate(0)),
+                new MipsIJump(MipsIJump.X.j, exitBlock)
+            );
         }
         if (instruction instanceof ILoad load) {
             MipsVirtualRegister register = new MipsVirtualRegister();
