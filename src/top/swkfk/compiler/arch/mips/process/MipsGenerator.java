@@ -8,6 +8,7 @@ import top.swkfk.compiler.arch.mips.instruction.MipsIHiLo;
 import top.swkfk.compiler.arch.mips.instruction.MipsIJump;
 import top.swkfk.compiler.arch.mips.instruction.MipsILoadStore;
 import top.swkfk.compiler.arch.mips.instruction.MipsIMultDiv;
+import top.swkfk.compiler.arch.mips.instruction.MipsIPhi;
 import top.swkfk.compiler.arch.mips.instruction.MipsIUnimp;
 import top.swkfk.compiler.arch.mips.instruction.MipsInstruction;
 import top.swkfk.compiler.arch.mips.operand.MipsImmediate;
@@ -30,6 +31,7 @@ import top.swkfk.compiler.llvm.value.instruction.IComparator;
 import top.swkfk.compiler.llvm.value.instruction.IConvert;
 import top.swkfk.compiler.llvm.value.instruction.ILoad;
 import top.swkfk.compiler.llvm.value.instruction.IMove;
+import top.swkfk.compiler.llvm.value.instruction.IPhi;
 import top.swkfk.compiler.llvm.value.instruction.IReturn;
 import top.swkfk.compiler.llvm.value.instruction.IStore;
 import top.swkfk.compiler.utils.DualLinkedList;
@@ -221,6 +223,21 @@ final public class MipsGenerator {
                     return List.of(new MipsIBinary(MipsIBinary.X.addiu, register, valueMap.get(convert.getOperand(0)), new MipsImmediate(0)));
                 }
             }
+        }
+        if (instruction instanceof IPhi phi) {
+            MipsVirtualRegister register = new MipsVirtualRegister();
+            valueMap.put(phi, register);
+            MipsIPhi mipsPhi = new MipsIPhi(register);
+            for (Pair<BasicBlock, Value> pair : phi.getIncoming()) {
+                MipsOperand operand;
+                if (pair.second() instanceof ConstInteger integer) {
+                    operand = new MipsImmediate(integer.getValue());
+                } else {
+                    operand = valueMap.get(pair.second());
+                }
+                mipsPhi.addOperand(operand, blockLLVM2Mips(pair.first()));
+            }
+            return List.of(mipsPhi);
         }
         return List.of(new MipsIUnimp());
     }

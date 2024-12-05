@@ -23,6 +23,10 @@ final public class IPhi extends User {
         addOperand(value);
     }
 
+    public List<Pair<BasicBlock, Value>> getIncoming() {
+        return incoming;
+    }
+
     @Override
     public String toLLVM() {
         return getName() + " = phi " + getType() + " " +
