@@ -26,6 +26,8 @@ import top.swkfk.compiler.llvm.value.instruction.IBinary;
 import top.swkfk.compiler.llvm.value.instruction.IBranch;
 import top.swkfk.compiler.llvm.value.instruction.ICall;
 import top.swkfk.compiler.llvm.value.instruction.IComparator;
+import top.swkfk.compiler.llvm.value.instruction.ILoad;
+import top.swkfk.compiler.llvm.value.instruction.IStore;
 import top.swkfk.compiler.utils.DualLinkedList;
 import top.swkfk.compiler.utils.Pair;
 
@@ -146,6 +148,25 @@ final public class MipsGenerator {
             }
             list.add(new MipsIJump(MipsIJump.X.jal, functionMap.get(call.getFunction()).getEntryBlock()));
             return list;
+        }
+        if (instruction instanceof ILoad load) {
+            MipsVirtualRegister register = new MipsVirtualRegister();
+            valueMap.put(load, register);
+            return List.of(new MipsILoadStore(MipsILoadStore.X.lw, register, valueMap.get(load.getOperand(0)), new MipsImmediate(0)));
+        }
+        if (instruction instanceof IStore store) {
+            List<MipsInstruction> res = new LinkedList<>();
+            MipsOperand operand;
+            if (store.getOperand(0) instanceof ConstInteger integer) {
+                operand = new MipsVirtualRegister();
+                res.add(new MipsIBinary(MipsIBinary.X.addiu, operand, MipsPhysicalRegister.zero, new MipsImmediate(integer.getValue())));
+            } else {
+                operand = valueMap.get(store.getOperand(0));
+            }
+            res.add(new MipsILoadStore(MipsILoadStore.X.sw,
+                operand, valueMap.get(store.getOperand(1)), new MipsImmediate(0)
+            ));
+            return res;
         }
         return List.of(new MipsIUnimp());
     }
