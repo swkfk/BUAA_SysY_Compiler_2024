@@ -14,6 +14,7 @@ import top.swkfk.compiler.arch.mips.operand.MipsImmediate;
 import top.swkfk.compiler.arch.mips.operand.MipsOperand;
 import top.swkfk.compiler.arch.mips.operand.MipsPhysicalRegister;
 import top.swkfk.compiler.arch.mips.operand.MipsVirtualRegister;
+import top.swkfk.compiler.frontend.symbol.type.Ty;
 import top.swkfk.compiler.frontend.symbol.type.TyPtr;
 import top.swkfk.compiler.llvm.value.BasicBlock;
 import top.swkfk.compiler.llvm.value.Function;
@@ -150,6 +151,11 @@ final public class MipsGenerator {
                 ));
             }
             list.add(new MipsIJump(MipsIJump.X.jal, functionMap.get(call.getFunction()).getEntryBlock()));
+            if (call.getType() != Ty.Void) {
+                MipsVirtualRegister register = new MipsVirtualRegister();
+                list.add(new MipsIBinary(MipsIBinary.X.addiu, register, MipsPhysicalRegister.v0, new MipsImmediate(0)));
+                valueMap.put(call, register);
+            }
             return list;
         }
         if (instruction instanceof IReturn ret) {
