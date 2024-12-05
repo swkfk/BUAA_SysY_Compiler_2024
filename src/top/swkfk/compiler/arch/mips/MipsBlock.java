@@ -21,12 +21,16 @@ final public class MipsBlock extends MipsOperand {
 
     private final DualLinkedList<MipsInstruction> instructions = new DualLinkedList<>();
 
-    public MipsBlock() {
-        this(null);
+    public MipsBlock(String name) {
+        this(null, name);
     }
 
     public MipsBlock(BasicBlock block) {
-        name = "L" + counter.get();
+        this(block, ".L" + counter.get());
+    }
+
+    public MipsBlock(BasicBlock block, String name) {
+        this.name = name;
         if (block != null) {
             comment.append("%" + block.getName()).append(": ").append(block.comment.getComment());
         }

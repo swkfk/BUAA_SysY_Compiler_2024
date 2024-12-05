@@ -30,8 +30,8 @@ public class MipsModule implements ArchModule {
     }
 
     private void parseFunction(Function function) {
-        MipsBlock entry = new MipsBlock();
-        MipsBlock exit = new MipsBlock();
+        MipsBlock entry = new MipsBlock(function.getName() + ".entry");
+        MipsBlock exit = new MipsBlock(function.getName() + ".exit");
 
         MipsGenerator generator = new MipsGenerator(function.getBlocks(), functionMap, exit);
         MipsFunction mipsFunction = new MipsFunction(function.getName());
