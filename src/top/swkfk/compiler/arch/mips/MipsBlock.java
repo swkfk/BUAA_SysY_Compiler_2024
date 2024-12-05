@@ -7,6 +7,8 @@ import top.swkfk.compiler.helpers.GlobalCounter;
 import top.swkfk.compiler.llvm.value.BasicBlock;
 import top.swkfk.compiler.utils.DualLinkedList;
 
+import java.util.function.Predicate;
+
 final public class MipsBlock extends MipsOperand {
     private final static GlobalCounter counter = new GlobalCounter();
     private final String name;
@@ -42,6 +44,16 @@ final public class MipsBlock extends MipsOperand {
             instruction.comment.append(reservedComment);
             reservedComment = null;
         }
+    }
+
+    public void addInstructionAfter(MipsInstruction instruction, Predicate<MipsInstruction> predicate) {
+        for (DualLinkedList.Node<MipsInstruction> node : instructions) {
+            if (predicate.test(node.getData())) {
+                new DualLinkedList.Node<>(instruction).insertAfter(node);
+                return;
+            }
+        }
+        throw new RuntimeException("Cannot find the instruction to insert after");
     }
 
     @Override

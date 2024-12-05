@@ -15,6 +15,7 @@ final public class MipsPhysicalRegister extends MipsOperand {
     public static final MipsPhysicalRegister v1 = new MipsPhysicalRegister(3, "$v1");
     public static final MipsPhysicalRegister gp = new MipsPhysicalRegister(28, "$gp");
     public static final MipsPhysicalRegister sp = new MipsPhysicalRegister(29, "$sp");
+    public static final MipsPhysicalRegister fp = new MipsPhysicalRegister(30, "$fp");
     public static final MipsPhysicalRegister ra = new MipsPhysicalRegister(31, "$ra");
 
     public static final MipsPhysicalRegister[] a = new MipsPhysicalRegister[] {

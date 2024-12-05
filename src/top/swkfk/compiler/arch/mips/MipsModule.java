@@ -2,6 +2,10 @@ package top.swkfk.compiler.arch.mips;
 
 import top.swkfk.compiler.Configure;
 import top.swkfk.compiler.arch.ArchModule;
+import top.swkfk.compiler.arch.mips.instruction.MipsIBinary;
+import top.swkfk.compiler.arch.mips.instruction.MipsIJump;
+import top.swkfk.compiler.arch.mips.operand.MipsImmediate;
+import top.swkfk.compiler.arch.mips.operand.MipsPhysicalRegister;
 import top.swkfk.compiler.arch.mips.process.MipsGenerator;
 import top.swkfk.compiler.llvm.IrModule;
 import top.swkfk.compiler.llvm.value.BasicBlock;
@@ -37,17 +41,27 @@ public class MipsModule implements ArchModule {
         MipsFunction mipsFunction = new MipsFunction(function.getName());
         functions.add(mipsFunction);
         functionMap.put(function, mipsFunction);
-        // TODO: calculate the parameter size
+
+        // Fill the entry block. Except for the sub $sp
+        entry.addInstruction(new MipsIBinary(MipsIBinary.X.addiu, MipsPhysicalRegister.fp, MipsPhysicalRegister.sp, new MipsImmediate(0)));
+        for (int i = 0; i < function.getParams().size(); i++) {
+            generator.addParameter(function.getParams().get(i), i).forEach(entry::addInstruction);
+        }
 
         mipsFunction.addBlock(entry);
         for (DualLinkedList.Node<BasicBlock> node : function.getBlocks()) {
             parseBlock(node.getData(), mipsFunction, generator);
         }
-        // TODO: fill the entry block
 
         mipsFunction.addBlock(exit);
+        exit.addInstruction(new MipsIBinary(MipsIBinary.X.addiu, MipsPhysicalRegister.sp, MipsPhysicalRegister.sp, new MipsImmediate(generator.getStackSize())));
+        exit.addInstruction(new MipsIJump(MipsIJump.X.jr, MipsPhysicalRegister.ra));
 
-        // TODO: fill the exit block
+        // Re-fill the entry block. Fill the sub $sp
+        entry.addInstructionAfter(
+            new MipsIBinary(MipsIBinary.X.addiu, MipsPhysicalRegister.sp, MipsPhysicalRegister.sp, new MipsImmediate(-generator.getStackSize())),
+            instruction -> instruction instanceof MipsIBinary && instruction.getOperands()[0] == MipsPhysicalRegister.fp
+        );
     }
 
     private void parseBlock(BasicBlock block, MipsFunction mipsFunction, MipsGenerator generator) {

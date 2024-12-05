@@ -46,6 +46,26 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+/// Convention:
+/// <code>$a0</code> ~ <code>$a3</code>: The first four arguments
+///
+/// <pre>
+/// |                                        |
+/// |           Caller Stack Frame           |
+/// |                                        |
+/// +========================================+  <-- Caller $sp == Callee $fp
+/// |            The 5th Argument            |
+/// +----------------------------------------+  <-- Caller $fp - 4
+/// |            The 6th Argument            |
+/// +----------------------------------------+  <-- Caller $fp - 8
+/// |             Other Argument             |
+/// +----------------------------------------+
+/// |             Local Variable             |
+/// +----------------------------------------+
+/// |           Reserved register            |
+/// +----------------------------------------+  <-- Callee $sp
+/// </pre>
+///
 final public class MipsGenerator {
     private final Map<Value, MipsVirtualRegister> valueMap = new HashMap<>();
     private final Map<BasicBlock, MipsBlock> blockMap = new HashMap<>();
@@ -63,13 +83,28 @@ final public class MipsGenerator {
         return blockMap.get(block);
     }
 
+    public List<MipsInstruction> addParameter(Value value, int index) {
+        MipsVirtualRegister register = new MipsVirtualRegister();
+        valueMap.put(value, register);
+        if (index >= MipsPhysicalRegister.a.length) {
+            enlargeStack(4);
+            return List.of(
+                new MipsILoadStore(MipsILoadStore.X.lw, register, MipsPhysicalRegister.fp, new MipsImmediate((1 + index - MipsPhysicalRegister.a.length) * -4))
+            );
+        } else {
+            return List.of(
+                new MipsIBinary(MipsIBinary.X.addiu, register, MipsPhysicalRegister.a[index], new MipsImmediate(0))
+            );
+        }
+    }
+
     public List<MipsInstruction> run(User instruction) {
         if (instruction instanceof IAllocate allocate) {
             int offset = enlargeStack(((TyPtr) allocate.getType()).getBase().sizeof());
             MipsVirtualRegister register = new MipsVirtualRegister();
             valueMap.put(allocate, register);
             return List.of(
-                new MipsIBinary(MipsIBinary.X.addiu, register, MipsPhysicalRegister.sp, new MipsImmediate(offset))
+                new MipsIBinary(MipsIBinary.X.addiu, register, MipsPhysicalRegister.fp, new MipsImmediate(offset))
             );
         }
         if (instruction instanceof IBinary || instruction instanceof IComparator) {
@@ -136,16 +171,7 @@ final public class MipsGenerator {
         }
         if (instruction instanceof ICall call) {
             List<MipsInstruction> list = new LinkedList<>();
-            /// Convention:
-            /// $a0 ~ $a3: The first four arguments
-            ///
-            /// |                                        |  <-- Caller's Stack Frame
-            /// +========================================+  <-- Caller's $sp
-            /// |                                        |  <-- The 5th argument
-            /// +----------------------------------------+  <-- $sp - 4
-            /// |                                        |  <-- The 6th argument
-            /// +----------------------------------------+  <-- $sp - 8
-            ///
+
             for (int i = 0; i < call.getOperands().size() && i < MipsPhysicalRegister.a.length; i++) {
                 list.add(new MipsIBinary(
                     MipsIBinary.X.addiu, MipsPhysicalRegister.a[i],
@@ -294,9 +320,12 @@ final public class MipsGenerator {
     }
 
     private int enlargeStack(int size) {
-        int offset = stackSize;
         stackSize += size;
-        return offset;
+        return -stackSize;
+    }
+
+    public int getStackSize() {
+        return stackSize;
     }
 
     private List<MipsInstruction> buildCompareHelper(User binary, MipsIBinary.X opcode) {
