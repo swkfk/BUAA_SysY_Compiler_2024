@@ -2,7 +2,6 @@ package top.swkfk.compiler.arch.mips;
 
 import top.swkfk.compiler.Configure;
 import top.swkfk.compiler.arch.ArchModule;
-import top.swkfk.compiler.arch.mips.instruction.MipsINop;
 import top.swkfk.compiler.arch.mips.process.MipsGenerator;
 import top.swkfk.compiler.llvm.IrModule;
 import top.swkfk.compiler.llvm.value.BasicBlock;
@@ -28,7 +27,7 @@ public class MipsModule implements ArchModule {
     }
 
     private void parseFunction(Function function) {
-        MipsGenerator generator = new MipsGenerator();
+        MipsGenerator generator = new MipsGenerator(function.getBlocks());
         MipsFunction mipsFunction = new MipsFunction(function.getName());
         functions.add(mipsFunction);
         // TODO: calculate the parameter size
@@ -41,7 +40,7 @@ public class MipsModule implements ArchModule {
     }
 
     private void parseBlock(BasicBlock block, MipsFunction mipsFunction, MipsGenerator generator) {
-        MipsBlock mipsBlock = new MipsBlock(block);
+        MipsBlock mipsBlock = generator.blockLLVM2Mips(block);
         mipsFunction.addBlock(mipsBlock);
         block.getInstructions().forEach(node -> parseInstruction(node.getData(), mipsBlock, generator));
     }

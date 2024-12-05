@@ -18,6 +18,18 @@ final public class IBranch extends ITerminator {
         this.target = Either.left(target);
     }
 
+    public boolean isConditional() {
+        return target.isRight();
+    }
+
+    public BasicBlock getTarget() {
+        return target.getLeft();
+    }
+
+    public Pair<BasicBlock, BasicBlock> getConditionalTarget() {
+        return target.getRight();
+    }
+
     public IBranch(Value value, BasicBlock trueTarget, BasicBlock falseTarget) {
         super("", null);
         addOperand(value);

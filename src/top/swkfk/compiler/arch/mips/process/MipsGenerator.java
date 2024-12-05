@@ -1,7 +1,10 @@
 package top.swkfk.compiler.arch.mips.process;
 
+import top.swkfk.compiler.arch.mips.MipsBlock;
 import top.swkfk.compiler.arch.mips.instruction.MipsIBinary;
+import top.swkfk.compiler.arch.mips.instruction.MipsIBrEqu;
 import top.swkfk.compiler.arch.mips.instruction.MipsIHiLo;
+import top.swkfk.compiler.arch.mips.instruction.MipsIJump;
 import top.swkfk.compiler.arch.mips.instruction.MipsIMultDiv;
 import top.swkfk.compiler.arch.mips.instruction.MipsIUnimp;
 import top.swkfk.compiler.arch.mips.instruction.MipsInstruction;
@@ -10,13 +13,17 @@ import top.swkfk.compiler.arch.mips.operand.MipsOperand;
 import top.swkfk.compiler.arch.mips.operand.MipsPhysicalRegister;
 import top.swkfk.compiler.arch.mips.operand.MipsVirtualRegister;
 import top.swkfk.compiler.frontend.symbol.type.TyPtr;
+import top.swkfk.compiler.llvm.value.BasicBlock;
 import top.swkfk.compiler.llvm.value.User;
 import top.swkfk.compiler.llvm.value.Value;
 import top.swkfk.compiler.llvm.value.constants.ConstInteger;
 import top.swkfk.compiler.llvm.value.instruction.BinaryOp;
 import top.swkfk.compiler.llvm.value.instruction.IAllocate;
 import top.swkfk.compiler.llvm.value.instruction.IBinary;
+import top.swkfk.compiler.llvm.value.instruction.IBranch;
 import top.swkfk.compiler.llvm.value.instruction.IComparator;
+import top.swkfk.compiler.utils.DualLinkedList;
+import top.swkfk.compiler.utils.Pair;
 
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -25,9 +32,15 @@ import java.util.Map;
 
 final public class MipsGenerator {
     private final Map<Value, MipsVirtualRegister> valueMap = new HashMap<>();
+    private final Map<BasicBlock, MipsBlock> blockMap = new HashMap<>();
     private int stackSize = 0;
 
-    public MipsGenerator() {
+    public MipsGenerator(DualLinkedList<BasicBlock> blocks) {
+        blocks.forEach(node -> blockMap.put(node.getData(), new MipsBlock(node.getData())));
+    }
+
+    public MipsBlock blockLLVM2Mips(BasicBlock block) {
+        return blockMap.get(block);
     }
 
     public List<MipsInstruction> run(User instruction) {
@@ -88,6 +101,18 @@ final public class MipsGenerator {
                 case Gt -> buildCompareHelper(instruction, MipsIBinary.X.sgt);
                 case Ge -> buildCompareHelper(instruction, MipsIBinary.X.sge);
             };
+        }
+        if (instruction instanceof IBranch branch) {
+            if (branch.isConditional()) {
+                MipsVirtualRegister cond = valueMap.get(branch.getOperand(0));
+                Pair<BasicBlock, BasicBlock> target = branch.getConditionalTarget();
+                return List.of(
+                    new MipsIBrEqu(MipsIBrEqu.X.bne, cond, MipsPhysicalRegister.zero, blockLLVM2Mips(target.first())),
+                    new MipsIJump(MipsIJump.X.j, blockLLVM2Mips(target.second()))
+                );
+            } else {
+                return List.of(new MipsIJump(MipsIJump.X.j, blockLLVM2Mips(branch.getTarget())));
+            }
         }
         return List.of(new MipsIUnimp());
     }
