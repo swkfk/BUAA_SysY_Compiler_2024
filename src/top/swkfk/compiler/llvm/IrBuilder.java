@@ -36,18 +36,12 @@ public class IrBuilder {
     private final Traverser traverser;
 
     @SuppressWarnings("SpellCheckingInspection")
-    private final static Map<String, SymbolFunction> externalFunctions = Map.of(
-        "getint", new SymbolFunction("getint", Ty.I32, -1),
-        "getchar", new SymbolFunction("getchar", Ty.I32, -1),
-        "putint", new SymbolFunction("putint", Ty.Void, -1) {{
-            addParameter(new SymbolVariable("_1_i32", Ty.I32, false, -1));
-        }},
-        "putch", new SymbolFunction("putch", Ty.Void, -1) {{
-            addParameter(new SymbolVariable("_1_i32", Ty.I32, false, -1));
-        }},
-        "putstr", new SymbolFunction("putstr", Ty.Void, -1) {{
-            addParameter(new SymbolVariable("_1_i8_star", new TyPtr(Ty.I8), false, -1));
-        }}
+    private final static Map<String, Function> externalFunctions = Map.of(
+        "getint", Function.external("getint", Ty.I32),
+        "getchar", Function.external("getchar", Ty.I32),
+        "putint", Function.external("putint", Ty.Void, Ty.I32),
+        "putch", Function.external("putch", Ty.Void, Ty.I32),
+        "putstr", Function.external("putstr", Ty.Void, new TyPtr(Ty.I8))
     );
 
     private final List<Function> functions;
@@ -99,7 +93,7 @@ public class IrBuilder {
         return currentFunction;
     }
 
-    void registerFunction(String name, SymbolType type, List<FuncFormalParam> params) {
+    Function registerFunction(String name, SymbolType type, List<FuncFormalParam> params) {
         Value.counter.reset();
         Function function = new Function(name, type);
         functions.add(function);
@@ -126,6 +120,8 @@ public class IrBuilder {
             param.getSymbol().setValue(pointer);
             param.getSymbol().setFromParam();
         }
+
+        return function;
     }
 
     void setInsertPoint(BasicBlock block) {
@@ -158,7 +154,7 @@ public class IrBuilder {
         return createBlock(autoFallThroughInto, "");
     }
 
-    SymbolFunction getExternalFunction(String name) {
+    Function getExternalFunction(String name) {
         return externalFunctions.get(name);
     }
 

@@ -50,6 +50,7 @@ import top.swkfk.compiler.frontend.symbol.type.TyPtr;
 import top.swkfk.compiler.helpers.Compatibility;
 import top.swkfk.compiler.helpers.LoopStorage;
 import top.swkfk.compiler.llvm.value.BasicBlock;
+import top.swkfk.compiler.llvm.value.Function;
 import top.swkfk.compiler.llvm.value.Value;
 import top.swkfk.compiler.llvm.value.constants.ConstInteger;
 import top.swkfk.compiler.llvm.value.instruction.BinaryOp;
@@ -66,9 +67,11 @@ import top.swkfk.compiler.llvm.value.instruction.IReturn;
 import top.swkfk.compiler.llvm.value.instruction.IStore;
 import top.swkfk.compiler.llvm.value.instruction.ITerminator;
 
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Stack;
 
@@ -76,6 +79,7 @@ class Traverser {
     private final CompileUnit ast;
     private final IrBuilder builder;
     private final SymbolTable symbols = Controller.symbols;
+    private final Map<String, Function> functionMap = new HashMap<>();
 
     Traverser(CompileUnit ast, IrBuilder builder) {
         this.ast = ast;
@@ -104,8 +108,11 @@ class Traverser {
     }
 
     void visitFunction(FuncDef funcDef) {
-        builder.registerFunction(
-            funcDef.getSymbol().getName(), funcDef.getSymbol().getType(), funcDef.getParams()
+        functionMap.put(
+            funcDef.getSymbol().getName(),
+            builder.registerFunction(
+                funcDef.getSymbol().getName(), funcDef.getSymbol().getType(), funcDef.getParams()
+            )
         );
         builder.jumpToNewBlock("First Block of Function `" + funcDef.getSymbol().getName() + "`");
         visitBlock(funcDef.getBody());
@@ -296,7 +303,7 @@ class Traverser {
      */
     Value visitCall(ExprUnaryCall call) {
         Value ret = builder.insertInstruction(
-            new ICall(call.getSymbol(), call.getParams().stream().map(this::visitExpr).toList())
+            new ICall(functionMap.get(call.getSymbol().getName()), call.getParams().stream().map(this::visitExpr).toList())
         );
         return call.getSymbol().getType().is("void") ? null : ret;
     }

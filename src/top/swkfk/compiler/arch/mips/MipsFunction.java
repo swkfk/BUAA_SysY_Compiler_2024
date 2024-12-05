@@ -11,6 +11,10 @@ public class MipsFunction extends MipsOperand {
         this.name = name;
     }
 
+    public MipsBlock getEntryBlock() {
+        return blocks.getHead().getData();
+    }
+
     public void addBlock(MipsBlock block) {
         new DualLinkedList.Node<>(block).insertIntoTail(blocks);
     }
@@ -22,7 +26,7 @@ public class MipsFunction extends MipsOperand {
 
     public String toMips() {
         StringBuilder sb = new StringBuilder();
-        sb.append(name).append(":\n");
+        // sb.append(name).append(":\n");
         for (DualLinkedList.Node<MipsBlock> node : blocks) {
             sb.append(node.getData().toMips()).append("\n");
         }

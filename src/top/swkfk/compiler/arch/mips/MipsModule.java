@@ -11,11 +11,14 @@ import top.swkfk.compiler.utils.DualLinkedList;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 public class MipsModule implements ArchModule {
     private final List<MipsFunction> functions = new LinkedList<>();
+    private final Map<Function, MipsFunction> functionMap = new HashMap<>();
 
     @Override
     public ArchModule runParseIr(IrModule module) {
@@ -27,9 +30,10 @@ public class MipsModule implements ArchModule {
     }
 
     private void parseFunction(Function function) {
-        MipsGenerator generator = new MipsGenerator(function.getBlocks());
+        MipsGenerator generator = new MipsGenerator(function.getBlocks(), functionMap);
         MipsFunction mipsFunction = new MipsFunction(function.getName());
         functions.add(mipsFunction);
+        functionMap.put(function, mipsFunction);
         // TODO: calculate the parameter size
         MipsBlock entry = new MipsBlock();
         mipsFunction.addBlock(entry);
@@ -86,6 +90,7 @@ public class MipsModule implements ArchModule {
         sb.append("\n.text\n\n");
 
         for (MipsFunction function : functions) {
+            sb.append("# Function: ").append(function).append("\n");
             sb.append(function.toMips()).append("\n");
         }
 

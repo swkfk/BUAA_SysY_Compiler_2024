@@ -15,12 +15,12 @@ import java.util.stream.Collectors;
 
 public class IrModule {
     private final List<Function> functions;
-    private final Map<String, SymbolFunction> externalFunctions;
+    private final Map<String, Function> externalFunctions;
     private final List<GlobalVariable> globalVariables;
 
     public IrModule(
         List<Function> functions,
-        Map<String, SymbolFunction> externalFunctions,
+        Map<String, Function> externalFunctions,
         List<GlobalVariable> globalVariables
     ) {
         this.functions = functions;
@@ -36,12 +36,12 @@ public class IrModule {
         sb.append(";; Compiled at: ").append(time).append("\n");
 
         sb.append("\n;; External Functions:\n");
-        for (SymbolFunction externalFunction : externalFunctions.values()) {
+        for (Function externalFunction : externalFunctions.values()) {
             sb.append("declare ")
                 .append(externalFunction.getType())
                 .append(" @").append(externalFunction.getName()).append("(")
                 .append(
-                    externalFunction.getParameters().stream()
+                    externalFunction.getParams().stream()
                         .map(f -> f.getType().toString())
                         .collect(Collectors.joining(", "))
                 ).append(")\n");

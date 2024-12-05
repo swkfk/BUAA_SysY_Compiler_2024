@@ -11,6 +11,7 @@ final public class Function extends Value {
 
     private final DualLinkedList<BasicBlock> blocks;
     private final List<Value> params;
+    private boolean isExternal;
 
     /**
      * Function is a value that represents a function.
@@ -23,6 +24,16 @@ final public class Function extends Value {
             "Function return type must be void or i32 or i8";
         this.blocks = new DualLinkedList<>();
         this.params = new LinkedList<>();
+        this.isExternal = false;
+    }
+
+    public static Function external(String name, SymbolType type, SymbolType... args) {
+        Function function = new Function(name, type);
+        for (SymbolType arg : args) {
+            function.addParam(arg);
+        }
+        function.isExternal = true;
+        return function;
     }
 
     public void addBlock(BasicBlock block) {

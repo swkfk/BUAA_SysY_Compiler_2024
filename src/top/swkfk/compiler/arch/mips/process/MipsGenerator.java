@@ -1,10 +1,12 @@
 package top.swkfk.compiler.arch.mips.process;
 
 import top.swkfk.compiler.arch.mips.MipsBlock;
+import top.swkfk.compiler.arch.mips.MipsFunction;
 import top.swkfk.compiler.arch.mips.instruction.MipsIBinary;
 import top.swkfk.compiler.arch.mips.instruction.MipsIBrEqu;
 import top.swkfk.compiler.arch.mips.instruction.MipsIHiLo;
 import top.swkfk.compiler.arch.mips.instruction.MipsIJump;
+import top.swkfk.compiler.arch.mips.instruction.MipsILoadStore;
 import top.swkfk.compiler.arch.mips.instruction.MipsIMultDiv;
 import top.swkfk.compiler.arch.mips.instruction.MipsIUnimp;
 import top.swkfk.compiler.arch.mips.instruction.MipsInstruction;
@@ -14,6 +16,7 @@ import top.swkfk.compiler.arch.mips.operand.MipsPhysicalRegister;
 import top.swkfk.compiler.arch.mips.operand.MipsVirtualRegister;
 import top.swkfk.compiler.frontend.symbol.type.TyPtr;
 import top.swkfk.compiler.llvm.value.BasicBlock;
+import top.swkfk.compiler.llvm.value.Function;
 import top.swkfk.compiler.llvm.value.User;
 import top.swkfk.compiler.llvm.value.Value;
 import top.swkfk.compiler.llvm.value.constants.ConstInteger;
@@ -21,6 +24,7 @@ import top.swkfk.compiler.llvm.value.instruction.BinaryOp;
 import top.swkfk.compiler.llvm.value.instruction.IAllocate;
 import top.swkfk.compiler.llvm.value.instruction.IBinary;
 import top.swkfk.compiler.llvm.value.instruction.IBranch;
+import top.swkfk.compiler.llvm.value.instruction.ICall;
 import top.swkfk.compiler.llvm.value.instruction.IComparator;
 import top.swkfk.compiler.utils.DualLinkedList;
 import top.swkfk.compiler.utils.Pair;
@@ -33,10 +37,12 @@ import java.util.Map;
 final public class MipsGenerator {
     private final Map<Value, MipsVirtualRegister> valueMap = new HashMap<>();
     private final Map<BasicBlock, MipsBlock> blockMap = new HashMap<>();
+    private final Map<Function, MipsFunction> functionMap;
     private int stackSize = 0;
 
-    public MipsGenerator(DualLinkedList<BasicBlock> blocks) {
+    public MipsGenerator(DualLinkedList<BasicBlock> blocks, Map<Function, MipsFunction> functionMap) {
         blocks.forEach(node -> blockMap.put(node.getData(), new MipsBlock(node.getData())));
+        this.functionMap = functionMap;
     }
 
     public MipsBlock blockLLVM2Mips(BasicBlock block) {
@@ -113,6 +119,33 @@ final public class MipsGenerator {
             } else {
                 return List.of(new MipsIJump(MipsIJump.X.j, blockLLVM2Mips(branch.getTarget())));
             }
+        }
+        if (instruction instanceof ICall call) {
+            List<MipsInstruction> list = new LinkedList<>();
+            /// Convention:
+            /// $a0 ~ $a3: The first four arguments
+            ///
+            /// |                                        |  <-- Caller's Stack Frame
+            /// +========================================+  <-- Caller's $sp
+            /// |                                        |  <-- The 5th argument
+            /// +----------------------------------------+  <-- $sp - 4
+            /// |                                        |  <-- The 6th argument
+            /// +----------------------------------------+  <-- $sp - 8
+            ///
+            for (int i = 0; i < call.getOperands().size() && i < MipsPhysicalRegister.a.length; i++) {
+                list.add(new MipsIBinary(
+                    MipsIBinary.X.addiu, MipsPhysicalRegister.a[i],
+                    eliminateImmediate(list, call.getOperand(i)), new MipsImmediate(0)
+                ));
+            }
+            for (int i = MipsPhysicalRegister.a.length; i < call.getOperands().size(); i++) {
+                list.add(new MipsILoadStore(MipsILoadStore.X.sw,
+                    eliminateImmediate(list, call.getOperand(i)),
+                    MipsPhysicalRegister.sp, new MipsImmediate((1 + i - MipsPhysicalRegister.a.length) * -4)
+                ));
+            }
+            list.add(new MipsIJump(MipsIJump.X.jal, functionMap.get(call.getFunction()).getEntryBlock()));
+            return list;
         }
         return List.of(new MipsIUnimp());
     }
@@ -211,5 +244,15 @@ final public class MipsGenerator {
         valueMap.put(binary, resultRegister);
         list.add(new MipsIHiLo(mf, resultRegister));
         return list;
+    }
+
+    private MipsOperand eliminateImmediate(List<MipsInstruction> instructions, Value value) {
+        if (value instanceof ConstInteger integer) {
+            MipsVirtualRegister register = new MipsVirtualRegister();
+            valueMap.put(value, register);
+            instructions.add(new MipsIBinary(MipsIBinary.X.addiu, register, MipsPhysicalRegister.zero, new MipsImmediate(integer.getValue())));
+            return register;
+        }
+        return valueMap.get(value);
     }
 }
