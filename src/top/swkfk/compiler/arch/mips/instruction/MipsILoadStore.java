@@ -10,7 +10,7 @@ import java.util.Map;
 final public class MipsILoadStore extends MipsInstruction {
 
     public enum X {
-        lb, lh, lw, SEPARATOR, sb, sh, sw
+        lbu, lhu, lw, SEPARATOR, sb, sh, sw
     }
 
     private final X operator;

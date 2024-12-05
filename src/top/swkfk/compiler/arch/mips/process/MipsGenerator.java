@@ -185,19 +185,39 @@ final public class MipsGenerator {
         if (instruction instanceof ILoad load) {
             MipsVirtualRegister register = new MipsVirtualRegister();
             valueMap.put(load, register);
-            return List.of(new MipsILoadStore(MipsILoadStore.X.lw, register, valueMap.get(load.getOperand(0)), new MipsImmediate(0)));
+            MipsILoadStore.X opcode;
+            if (load.getType().sizeof() == 1) {
+                opcode = MipsILoadStore.X.lbu;
+            } else if (load.getType().sizeof() == 2) {
+                opcode = MipsILoadStore.X.lhu;
+            } else if (load.getType().sizeof() == 4) {
+                opcode = MipsILoadStore.X.lw;
+            } else {
+                throw new RuntimeException("Unsupported load size");
+            }
+            return List.of(new MipsILoadStore(opcode, register, valueMap.get(load.getOperand(0)), new MipsImmediate(0)));
         }
         if (instruction instanceof IStore store) {
             List<MipsInstruction> res = new LinkedList<>();
             MipsOperand operand;
+            MipsILoadStore.X opcode;
+            if (store.getOperand(0).getType().sizeof() == 1) {
+                opcode = MipsILoadStore.X.sb;
+            } else if (store.getOperand(0).getType().sizeof() == 2) {
+                opcode = MipsILoadStore.X.sh;
+            } else if (store.getOperand(0).getType().sizeof() == 4) {
+                opcode = MipsILoadStore.X.sw;
+            } else {
+                throw new RuntimeException("Unsupported load size");
+            }
             if (store.getOperand(0) instanceof ConstInteger integer) {
                 operand = new MipsVirtualRegister();
                 res.add(new MipsIBinary(MipsIBinary.X.addiu, operand, MipsPhysicalRegister.zero, new MipsImmediate(integer.getValue())));
             } else {
                 operand = valueMap.get(store.getOperand(0));
             }
-            res.add(new MipsILoadStore(MipsILoadStore.X.sw,
-                operand, valueMap.get(store.getOperand(1)), new MipsImmediate(0)
+            res.add(new MipsILoadStore(
+                opcode, operand, valueMap.get(store.getOperand(1)), new MipsImmediate(0)
             ));
             return res;
         }
