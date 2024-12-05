@@ -6,6 +6,7 @@ import top.swkfk.compiler.arch.mips.instruction.MipsIMultDiv;
 import top.swkfk.compiler.arch.mips.instruction.MipsINop;
 import top.swkfk.compiler.arch.mips.instruction.MipsInstruction;
 import top.swkfk.compiler.arch.mips.operand.MipsImmediate;
+import top.swkfk.compiler.arch.mips.operand.MipsOperand;
 import top.swkfk.compiler.arch.mips.operand.MipsPhysicalRegister;
 import top.swkfk.compiler.arch.mips.operand.MipsVirtualRegister;
 import top.swkfk.compiler.frontend.symbol.type.TyPtr;
@@ -15,6 +16,7 @@ import top.swkfk.compiler.llvm.value.constants.ConstInteger;
 import top.swkfk.compiler.llvm.value.instruction.BinaryOp;
 import top.swkfk.compiler.llvm.value.instruction.IAllocate;
 import top.swkfk.compiler.llvm.value.instruction.IBinary;
+import top.swkfk.compiler.llvm.value.instruction.IBranch;
 import top.swkfk.compiler.llvm.value.instruction.IComparator;
 
 import java.util.HashMap;
@@ -80,12 +82,12 @@ final public class MipsGenerator {
                     instruction, MipsIBinary.X.xor, MipsIBinary.X.xori
                 );
                 case Separator -> throw new RuntimeException("Separator is not a valid binary operator");
-                case Eq -> MipsInstructionHub.seq(instruction, valueMap);
-                case Ne -> MipsInstructionHub.sne(instruction, valueMap);
-                case Lt -> MipsInstructionHub.slt(instruction, valueMap);
-                case Le -> MipsInstructionHub.sle(instruction, valueMap);
-                case Gt -> MipsInstructionHub.sgt(instruction, valueMap);
-                case Ge -> MipsInstructionHub.sge(instruction, valueMap);
+                case Eq -> buildCompareHelper(instruction, MipsIBinary.X.seq);
+                case Ne -> buildCompareHelper(instruction, MipsIBinary.X.sne);
+                case Lt -> buildCompareHelper(instruction, MipsIBinary.X.slt);
+                case Le -> buildCompareHelper(instruction, MipsIBinary.X.sle);
+                case Gt -> buildCompareHelper(instruction, MipsIBinary.X.sgt);
+                case Ge -> buildCompareHelper(instruction, MipsIBinary.X.sge);
             };
         }
         return List.of(new MipsINop());
@@ -95,6 +97,31 @@ final public class MipsGenerator {
         int offset = stackSize;
         stackSize += size;
         return offset;
+    }
+
+    private List<MipsInstruction> buildCompareHelper(User binary, MipsIBinary.X opcode) {
+        Value lhs = binary.getOperand(0);
+        Value rhs = binary.getOperand(1);
+        MipsVirtualRegister register = new MipsVirtualRegister();
+        valueMap.put(binary, register);
+        List<MipsInstruction> res = new LinkedList<>();
+        MipsOperand lhsOperand, rhsOperand;
+
+        if (lhs instanceof ConstInteger integer) {
+            lhsOperand = new MipsVirtualRegister();
+            res.add(new MipsIBinary(MipsIBinary.X.addiu, lhsOperand, MipsPhysicalRegister.zero, new MipsImmediate(integer.getValue())));
+        } else {
+            lhsOperand = valueMap.get(lhs);
+        }
+        if (rhs instanceof ConstInteger integer) {
+            rhsOperand = new MipsVirtualRegister();
+            res.add(new MipsIBinary(MipsIBinary.X.addiu, rhsOperand, MipsPhysicalRegister.zero, new MipsImmediate(integer.getValue())));
+        } else {
+            rhsOperand = valueMap.get(rhs);
+        }
+
+        res.add(new MipsIBinary(opcode, register, lhsOperand, rhsOperand));
+        return res;
     }
 
     /**

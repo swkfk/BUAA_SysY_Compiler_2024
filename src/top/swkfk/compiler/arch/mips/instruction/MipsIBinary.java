@@ -11,6 +11,7 @@ final public class MipsIBinary extends MipsInstruction {
     public enum X {
         addu, subu, and, or, xor, not, slt, sltu,
         addiu, andi, ori, xori, nor, slti, sltiu,
+        sle, sge, sgt, seq, sne
     }
 
     private final X operator;
