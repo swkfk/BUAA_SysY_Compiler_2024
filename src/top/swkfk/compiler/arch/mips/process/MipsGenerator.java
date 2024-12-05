@@ -27,7 +27,9 @@ import top.swkfk.compiler.llvm.value.instruction.IBinary;
 import top.swkfk.compiler.llvm.value.instruction.IBranch;
 import top.swkfk.compiler.llvm.value.instruction.ICall;
 import top.swkfk.compiler.llvm.value.instruction.IComparator;
+import top.swkfk.compiler.llvm.value.instruction.IConvert;
 import top.swkfk.compiler.llvm.value.instruction.ILoad;
+import top.swkfk.compiler.llvm.value.instruction.IMove;
 import top.swkfk.compiler.llvm.value.instruction.IReturn;
 import top.swkfk.compiler.llvm.value.instruction.IStore;
 import top.swkfk.compiler.utils.DualLinkedList;
@@ -192,6 +194,33 @@ final public class MipsGenerator {
                 operand, valueMap.get(store.getOperand(1)), new MipsImmediate(0)
             ));
             return res;
+        }
+        if (instruction instanceof IMove move) {
+            // XXX: Unchecked!
+            if (move.getOperand(0) instanceof ConstInteger integer) {
+                MipsVirtualRegister register = new MipsVirtualRegister();
+                valueMap.put(move, register);
+                return List.of(new MipsIBinary(MipsIBinary.X.addiu, register, MipsPhysicalRegister.zero, new MipsImmediate(integer.getValue())));
+            }
+            valueMap.put(move, valueMap.get(move.getOperand(0)));
+            return List.of();
+        }
+        if (instruction instanceof IConvert convert) {
+            MipsVirtualRegister register = new MipsVirtualRegister();
+            valueMap.put(convert, register);
+            if (convert.isTruncating()) {
+                if (convert.getOperand(0) instanceof ConstInteger integer) {
+                    return List.of(new MipsIBinary(MipsIBinary.X.addiu, register, MipsPhysicalRegister.zero, new MipsImmediate(integer.getValue() % (1 << convert.getType().sizeof() * 8))));
+                } else {
+                    return List.of(new MipsIBinary(MipsIBinary.X.andi, register, valueMap.get(convert.getOperand(0)), new MipsImmediate((1 << convert.getType().sizeof() * 8) - 1)));
+                }
+            } else {
+                if (convert.getOperand(0) instanceof ConstInteger integer) {
+                    return List.of(new MipsIBinary(MipsIBinary.X.addiu, register, MipsPhysicalRegister.zero, new MipsImmediate(integer.getValue())));
+                } else {
+                    return List.of(new MipsIBinary(MipsIBinary.X.addiu, register, valueMap.get(convert.getOperand(0)), new MipsImmediate(0)));
+                }
+            }
         }
         return List.of(new MipsIUnimp());
     }

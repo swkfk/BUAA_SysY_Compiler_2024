@@ -12,6 +12,11 @@ final public class IConvert extends User {
         assert value.getType().is("int") && target.is("int") && !target.equals(value.getType()) :
             "Invalid conversion from " + value.getType() + " to " + target ;
         this.source = value;
+        addOperand(value);
+    }
+
+    public boolean isTruncating() {
+        return getType().sizeof() < source.getType().sizeof();
     }
 
     @SuppressWarnings("SpellCheckingInspection")
