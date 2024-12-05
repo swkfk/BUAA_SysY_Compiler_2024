@@ -3,7 +3,7 @@ package top.swkfk.compiler.arch.mips.process;
 import top.swkfk.compiler.arch.mips.instruction.MipsIBinary;
 import top.swkfk.compiler.arch.mips.instruction.MipsIHiLo;
 import top.swkfk.compiler.arch.mips.instruction.MipsIMultDiv;
-import top.swkfk.compiler.arch.mips.instruction.MipsINop;
+import top.swkfk.compiler.arch.mips.instruction.MipsIUnimp;
 import top.swkfk.compiler.arch.mips.instruction.MipsInstruction;
 import top.swkfk.compiler.arch.mips.operand.MipsImmediate;
 import top.swkfk.compiler.arch.mips.operand.MipsOperand;
@@ -16,7 +16,6 @@ import top.swkfk.compiler.llvm.value.constants.ConstInteger;
 import top.swkfk.compiler.llvm.value.instruction.BinaryOp;
 import top.swkfk.compiler.llvm.value.instruction.IAllocate;
 import top.swkfk.compiler.llvm.value.instruction.IBinary;
-import top.swkfk.compiler.llvm.value.instruction.IBranch;
 import top.swkfk.compiler.llvm.value.instruction.IComparator;
 
 import java.util.HashMap;
@@ -90,7 +89,7 @@ final public class MipsGenerator {
                 case Ge -> buildCompareHelper(instruction, MipsIBinary.X.sge);
             };
         }
-        return List.of(new MipsINop());
+        return List.of(new MipsIUnimp());
     }
 
     private int enlargeStack(int size) {
