@@ -3,6 +3,7 @@ package top.swkfk.compiler.arch.mips.process;
 import top.swkfk.compiler.arch.mips.MipsBlock;
 import top.swkfk.compiler.arch.mips.MipsFunction;
 import top.swkfk.compiler.arch.mips.instruction.MipsIBinary;
+import top.swkfk.compiler.arch.mips.instruction.MipsIBitShift;
 import top.swkfk.compiler.arch.mips.instruction.MipsIBrEqu;
 import top.swkfk.compiler.arch.mips.instruction.MipsIHiLo;
 import top.swkfk.compiler.arch.mips.instruction.MipsIJump;
@@ -15,7 +16,9 @@ import top.swkfk.compiler.arch.mips.operand.MipsImmediate;
 import top.swkfk.compiler.arch.mips.operand.MipsOperand;
 import top.swkfk.compiler.arch.mips.operand.MipsPhysicalRegister;
 import top.swkfk.compiler.arch.mips.operand.MipsVirtualRegister;
+import top.swkfk.compiler.frontend.symbol.type.SymbolType;
 import top.swkfk.compiler.frontend.symbol.type.Ty;
+import top.swkfk.compiler.frontend.symbol.type.TyArray;
 import top.swkfk.compiler.frontend.symbol.type.TyPtr;
 import top.swkfk.compiler.llvm.value.BasicBlock;
 import top.swkfk.compiler.llvm.value.Function;
@@ -29,6 +32,7 @@ import top.swkfk.compiler.llvm.value.instruction.IBranch;
 import top.swkfk.compiler.llvm.value.instruction.ICall;
 import top.swkfk.compiler.llvm.value.instruction.IComparator;
 import top.swkfk.compiler.llvm.value.instruction.IConvert;
+import top.swkfk.compiler.llvm.value.instruction.IGep;
 import top.swkfk.compiler.llvm.value.instruction.ILoad;
 import top.swkfk.compiler.llvm.value.instruction.IMove;
 import top.swkfk.compiler.llvm.value.instruction.IPhi;
@@ -238,6 +242,33 @@ final public class MipsGenerator {
                 mipsPhi.addOperand(operand, blockLLVM2Mips(pair.first()));
             }
             return List.of(mipsPhi);
+        }
+        if (instruction instanceof IGep gep) {
+            MipsVirtualRegister register = new MipsVirtualRegister();
+            valueMap.put(gep, register);
+            Value pointer = gep.getOperand(0);
+            Value offset = gep.getOperand(1);
+            SymbolType base;
+            if (gep.isFromArgument()) {
+                base = ((TyPtr) pointer.getType()).getBase();
+            } else {
+                base = ((TyArray) ((TyPtr) pointer.getType()).getBase()).getBase();
+            }
+            if (offset instanceof ConstInteger integer) {
+                return List.of(new MipsIBinary(
+                    MipsIBinary.X.addiu, register, valueMap.get(pointer),
+                    new MipsImmediate(integer.getValue() * base.sizeof()))
+                );
+            } else {
+                return List.of(
+                    new MipsIBitShift(
+                        MipsIBitShift.X.sll, register, valueMap.get(offset),
+                        // ceil(log2(x)) = 32 - numberOfLeadingZeros(x - 1)
+                        new MipsImmediate(32 - Integer.numberOfLeadingZeros(base.sizeof() - 1))
+                    ),
+                    new MipsIBinary(MipsIBinary.X.addu, register, valueMap.get(pointer), valueMap.get(offset))
+                );
+            }
         }
         return List.of(new MipsIUnimp());
     }

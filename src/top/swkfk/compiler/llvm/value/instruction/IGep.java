@@ -33,6 +33,10 @@ final public class IGep extends User {
         addOperand(offset);
     }
 
+    public boolean isFromArgument() {
+        return loadedFromArgument;
+    }
+
     @SuppressWarnings("SpellCheckingInspection")
     @Override
     public String toLLVM() {
