@@ -45,7 +45,7 @@ public class MipsModule implements ArchModule {
         MipsBlock entry = new MipsBlock(function.getName() + ".entry");
         MipsBlock exit = new MipsBlock(function.getName() + ".exit");
 
-        MipsGenerator generator = new MipsGenerator(function.getBlocks(), functionMap, exit);
+        MipsGenerator generator = new MipsGenerator(function.getBlocks(), functionMap, entry, exit);
         MipsFunction mipsFunction = new MipsFunction(function.getName());
         functions.add(mipsFunction);
         functionMap.put(function, mipsFunction);
@@ -80,7 +80,7 @@ public class MipsModule implements ArchModule {
 
     private void parseInstruction(User instruction, MipsBlock mipsBlock, MipsGenerator generator) {
         mipsBlock.reservedComment = instruction.toLLVM();
-        generator.run(instruction).forEach(mipsBlock::addInstruction);
+        generator.run(mipsBlock, instruction).forEach(mipsBlock::addInstruction);
         mipsBlock.reservedComment = null;  // Maybe there are no instruction added
     }
 

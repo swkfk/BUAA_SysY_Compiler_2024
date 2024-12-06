@@ -74,10 +74,13 @@ final public class MipsGenerator {
     private final MipsBlock exitBlock;
     private int stackSize = 0;
 
-    public MipsGenerator(DualLinkedList<BasicBlock> blocks, Map<Function, MipsFunction> functionMap, MipsBlock exit) {
+    public MipsGenerator(DualLinkedList<BasicBlock> blocks, Map<Function, MipsFunction> functionMap, MipsBlock entry, MipsBlock exit) {
         blocks.forEach(node -> blockMap.put(node.getData(), new MipsBlock(node.getData())));
         this.functionMap = functionMap;
         this.exitBlock = exit;
+        MipsBlock.addEdge(entry, blockLLVM2Mips(blocks.getHead().getData()));
+        // This will be added in the Return instruction
+        // MipsBlock.addEdge(blockLLVM2Mips(blocks.getTail().getData()), exit);
     }
 
     public MipsBlock blockLLVM2Mips(BasicBlock block) {
@@ -99,7 +102,7 @@ final public class MipsGenerator {
         }
     }
 
-    public List<MipsInstruction> run(User instruction) {
+    public List<MipsInstruction> run(MipsBlock currentBlock, User instruction) {
         if (instruction instanceof IAllocate allocate) {
             int offset = enlargeStack(((TyPtr) allocate.getType()).getBase().sizeof());
             MipsVirtualRegister register = new MipsVirtualRegister();
@@ -162,17 +165,23 @@ final public class MipsGenerator {
             if (branch.isConditional()) {
                 MipsVirtualRegister cond = valueMap.get(branch.getOperand(0));
                 Pair<BasicBlock, BasicBlock> target = branch.getConditionalTarget();
+                MipsBlock.addEdge(currentBlock, blockLLVM2Mips(target.first()));
+                MipsBlock.addEdge(currentBlock, blockLLVM2Mips(target.second()));
+
                 return List.of(
                     new MipsIBrEqu(MipsIBrEqu.X.bne, cond, MipsPhysicalRegister.zero, blockLLVM2Mips(target.first())),
                     new MipsIJump(MipsIJump.X.j, blockLLVM2Mips(target.second()))
                 );
             } else {
+                MipsBlock.addEdge(currentBlock, blockLLVM2Mips(branch.getTarget()));
                 return List.of(new MipsIJump(MipsIJump.X.j, blockLLVM2Mips(branch.getTarget())));
             }
         }
         if (instruction instanceof ICall call) {
-            List<MipsInstruction> list = new LinkedList<>();
+            MipsBlock target = functionMap.get(call.getFunction()).getEntryBlock();
+            MipsBlock.addEdge(currentBlock, target);
 
+            List<MipsInstruction> list = new LinkedList<>();
             for (int i = 0; i < call.getOperands().size() && i < MipsPhysicalRegister.a.length; i++) {
                 list.add(new MipsIBinary(
                     MipsIBinary.X.addiu, MipsPhysicalRegister.a[i],
@@ -185,7 +194,7 @@ final public class MipsGenerator {
                     MipsPhysicalRegister.sp, new MipsImmediate((1 + i - MipsPhysicalRegister.a.length) * -4)
                 ));
             }
-            list.add(new MipsIJump(MipsIJump.X.jal, functionMap.get(call.getFunction()).getEntryBlock()));
+            list.add(new MipsIJump(MipsIJump.X.jal, target));
             if (call.getType() != Ty.Void) {
                 MipsVirtualRegister register = new MipsVirtualRegister();
                 list.add(new MipsIBinary(MipsIBinary.X.addiu, register, MipsPhysicalRegister.v0, new MipsImmediate(0)));
@@ -194,6 +203,8 @@ final public class MipsGenerator {
             return list;
         }
         if (instruction instanceof IReturn ret) {
+            MipsBlock.addEdge(currentBlock, exitBlock);
+
             if (ret.getOperands().isEmpty()) {
                 return List.of(new MipsIJump(MipsIJump.X.j, exitBlock));
             }

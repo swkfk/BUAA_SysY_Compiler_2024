@@ -7,11 +7,16 @@ import top.swkfk.compiler.helpers.GlobalCounter;
 import top.swkfk.compiler.llvm.value.BasicBlock;
 import top.swkfk.compiler.utils.DualLinkedList;
 
+import java.util.HashSet;
+import java.util.Set;
 import java.util.function.Predicate;
 
 final public class MipsBlock extends MipsOperand {
     private final static GlobalCounter counter = new GlobalCounter();
     private final String name;
+
+    private final Set<MipsBlock> successors = new HashSet<>();
+    private final Set<MipsBlock> predecessors = new HashSet<>();
 
     public final Comments comment = new Comments("# ");
 
@@ -36,6 +41,24 @@ final public class MipsBlock extends MipsOperand {
         if (block != null) {
             comment.append("%" + block.getName()).append(": ").append(block.comment.getComment());
         }
+    }
+
+    public static void addEdge(MipsBlock from, MipsBlock to) {
+        from.successors.add(to);
+        to.predecessors.add(from);
+    }
+
+    public static void removeEdge(MipsBlock from, MipsBlock to) {
+        from.successors.remove(to);
+        to.predecessors.remove(from);
+    }
+
+    public Set<MipsBlock> getSuccessors() {
+        return successors;
+    }
+
+    public Set<MipsBlock> getPredecessors() {
+        return predecessors;
     }
 
     public void addInstruction(MipsInstruction instruction) {
@@ -63,7 +86,10 @@ final public class MipsBlock extends MipsOperand {
 
     public String toMips() {
         StringBuilder sb = new StringBuilder();
-        sb.append("  ").append(name).append(":\t\t").append(comment).append("\n");
+        sb.append("    ").append(comment).append("\n");
+        sb.append("    # Predecessors: ").append(predecessors).append("\n");
+        sb.append("    # Successors:   ").append(successors).append("\n");
+        sb.append("  ").append(name).append(":").append("\n");
         for (DualLinkedList.Node<MipsInstruction> node : instructions) {
             sb.append(node.getData()).append("\n");
         }
