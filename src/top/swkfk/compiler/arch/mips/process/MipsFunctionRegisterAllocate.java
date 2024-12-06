@@ -5,7 +5,9 @@ import top.swkfk.compiler.arch.mips.MipsFunction;
 import top.swkfk.compiler.arch.mips.instruction.MipsIBrEqu;
 import top.swkfk.compiler.arch.mips.instruction.MipsIBrZero;
 import top.swkfk.compiler.arch.mips.instruction.MipsIJump;
+import top.swkfk.compiler.arch.mips.instruction.MipsILoadStore;
 import top.swkfk.compiler.arch.mips.instruction.MipsInstruction;
+import top.swkfk.compiler.arch.mips.operand.MipsImmediate;
 import top.swkfk.compiler.arch.mips.operand.MipsOperand;
 import top.swkfk.compiler.arch.mips.operand.MipsPhysicalRegister;
 import top.swkfk.compiler.arch.mips.operand.MipsVirtualRegister;
@@ -23,16 +25,23 @@ final public class MipsFunctionRegisterAllocate {
     static class Config {
         static final List<MipsPhysicalRegister> localRegisters = Arrays.asList(MipsPhysicalRegister.t);
         static final List<MipsPhysicalRegister> globalRegisters = Arrays.asList(MipsPhysicalRegister.s);
+        static final List<MipsPhysicalRegister> temporaryRegisters = Arrays.asList(MipsPhysicalRegister.k0, MipsPhysicalRegister.k1);
     }
 
     private final MipsFunction function;
     private final HashMap<MipsBlock, Set<MipsVirtualRegister>> localVirtualRegisters;
     private final Set<MipsVirtualRegister> globalVirtualRegisters;
 
+    private final Map<MipsVirtualRegister, MipsPhysicalRegister> allocated = new HashMap<>();
+    private final Set<MipsVirtualRegister> spilled = new HashSet<>();
+    private final Set<MipsPhysicalRegister> allocatedGlobal = new HashSet<>();
+
+
     public MipsFunctionRegisterAllocate(MipsFunction function) {
         this.function = function;
         this.localVirtualRegisters = new HashMap<>();
         this.globalVirtualRegisters = new HashSet<>();
+        this.allocatedGlobal.add(MipsPhysicalRegister.ra);
     }
 
     public MipsFunctionRegisterAllocate runCheckAllocateStrategy() {
@@ -72,13 +81,70 @@ final public class MipsFunctionRegisterAllocate {
             }
         }
 
-        System.err.println("Checked `" + function + "`:");
-        System.err.println("  Local : " + localVirtualRegisters);
-        System.err.println("  Global: " + globalVirtualRegisters);
         return this;
     }
 
+    /**
+     * Apply the simplified linear scan algorithm to allocate the temporary registers.
+     * @return this
+     */
     public MipsFunctionRegisterAllocate runAllocateTemporaryRegisters() {
+        for (DualLinkedList.Node<MipsBlock> bNode : function.getBlocks()) {
+            MipsBlock block = bNode.getData();
+            if (localVirtualRegisters.getOrDefault(block, Set.of()).isEmpty()) {
+                continue;
+            }
+
+            HashMap<MipsVirtualRegister, MipsInstruction> lastLivingMap = new HashMap<>();
+            for (DualLinkedList.Node<MipsInstruction> iNode : block.getInstructions()) {
+                MipsInstruction instruction = iNode.getData();
+                for (MipsOperand operand : instruction.getOperands()) {
+                    if (!(operand instanceof MipsVirtualRegister register)) {
+                        continue;
+                    }
+                    lastLivingMap.put(register, instruction);
+                }
+            }
+
+            HashMap<MipsPhysicalRegister, MipsInstruction> currentAllocateMap = new HashMap<>();
+            for (MipsPhysicalRegister register : Config.localRegisters) {
+                currentAllocateMap.put(register, null);
+            }
+            LoopInstruction: for (DualLinkedList.Node<MipsInstruction> iNode : block.getInstructions()) {
+                MipsInstruction instruction = iNode.getData();
+                for (MipsOperand operand : instruction.getOperands()) {
+                    if (!(operand instanceof MipsVirtualRegister register)) {
+                        continue;
+                    }
+                    if (allocated.containsKey(register)) {
+                        if (currentAllocateMap.get(allocated.get(register)) == instruction) {
+                            // Release the register
+                            currentAllocateMap.put(allocated.get(register), null);
+                        }
+                    }
+                }
+                for (MipsOperand operand : instruction.getOperands()) {
+                    if (!(operand instanceof MipsVirtualRegister register)) {
+                        continue;
+                    }
+                    if (spilled.contains(operand) || allocated.containsKey(operand)) {
+                        continue;
+                    }
+                    // Allocate the register
+                    for (MipsPhysicalRegister physicalRegister : Config.localRegisters) {
+                        if (currentAllocateMap.get(physicalRegister) == null) {
+                            if (lastLivingMap.get(register) != instruction) {
+                                currentAllocateMap.put(physicalRegister, lastLivingMap.get(register));
+                            }
+                            allocated.put(register, physicalRegister);
+                            continue LoopInstruction;
+                        }
+                    }
+                    // Cannot allocate the register
+                    spilled.add(register);
+                }
+            }
+        }
         return this;
     }
 
@@ -86,9 +152,62 @@ final public class MipsFunctionRegisterAllocate {
         return this;
     }
 
-    /**
-     * Check whether every register is allocated.
-     */
-    public void finalCheck() {
+    public void refill() {
+        // 1. Fill the allocated registers
+        for (DualLinkedList.Node<MipsBlock> bNode : function.getBlocks()) {
+            MipsBlock block = bNode.getData();
+            for (DualLinkedList.Node<MipsInstruction> iNode : block.getInstructions()) {
+                MipsInstruction instruction = iNode.getData();
+                instruction.fillPhysicalRegister(allocated);
+            }
+        }
+
+        int currentOffset = 0;
+        // 2. Store/Recover the global registers used
+        function.enlargeStackSize(4 * allocatedGlobal.size());
+        for (MipsPhysicalRegister register : allocatedGlobal) {
+            function.getEntryBlock().addInstruction(
+                new MipsILoadStore(MipsILoadStore.X.sw, register, MipsPhysicalRegister.sp, new MipsImmediate(currentOffset))
+            );
+            function.getExitBlock().addInstructionFirst(
+                new MipsILoadStore(MipsILoadStore.X.lw, register, MipsPhysicalRegister.sp, new MipsImmediate(currentOffset))
+            );
+            currentOffset += 4;
+        }
+
+        // 3. Fill the spilled registers
+        HashMap<MipsVirtualRegister, Integer> spilledOffset = new HashMap<>();
+        for (MipsVirtualRegister register : spilled) {
+            function.enlargeStackSize(4);
+            spilledOffset.put(register, currentOffset);
+            currentOffset += 4;
+        }
+        int temporaryRegisterIndex = 0;
+        for (DualLinkedList.Node<MipsBlock> bNode : function.getBlocks()) {
+            MipsBlock block = bNode.getData();
+            for (DualLinkedList.Node<MipsInstruction> iNode : block.getInstructions()) {
+                MipsInstruction instruction = iNode.getData();
+                for (MipsVirtualRegister useRegister : instruction.getUseVirtualRegisters()) {
+                    if (!spilled.contains(useRegister)) {
+                        continue;
+                    }
+                    MipsPhysicalRegister temp = Config.temporaryRegisters.get(temporaryRegisterIndex ^= 1);
+                    new DualLinkedList.Node<MipsInstruction>(new MipsILoadStore(
+                        MipsILoadStore.X.lw, temp, MipsPhysicalRegister.sp, new MipsImmediate(spilledOffset.get(useRegister))
+                    )).insertBefore(iNode);
+                    instruction.fillPhysicalRegister(Map.of(useRegister, temp));
+                }
+                for (MipsVirtualRegister defRegister : instruction.getDefVirtualRegisters()) {
+                    if (!spilled.contains(defRegister)) {
+                        continue;
+                    }
+                    MipsPhysicalRegister temp = Config.temporaryRegisters.get(temporaryRegisterIndex ^= 1);
+                    instruction.fillPhysicalRegister(Map.of(defRegister, temp));
+                    new DualLinkedList.Node<MipsInstruction>(new MipsILoadStore(
+                        MipsILoadStore.X.sw, temp, MipsPhysicalRegister.sp, new MipsImmediate(spilledOffset.get(defRegister))
+                    )).insertAfter(iNode);
+                }
+            }
+        }
     }
 }

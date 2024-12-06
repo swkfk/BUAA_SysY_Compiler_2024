@@ -49,6 +49,7 @@ public class MipsModule implements ArchModule {
 
         MipsGenerator generator = new MipsGenerator(function.getBlocks(), functionMap, entry, exit);
         MipsFunction mipsFunction = new MipsFunction(function.getName());
+        mipsFunction.setKeyBlock(entry, exit);
         functions.add(mipsFunction);
         functionMap.put(function, mipsFunction);
 
@@ -64,14 +65,8 @@ public class MipsModule implements ArchModule {
         }
 
         mipsFunction.addBlock(exit);
-        exit.addInstruction(new MipsIBinary(MipsIBinary.X.addiu, MipsPhysicalRegister.sp, MipsPhysicalRegister.sp, new MipsImmediate(generator.getStackSize())));
+        mipsFunction.setStackSize(generator.getStackSize());
         exit.addInstruction(new MipsIJump(MipsIJump.X.jr, MipsPhysicalRegister.ra));
-
-        // Re-fill the entry block. Fill the sub $sp
-        entry.addInstructionAfter(
-            new MipsIBinary(MipsIBinary.X.addiu, MipsPhysicalRegister.sp, MipsPhysicalRegister.sp, new MipsImmediate(-generator.getStackSize())),
-            instruction -> instruction instanceof MipsIBinary && instruction.getOperands()[0] == MipsPhysicalRegister.fp
-        );
     }
 
     private void parseBlock(BasicBlock block, MipsFunction mipsFunction, MipsGenerator generator) {
@@ -103,8 +98,9 @@ public class MipsModule implements ArchModule {
             .runCheckAllocateStrategy()
             .runAllocateTemporaryRegisters()
             .runAllocateGlobalRegisters()
-            .finalCheck()
+            .refill()
         );
+        functions.forEach(MipsFunction::fillStackSize);
         return this;
     }
 

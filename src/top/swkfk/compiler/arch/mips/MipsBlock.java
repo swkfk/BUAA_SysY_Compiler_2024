@@ -66,6 +66,14 @@ final public class MipsBlock extends MipsOperand {
         return predecessors;
     }
 
+    public void addInstructionFirst(MipsInstruction instruction) {
+        new DualLinkedList.Node<>(instruction).insertIntoHead(instructions);
+        if (reservedComment != null) {
+            instruction.comment.append(reservedComment);
+            reservedComment = null;
+        }
+    }
+
     public void addInstruction(MipsInstruction instruction) {
         new DualLinkedList.Node<>(instruction).insertIntoTail(instructions);
         if (reservedComment != null) {

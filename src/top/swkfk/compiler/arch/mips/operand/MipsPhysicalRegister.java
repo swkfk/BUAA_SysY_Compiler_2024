@@ -13,6 +13,8 @@ final public class MipsPhysicalRegister extends MipsOperand {
     public static final MipsPhysicalRegister at = new MipsPhysicalRegister(1, "$at");
     public static final MipsPhysicalRegister v0 = new MipsPhysicalRegister(2, "$v0");
     public static final MipsPhysicalRegister v1 = new MipsPhysicalRegister(3, "$v1");
+    public static final MipsPhysicalRegister k0 = new MipsPhysicalRegister(26, "$k0");
+    public static final MipsPhysicalRegister k1 = new MipsPhysicalRegister(27, "$k1");
     public static final MipsPhysicalRegister gp = new MipsPhysicalRegister(28, "$gp");
     public static final MipsPhysicalRegister sp = new MipsPhysicalRegister(29, "$sp");
     public static final MipsPhysicalRegister fp = new MipsPhysicalRegister(30, "$fp");
@@ -24,18 +26,18 @@ final public class MipsPhysicalRegister extends MipsOperand {
     };
 
     public static final MipsPhysicalRegister[] t = new MipsPhysicalRegister[] {
-        new MipsPhysicalRegister(8, "t0"), new MipsPhysicalRegister(9, "t1"),
-        new MipsPhysicalRegister(10, "t2"), new MipsPhysicalRegister(11, "t3"),
-        new MipsPhysicalRegister(12, "t4"), new MipsPhysicalRegister(13, "t5"),
-        new MipsPhysicalRegister(14, "t6"), new MipsPhysicalRegister(15, "t7"),
-        new MipsPhysicalRegister(24, "t8"), new MipsPhysicalRegister(25, "t9")
+        new MipsPhysicalRegister(8, "$t0"), new MipsPhysicalRegister(9, "$t1"),
+        new MipsPhysicalRegister(10, "$t2"), new MipsPhysicalRegister(11, "$t3"),
+        new MipsPhysicalRegister(12, "$t4"), new MipsPhysicalRegister(13, "$t5"),
+        new MipsPhysicalRegister(14, "$t6"), new MipsPhysicalRegister(15, "$t7"),
+        new MipsPhysicalRegister(24, "$t8"), new MipsPhysicalRegister(25, "$t9")
     };
 
     public static final MipsPhysicalRegister[] s = new MipsPhysicalRegister[] {
-        new MipsPhysicalRegister(16, "s0"), new MipsPhysicalRegister(17, "s1"),
-        new MipsPhysicalRegister(18, "s2"), new MipsPhysicalRegister(19, "s3"),
-        new MipsPhysicalRegister(20, "s4"), new MipsPhysicalRegister(21, "s5"),
-        new MipsPhysicalRegister(22, "s6"), new MipsPhysicalRegister(23, "s7")
+        new MipsPhysicalRegister(16, "$s0"), new MipsPhysicalRegister(17, "$s1"),
+        new MipsPhysicalRegister(18, "$s2"), new MipsPhysicalRegister(19, "$s3"),
+        new MipsPhysicalRegister(20, "$s4"), new MipsPhysicalRegister(21, "$s5"),
+        new MipsPhysicalRegister(22, "$s6"), new MipsPhysicalRegister(23, "$s7")
     };
 
     @Override
