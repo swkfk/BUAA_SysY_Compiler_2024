@@ -11,12 +11,15 @@ import top.swkfk.compiler.arch.mips.operand.MipsImmediate;
 import top.swkfk.compiler.arch.mips.operand.MipsOperand;
 import top.swkfk.compiler.arch.mips.operand.MipsPhysicalRegister;
 import top.swkfk.compiler.arch.mips.operand.MipsVirtualRegister;
+import top.swkfk.compiler.helpers.BlockLivingData;
 import top.swkfk.compiler.utils.DualLinkedList;
 import top.swkfk.compiler.utils.Pair;
+import top.swkfk.compiler.utils.UndirectedGraph;
 
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -36,6 +39,9 @@ final public class MipsFunctionRegisterAllocate {
     private final Set<MipsVirtualRegister> spilled = new HashSet<>();
     private final Set<MipsPhysicalRegister> allocatedGlobal = new HashSet<>();
 
+    private boolean haveNotAllocated(MipsVirtualRegister register) {
+        return !allocated.containsKey(register) && !spilled.contains(register);
+    }
 
     public MipsFunctionRegisterAllocate(MipsFunction function) {
         this.function = function;
@@ -52,9 +58,6 @@ final public class MipsFunctionRegisterAllocate {
             int blockLevel = 0;
             for (DualLinkedList.Node<MipsInstruction> iNode : block.getInstructions()) {
                 MipsInstruction instruction = iNode.getData();
-                if (instruction instanceof MipsIJump || instruction instanceof MipsIBrZero || instruction instanceof MipsIBrEqu) {
-                    blockLevel++;
-                }
                 for (MipsOperand operand : instruction.getOperands()) {
                     if (!(operand instanceof MipsVirtualRegister register)) {
                         continue;
@@ -68,6 +71,9 @@ final public class MipsFunctionRegisterAllocate {
                             records.put(register, null);
                         }
                     }
+                }
+                if (instruction instanceof MipsIJump || instruction instanceof MipsIBrZero || instruction instanceof MipsIBrEqu) {
+                    blockLevel++;
                 }
             }
         }
@@ -148,7 +154,121 @@ final public class MipsFunctionRegisterAllocate {
         return this;
     }
 
+    /**
+     * Apply the simple, block-level graph coloring algorithm to allocate the global registers.
+     * @return this
+     */
     public MipsFunctionRegisterAllocate runAllocateGlobalRegisters() {
+        HashMap<MipsBlock, BlockLivingData<MipsVirtualRegister>> livings = new HashMap<>();
+        // 1. Initialize the living data & use/def sets
+        for (DualLinkedList.Node<MipsBlock> bNode : function.getBlocks()) {
+            MipsBlock block = bNode.getData();
+            livings.put(block, new BlockLivingData<>());
+            // Generate the use/def of this block
+            HashSet<MipsVirtualRegister> use = new HashSet<>(), def = new HashSet<>();
+            for (DualLinkedList.Node<MipsInstruction> iNode : block.getInstructions()) {
+                MipsInstruction instruction = iNode.getData();
+                use.addAll(
+                    Arrays.stream(instruction.getUseVirtualRegisters())
+                        .filter(register -> haveNotAllocated(register) && !def.contains(register))
+                        .toList()
+                );
+                def.addAll(
+                    Arrays.stream(instruction.getDefVirtualRegisters())
+                        .filter(register -> haveNotAllocated(register) && !use.contains(register))
+                        .toList()
+                );
+            }
+            livings.get(block).getUse().addAll(use);
+            livings.get(block).getDef().addAll(def);
+        }
+        // 2. Calculate the in/out sets
+        boolean changed = true;
+        while (changed) {
+            changed = false;
+            for (DualLinkedList.Node<MipsBlock> bNode : function.getBlocks()) {
+                MipsBlock block = bNode.getData();
+                BlockLivingData<MipsVirtualRegister> living = livings.get(block);
+                Set<MipsVirtualRegister> out = new HashSet<>();
+                for (MipsBlock successor : block.getSuccessors()) {
+                    BlockLivingData.union(out, livings.get(successor).getIn());
+                }
+                Set<MipsVirtualRegister> in = new HashSet<>(out);
+                BlockLivingData.minus(in, living.getDef());
+                BlockLivingData.union(in, living.getUse());
+                if (!in.equals(living.getIn()) || !out.equals(living.getOut())) {
+                    changed = true;
+                    living.getIn().clear();
+                    living.getIn().addAll(in);
+                    living.getOut().clear();
+                    living.getOut().addAll(out);
+                }
+            }
+        }
+        // 3. Calculate the interference graph
+        UndirectedGraph<MipsVirtualRegister> interferenceGraph = new UndirectedGraph<>();
+        for (DualLinkedList.Node<MipsBlock> bNode : function.getBlocks()) {
+            MipsBlock block = bNode.getData();
+            BlockLivingData<MipsVirtualRegister> living = livings.get(block);
+            for (MipsVirtualRegister register : living.getIn()) {
+                interferenceGraph.addVertex(register);
+            }
+            for (MipsVirtualRegister register : living.getOut()) {
+                interferenceGraph.addVertex(register);
+            }
+            for (MipsVirtualRegister register : living.getOut()) {
+                for (MipsVirtualRegister other : living.getOut()) {
+                    if (register != other) {
+                        interferenceGraph.addEdge(register, other);
+                    }
+                }
+                for (MipsVirtualRegister other : living.getIn()) {
+                    if (register != other) {
+                        interferenceGraph.addEdge(register, other);
+                    }
+                }
+            }
+        }
+        // 4. Prepare the data structure for the graph coloring
+        int K = Config.globalRegisters.size();
+        List<MipsVirtualRegister> removed = new LinkedList<>();
+        UndirectedGraph<MipsVirtualRegister> originGraph = interferenceGraph.copy();
+        HashMap<MipsVirtualRegister, Integer> color = new HashMap<>();
+        // 5. Simplified graph coloring algorithm
+        while (!interferenceGraph.getVertices().isEmpty()) {
+            MipsVirtualRegister register = null;
+            for (MipsVirtualRegister vertex : interferenceGraph.getVertices()) {
+                if (interferenceGraph.getEdges(vertex).size() < K) {
+                    register = vertex;
+                    break;
+                }
+            }
+            if (register == null) {
+                // TODO: Spill the register with the highest degree
+                register = interferenceGraph.getVertices().iterator().next();
+                spilled.add(register);
+            } else {
+                removed.add(register);
+            }
+            interferenceGraph.removeVertex(register);
+        }
+        // 6. Allocate the global registers
+        for (MipsVirtualRegister register : removed) {
+            Set<Integer> usedColors = new HashSet<>();
+            for (MipsVirtualRegister other : originGraph.getEdges(register)) {
+                if (color.containsKey(other)) {
+                    usedColors.add(color.get(other));
+                }
+            }
+            for (int i = 0; i < K; i++) {
+                if (!usedColors.contains(i)) {
+                    color.put(register, i);
+                    allocated.put(register, Config.globalRegisters.get(i));
+                    allocatedGlobal.add(Config.globalRegisters.get(i));
+                    break;
+                }
+            }
+        }
         return this;
     }
 
