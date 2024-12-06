@@ -179,7 +179,7 @@ final public class MipsGenerator {
         }
         if (instruction instanceof ICall call) {
             MipsBlock target = functionMap.get(call.getFunction()).getEntryBlock();
-            MipsBlock.addEdge(currentBlock, target);
+            // MipsBlock.addEdge(currentBlock, target);
 
             List<MipsInstruction> list = new LinkedList<>();
             for (int i = 0; i < call.getOperands().size() && i < MipsPhysicalRegister.a.length; i++) {
