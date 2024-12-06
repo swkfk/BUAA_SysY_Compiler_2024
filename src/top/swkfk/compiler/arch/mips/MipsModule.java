@@ -6,6 +6,7 @@ import top.swkfk.compiler.arch.mips.instruction.MipsIBinary;
 import top.swkfk.compiler.arch.mips.instruction.MipsIJump;
 import top.swkfk.compiler.arch.mips.operand.MipsImmediate;
 import top.swkfk.compiler.arch.mips.operand.MipsPhysicalRegister;
+import top.swkfk.compiler.arch.mips.process.MipsFunctionRegisterAllocate;
 import top.swkfk.compiler.arch.mips.process.MipsFunctionRemovePhi;
 import top.swkfk.compiler.arch.mips.process.MipsGenerator;
 import top.swkfk.compiler.llvm.IrModule;
@@ -98,6 +99,12 @@ public class MipsModule implements ArchModule {
 
     @Override
     public ArchModule runRegisterAllocation() {
+        functions.forEach(function -> new MipsFunctionRegisterAllocate(function)
+            .runCheckAllocateStrategy()
+            .runAllocateTemporaryRegisters()
+            .runAllocateGlobalRegisters()
+            .finalCheck()
+        );
         return this;
     }
 
