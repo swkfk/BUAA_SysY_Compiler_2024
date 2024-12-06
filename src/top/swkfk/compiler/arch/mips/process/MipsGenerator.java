@@ -341,13 +341,14 @@ final public class MipsGenerator {
                     new MipsImmediate(integer.getValue() * base.sizeof()))
                 );
             } else {
+                MipsVirtualRegister temp = new MipsVirtualRegister();
                 res.addAll(List.of(
                     new MipsIBitShift(
-                        MipsIBitShift.X.sll, register, valueMap.get(offset),
+                        MipsIBitShift.X.sll, temp, valueMap.get(offset),
                         // ceil(log2(x)) = 32 - numberOfLeadingZeros(x - 1)
                         new MipsImmediate(32 - Integer.numberOfLeadingZeros(base.sizeof() - 1))
                     ),
-                    new MipsIBinary(MipsIBinary.X.addu, register, pointerOperand, valueMap.get(offset))
+                    new MipsIBinary(MipsIBinary.X.addu, register, pointerOperand, temp)
                 ));
             }
             return res;
