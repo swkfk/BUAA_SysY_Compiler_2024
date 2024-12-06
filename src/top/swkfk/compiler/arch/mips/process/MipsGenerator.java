@@ -214,9 +214,8 @@ final public class MipsGenerator {
                     new MipsIJump(MipsIJump.X.j, exitBlock)
                 );
             }
-            MipsVirtualRegister register = new MipsVirtualRegister();
             return List.of(
-                new MipsIBinary(MipsIBinary.X.addiu, register, eliminateImmediate(List.of(), ret.getOperand(0)), new MipsImmediate(0)),
+                new MipsIBinary(MipsIBinary.X.addiu, MipsPhysicalRegister.v0, valueMap.get(ret.getOperand(0)), new MipsImmediate(0)),
                 new MipsIJump(MipsIJump.X.j, exitBlock)
             );
         }

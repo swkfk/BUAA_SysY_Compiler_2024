@@ -31,7 +31,7 @@ final public class MipsILoadStore extends MipsInstruction {
 
     @Override
     public MipsOperand[] getOperands() {
-        return new MipsOperand[]{base, offset};
+        return new MipsOperand[]{dstOrSrc, base, offset};
     }
 
     @Override
