@@ -193,15 +193,23 @@ final public class MipsGenerator {
         }
         if (instruction instanceof IBranch branch) {
             if (branch.isConditional()) {
-                MipsVirtualRegister cond = valueMap.get(branch.getOperand(0));
                 Pair<BasicBlock, BasicBlock> target = branch.getConditionalTarget();
                 MipsBlock.addEdge(currentBlock, blockLLVM2Mips(target.first()));
                 MipsBlock.addEdge(currentBlock, blockLLVM2Mips(target.second()));
-
-                return List.of(
-                    new MipsIBrEqu(MipsIBrEqu.X.bne, cond, MipsPhysicalRegister.zero, blockLLVM2Mips(target.first())),
-                    new MipsIJump(MipsIJump.X.j, blockLLVM2Mips(target.second()))
-                );
+                if (branch.getOperand(0) instanceof ConstInteger integer) {
+                    MipsVirtualRegister register = new MipsVirtualRegister();
+                    return List.of(
+                        new MipsIBinary(MipsIBinary.X.addiu, register, MipsPhysicalRegister.zero, new MipsImmediate(integer.getValue())),
+                        new MipsIBrEqu(MipsIBrEqu.X.bne, register, MipsPhysicalRegister.zero, blockLLVM2Mips(target.first())),
+                        new MipsIJump(MipsIJump.X.j, blockLLVM2Mips(target.second()))
+                    );
+                } else {
+                    MipsVirtualRegister cond = valueMap.get(branch.getOperand(0));
+                    return List.of(
+                        new MipsIBrEqu(MipsIBrEqu.X.bne, cond, MipsPhysicalRegister.zero, blockLLVM2Mips(target.first())),
+                        new MipsIJump(MipsIJump.X.j, blockLLVM2Mips(target.second()))
+                    );
+                }
             } else {
                 MipsBlock.addEdge(currentBlock, blockLLVM2Mips(branch.getTarget()));
                 return List.of(new MipsIJump(MipsIJump.X.j, blockLLVM2Mips(branch.getTarget())));
