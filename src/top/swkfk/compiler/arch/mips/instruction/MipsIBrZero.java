@@ -16,12 +16,19 @@ final public class MipsIBrZero extends MipsInstruction {
 
     private final X operator;
     private MipsOperand operand;
-    private final MipsBlock target;
+    private MipsBlock target;
 
     public MipsIBrZero(X operator, MipsOperand operand, MipsBlock target) {
         this.operator = operator;
         this.operand = operand;
         this.target = target;
+    }
+
+    @Override
+    public void replaceJumpTarget(MipsBlock oldBlock, MipsBlock newBlock) {
+        if (target == oldBlock) {
+            target = newBlock;
+        }
     }
 
     @Override

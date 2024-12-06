@@ -1,5 +1,6 @@
 package top.swkfk.compiler.arch.mips.instruction;
 
+import top.swkfk.compiler.arch.mips.MipsBlock;
 import top.swkfk.compiler.arch.mips.operand.MipsOperand;
 import top.swkfk.compiler.arch.mips.operand.MipsPhysicalRegister;
 import top.swkfk.compiler.arch.mips.operand.MipsVirtualRegister;
@@ -30,6 +31,10 @@ public abstract class MipsInstruction {
      * @return The operands that the instruction defines.
      */
     public abstract MipsVirtualRegister[] getDefVirtualRegisters();
+
+    public void replaceJumpTarget(MipsBlock oldBlock, MipsBlock newBlock) {
+        // Do nothing by default.
+    }
 
     /**
      * Detect and get the virtual registers from the operands.

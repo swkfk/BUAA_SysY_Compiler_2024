@@ -20,9 +20,25 @@ final public class MipsIPhi extends MipsInstruction {
         this.sources = new LinkedList<>();
     }
 
+    public MipsOperand getResult() {
+        return res;
+    }
+
     public void addOperand(MipsOperand operand, MipsBlock source) {
         operands.add(operand);
         sources.add(source);
+    }
+
+    public MipsOperand getOperand(int index) {
+        return operands.get(index);
+    }
+
+    public MipsBlock getSource(int index) {
+        return sources.get(index);
+    }
+
+    public int getOperandsSize() {
+        return operands.size();
     }
 
     @Override
@@ -58,5 +74,9 @@ final public class MipsIPhi extends MipsInstruction {
             sb.append("[ ").append(operands.get(i)).append(", ").append(sources.get(i)).append(" ] ");
         }
         return sb.toString();
+    }
+
+    public void replaceOperand(int i, MipsOperand newOperand) {
+        operands.set(i, newOperand);
     }
 }

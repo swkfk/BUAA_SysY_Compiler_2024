@@ -55,6 +55,13 @@ final public class MipsIJump extends MipsInstruction {
     }
 
     @Override
+    public void replaceJumpTarget(MipsBlock oldBlock, MipsBlock newBlock) {
+        if (operand.isRight() && operand.getRight() == oldBlock) {
+            operand = Either.right(newBlock);
+        }
+    }
+
+    @Override
     protected String toMips() {
         return operator + "\t" + operand;
     }

@@ -14,13 +14,20 @@ final public class MipsIBrEqu extends MipsInstruction {
 
     private final X operator;
     private MipsOperand lhs, rhs;
-    private final MipsBlock target;
+    private MipsBlock target;
 
     public MipsIBrEqu(X operator, MipsOperand lhs, MipsOperand rhs, MipsBlock target) {
         this.operator = operator;
         this.lhs = lhs;
         this.rhs = rhs;
         this.target = target;
+    }
+
+    @Override
+    public void replaceJumpTarget(MipsBlock oldBlock, MipsBlock newBlock) {
+        if (target == oldBlock) {
+            target = newBlock;
+        }
     }
 
     @Override

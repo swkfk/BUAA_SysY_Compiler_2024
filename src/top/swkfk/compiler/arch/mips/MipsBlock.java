@@ -8,6 +8,7 @@ import top.swkfk.compiler.llvm.value.BasicBlock;
 import top.swkfk.compiler.utils.DualLinkedList;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.function.Predicate;
 
@@ -41,6 +42,10 @@ final public class MipsBlock extends MipsOperand {
         if (block != null) {
             comment.append("%" + block.getName()).append(": ").append(block.comment.getComment());
         }
+    }
+
+    public DualLinkedList<MipsInstruction> getInstructions() {
+        return instructions;
     }
 
     public static void addEdge(MipsBlock from, MipsBlock to) {
