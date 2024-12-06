@@ -19,6 +19,7 @@ public class Configure {
         public static boolean displaySymbols = false;
         public static boolean displayPassDebug = false;
         public static boolean displayPassVerbose = false;
+        public static boolean displayDataSegment = false;
 
         /**
          * Display tokens with AST. For homework 3. Switch in {@link Controller#run()}.
@@ -32,6 +33,7 @@ public class Configure {
                 case "symbols" -> displaySymbols = true;
                 case "pass-debug" -> displayPassDebug = true;
                 case "pass-verbose" -> displayPassVerbose = true;
+                case ".data" -> displayDataSegment = true;
                 default -> throw new IllegalArgumentException("Unknown debug option: " + arg);
             }
         }

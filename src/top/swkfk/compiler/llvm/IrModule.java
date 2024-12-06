@@ -64,6 +64,10 @@ public class IrModule {
         return functions;
     }
 
+    public List<GlobalVariable> getGlobalVariables() {
+        return globalVariables;
+    }
+
     public IrModule runPass(Pass pass) {
         pass.run(this);
         if (Configure.debug.displayPassVerbose) {

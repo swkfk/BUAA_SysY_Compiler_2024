@@ -10,6 +10,7 @@ import top.swkfk.compiler.arch.mips.process.MipsGenerator;
 import top.swkfk.compiler.llvm.IrModule;
 import top.swkfk.compiler.llvm.value.BasicBlock;
 import top.swkfk.compiler.llvm.value.Function;
+import top.swkfk.compiler.llvm.value.GlobalVariable;
 import top.swkfk.compiler.llvm.value.User;
 import top.swkfk.compiler.utils.DualLinkedList;
 
@@ -22,15 +23,22 @@ import java.util.Map;
 
 public class MipsModule implements ArchModule {
     private final List<MipsFunction> functions = new LinkedList<>();
+    private final Map<String, MipsGlobalVariable> globalVariable = new HashMap<>();
     private final Map<Function, MipsFunction> functionMap = new HashMap<>();
 
     @Override
     public ArchModule runParseIr(IrModule module) {
-        //
-
+        module.getGlobalVariables().forEach(this::parseGlobalVariable);
         module.getFunctions().forEach(this::parseFunction);
-
         return this;
+    }
+
+    private void parseGlobalVariable(GlobalVariable globalVariable) {
+        this.globalVariable.put(globalVariable.getName(), new MipsGlobalVariable(
+            globalVariable.getType(),
+            globalVariable.getName() + ".addr",
+            globalVariable.getInitializerList()
+        ));
     }
 
     private void parseFunction(Function function) {
@@ -106,7 +114,12 @@ public class MipsModule implements ArchModule {
 
         sb.append("\n.data\n");
 
-        //
+        for (var global : globalVariable.values()) {
+            if (Configure.debug.displayDataSegment) {
+                System.err.println(global);
+            }
+            sb.append("  ").append(global.toMips()).append("\n");
+        }
 
         sb.append("\n.text\n\n");
 

@@ -7,6 +7,7 @@ import top.swkfk.compiler.arch.mips.instruction.MipsIBitShift;
 import top.swkfk.compiler.arch.mips.instruction.MipsIBrEqu;
 import top.swkfk.compiler.arch.mips.instruction.MipsIHiLo;
 import top.swkfk.compiler.arch.mips.instruction.MipsIJump;
+import top.swkfk.compiler.arch.mips.instruction.MipsILoadAddress;
 import top.swkfk.compiler.arch.mips.instruction.MipsILoadStore;
 import top.swkfk.compiler.arch.mips.instruction.MipsIMultDiv;
 import top.swkfk.compiler.arch.mips.instruction.MipsIPhi;
@@ -221,6 +222,12 @@ final public class MipsGenerator {
             } else {
                 throw new RuntimeException("Unsupported load size");
             }
+            if (load.getOperand(0).getName().startsWith("@")) {
+                return List.of(new MipsILoadStore(
+                    opcode, register, MipsPhysicalRegister.zero,
+                    new MipsImmediate(globalValueToMipsTag(load.getOperand(0)))
+                ));
+            }
             return List.of(new MipsILoadStore(opcode, register, valueMap.get(load.getOperand(0)), new MipsImmediate(0)));
         }
         if (instruction instanceof IStore store) {
@@ -242,9 +249,16 @@ final public class MipsGenerator {
             } else {
                 operand = valueMap.get(store.getOperand(0));
             }
-            res.add(new MipsILoadStore(
-                opcode, operand, valueMap.get(store.getOperand(1)), new MipsImmediate(0)
-            ));
+            if (store.getOperand(1).getName().startsWith("@")) {
+                res.add(new MipsILoadStore(
+                    opcode, operand, MipsPhysicalRegister.zero,
+                    new MipsImmediate(globalValueToMipsTag(store.getOperand(1)))
+                ));
+            } else {
+                res.add(new MipsILoadStore(
+                    opcode, operand, valueMap.get(store.getOperand(1)), new MipsImmediate(0)
+                ));
+            }
             return res;
         }
         if (instruction instanceof IMove move) {
@@ -290,9 +304,20 @@ final public class MipsGenerator {
             return List.of(mipsPhi);
         }
         if (instruction instanceof IGep gep) {
+            List<MipsInstruction> res = new LinkedList<>();
             MipsVirtualRegister register = new MipsVirtualRegister();
             valueMap.put(gep, register);
             Value pointer = gep.getOperand(0);
+            MipsOperand pointerOperand;
+            if (pointer.getName().startsWith("@")) {
+                pointerOperand = new MipsVirtualRegister();
+                res.add(new MipsILoadAddress(
+                    new MipsImmediate(globalValueToMipsTag(pointer)),
+                    pointerOperand
+                ));
+            } else {
+                pointerOperand = valueMap.get(pointer);
+            }
             Value offset = gep.getOperand(1);
             SymbolType base;
             if (gep.isFromArgument()) {
@@ -301,22 +326,28 @@ final public class MipsGenerator {
                 base = ((TyArray) ((TyPtr) pointer.getType()).getBase()).getBase();
             }
             if (offset instanceof ConstInteger integer) {
-                return List.of(new MipsIBinary(
-                    MipsIBinary.X.addiu, register, valueMap.get(pointer),
+                res.add(new MipsIBinary(
+                    MipsIBinary.X.addiu, register, pointerOperand,
                     new MipsImmediate(integer.getValue() * base.sizeof()))
                 );
             } else {
-                return List.of(
+                res.addAll(List.of(
                     new MipsIBitShift(
                         MipsIBitShift.X.sll, register, valueMap.get(offset),
                         // ceil(log2(x)) = 32 - numberOfLeadingZeros(x - 1)
                         new MipsImmediate(32 - Integer.numberOfLeadingZeros(base.sizeof() - 1))
                     ),
-                    new MipsIBinary(MipsIBinary.X.addu, register, valueMap.get(pointer), valueMap.get(offset))
-                );
+                    new MipsIBinary(MipsIBinary.X.addu, register, pointerOperand, valueMap.get(offset))
+                ));
             }
+            return res;
         }
         return List.of(new MipsIUnimp());
+    }
+
+    public static String globalValueToMipsTag(Value pointer) {
+        assert pointer.getName().startsWith("@");
+        return pointer.getName().substring(1) + ".addr";
     }
 
     private int enlargeStack(int size) {

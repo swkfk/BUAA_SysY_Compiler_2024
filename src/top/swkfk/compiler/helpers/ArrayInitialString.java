@@ -7,6 +7,7 @@ import top.swkfk.compiler.llvm.value.Value;
 import top.swkfk.compiler.llvm.value.constants.ConstInteger;
 import top.swkfk.compiler.utils.Pair;
 
+import java.util.List;
 import java.util.Map;
 
 final public class ArrayInitialString {
@@ -57,5 +58,21 @@ final public class ArrayInitialString {
 
     public static String into(SymbolType ty, Map<Integer, Value> init) {
         return work(ty, init, 0).first();
+    }
+
+    public static String into(List<Integer> list) {
+        StringBuilder sb = new StringBuilder();
+        for (Integer integer : list) {
+            if (Character.isLetterOrDigit(integer)) {
+                sb.append((char) integer.intValue());
+            } else if (integer == '\n') {
+                sb.append("\\n");
+            } else if (integer == '\t') {
+                sb.append("\\t");
+            } else {
+                sb.append("\\x").append(Integer.toHexString(integer));
+            }
+        }
+        return sb.toString();
     }
 }
