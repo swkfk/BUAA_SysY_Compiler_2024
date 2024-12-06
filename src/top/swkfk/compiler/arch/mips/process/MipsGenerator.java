@@ -2,6 +2,7 @@ package top.swkfk.compiler.arch.mips.process;
 
 import top.swkfk.compiler.arch.mips.MipsBlock;
 import top.swkfk.compiler.arch.mips.MipsFunction;
+import top.swkfk.compiler.arch.mips.MipsGlobalVariable;
 import top.swkfk.compiler.arch.mips.instruction.MipsIBinary;
 import top.swkfk.compiler.arch.mips.instruction.MipsIBitShift;
 import top.swkfk.compiler.arch.mips.instruction.MipsIBrEqu;
@@ -11,6 +12,7 @@ import top.swkfk.compiler.arch.mips.instruction.MipsILoadAddress;
 import top.swkfk.compiler.arch.mips.instruction.MipsILoadStore;
 import top.swkfk.compiler.arch.mips.instruction.MipsIMultDiv;
 import top.swkfk.compiler.arch.mips.instruction.MipsIPhi;
+import top.swkfk.compiler.arch.mips.instruction.MipsISyscall;
 import top.swkfk.compiler.arch.mips.instruction.MipsIUnimp;
 import top.swkfk.compiler.arch.mips.instruction.MipsInstruction;
 import top.swkfk.compiler.arch.mips.operand.MipsImmediate;
@@ -21,6 +23,7 @@ import top.swkfk.compiler.frontend.symbol.type.SymbolType;
 import top.swkfk.compiler.frontend.symbol.type.Ty;
 import top.swkfk.compiler.frontend.symbol.type.TyArray;
 import top.swkfk.compiler.frontend.symbol.type.TyPtr;
+import top.swkfk.compiler.helpers.GlobalCounter;
 import top.swkfk.compiler.llvm.value.BasicBlock;
 import top.swkfk.compiler.llvm.value.Function;
 import top.swkfk.compiler.llvm.value.User;
@@ -102,6 +105,33 @@ final public class MipsGenerator {
         }
     }
 
+    private StringBuilder reservedOutputString = new StringBuilder();
+    private static final GlobalCounter stringDataCounter = new GlobalCounter();
+
+    @SuppressWarnings("SpellCheckingInspection")
+    public List<MipsInstruction> preRun(MipsBlock ignore, User instruction, List<MipsGlobalVariable> globalVariable) {
+        if (instruction instanceof ICall call) {
+            if (call.getFunction().getName().equals("putch") && call.getOperand(0) instanceof ConstInteger) {
+                return List.of();
+            }
+        }
+        if (reservedOutputString.isEmpty()) {
+            return List.of();
+        }
+        String tag = ".str." + stringDataCounter.get();
+        String content = reservedOutputString.toString();
+        reservedOutputString = new StringBuilder();
+        globalVariable.add(new MipsGlobalVariable(
+            Ty.I8, tag, content
+        ));
+        return List.of(
+            new MipsILoadAddress(new MipsImmediate(tag), MipsPhysicalRegister.a[0]),
+            new MipsIBinary(MipsIBinary.X.addiu, MipsPhysicalRegister.v0, MipsPhysicalRegister.zero, new MipsImmediate(4)),
+            new MipsISyscall()
+        );
+    }
+
+    @SuppressWarnings("SpellCheckingInspection")
     public List<MipsInstruction> run(MipsBlock currentBlock, User instruction) {
         if (instruction instanceof IAllocate allocate) {
             int offset = enlargeStack(((TyPtr) allocate.getType()).getBase().sizeof());
@@ -178,6 +208,22 @@ final public class MipsGenerator {
             }
         }
         if (instruction instanceof ICall call) {
+            // Special functions
+            if (call.getFunction().getName().equals("putch") && call.getOperand(0) instanceof ConstInteger integer) {
+                reservedOutputString.append((char) integer.getValue());
+                return List.of();
+            } else if (call.getFunction().getName().equals("putch") || call.getFunction().getName().equals("putint")) {
+                return MipsInstructionHub.buildSyscallWrite(1, call.getOperand(0), valueMap);
+            } else if (call.getFunction().getName().equals("getint")) {
+                MipsVirtualRegister register = new MipsVirtualRegister();
+                valueMap.put(call, register);
+                return MipsInstructionHub.buildSyscallRead(5, register);
+            } else if (call.getFunction().getName().equals("getchar")) {
+                MipsVirtualRegister register = new MipsVirtualRegister();
+                valueMap.put(call, register);
+                return MipsInstructionHub.buildSyscallRead(12, register);
+            }
+
             MipsBlock target = functionMap.get(call.getFunction()).getEntryBlock();
             // MipsBlock.addEdge(currentBlock, target);
 

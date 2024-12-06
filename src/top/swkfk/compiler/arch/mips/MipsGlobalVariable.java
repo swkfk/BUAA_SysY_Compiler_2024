@@ -52,7 +52,7 @@ public class MipsGlobalVariable {
                 sb.append("\t\t## '").append(ArrayInitialString.into(initializerList)).append("'");
             }
         } else if (initializerString != null) {
-            sb.append(".asciiz ").append(initializerString.replace("\n", "\\n"));
+            sb.append(".asciiz \"").append(initializerString.replace("\n", "\\n")).append("\"");
         } else {
             throw new RuntimeException("Both initializer List/String are null");
         }

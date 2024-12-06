@@ -1,6 +1,7 @@
 package top.swkfk.compiler.arch.mips.process;
 
 import top.swkfk.compiler.arch.mips.instruction.MipsIBinary;
+import top.swkfk.compiler.arch.mips.instruction.MipsISyscall;
 import top.swkfk.compiler.arch.mips.instruction.MipsInstruction;
 import top.swkfk.compiler.arch.mips.operand.MipsImmediate;
 import top.swkfk.compiler.arch.mips.operand.MipsOperand;
@@ -218,5 +219,31 @@ final public class MipsInstructionHub {
         var pair = convertImmediate(value, valueMap);
         receiver.addAll(pair.second());
         return pair.first();
+    }
+
+    public static List<MipsInstruction> buildSyscallRead(int syscall, MipsOperand receiver) {
+        return List.of(
+            new MipsIBinary(MipsIBinary.X.addiu, MipsPhysicalRegister.v0, MipsPhysicalRegister.zero, new MipsImmediate(syscall)),
+            new MipsISyscall(),
+            new MipsIBinary(MipsIBinary.X.addiu, receiver, MipsPhysicalRegister.v0, new MipsImmediate(0))
+        );
+    }
+
+    public static List<MipsInstruction> buildSyscallWrite(int syscall, Value value, Map<Value, MipsVirtualRegister> valueMap) {
+        MipsInstruction loadValue;
+        if (value instanceof ConstInteger integer) {
+            loadValue = new MipsIBinary(
+                MipsIBinary.X.addiu, MipsPhysicalRegister.a[0], MipsPhysicalRegister.zero, new MipsImmediate(integer.getValue())
+            );
+        } else {
+            loadValue = new MipsIBinary(
+                MipsIBinary.X.addiu, MipsPhysicalRegister.a[0], valueMap.get(value), new MipsImmediate(0)
+            );
+        }
+        return List.of(
+            loadValue,
+            new MipsIBinary(MipsIBinary.X.addiu, MipsPhysicalRegister.v0, MipsPhysicalRegister.zero, new MipsImmediate(syscall)),
+            new MipsISyscall()
+        );
     }
 }

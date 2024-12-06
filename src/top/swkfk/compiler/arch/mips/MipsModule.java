@@ -25,18 +25,18 @@ import java.util.Map;
 
 public class MipsModule implements ArchModule {
     private final List<MipsFunction> functions = new LinkedList<>();
-    private final Map<String, MipsGlobalVariable> globalVariable = new HashMap<>();
+    private final List<MipsGlobalVariable> globalVariable = new LinkedList<>();
     private final Map<Function, MipsFunction> functionMap = new HashMap<>();
 
     @Override
     public ArchModule runParseIr(IrModule module) {
         module.getGlobalVariables().forEach(this::parseGlobalVariable);
-        module.getFunctions().forEach(this::parseFunction);
+        module.getFunctions().stream().filter(function -> !function.isExternal()).forEach(this::parseFunction);
         return this;
     }
 
     private void parseGlobalVariable(GlobalVariable globalVariable) {
-        this.globalVariable.put(globalVariable.getName(), new MipsGlobalVariable(
+        this.globalVariable.add(new MipsGlobalVariable(
             globalVariable.getType(),
             globalVariable.getName() + ".addr",
             globalVariable.getInitializerList()
@@ -77,6 +77,7 @@ public class MipsModule implements ArchModule {
 
     private void parseInstruction(User instruction, MipsBlock mipsBlock, MipsGenerator generator) {
         mipsBlock.reservedComment = instruction.toLLVM();
+        generator.preRun(mipsBlock, instruction, globalVariable).forEach(mipsBlock::addInstruction);
         generator.run(mipsBlock, instruction).forEach(mipsBlock::addInstruction);
         mipsBlock.reservedComment = null;  // Maybe there are no instruction added
     }
@@ -119,7 +120,7 @@ public class MipsModule implements ArchModule {
 
         sb.append("\n.data\n");
 
-        for (var global : globalVariable.values()) {
+        for (var global : globalVariable) {
             if (Configure.debug.displayDataSegment) {
                 System.err.println(global);
             }
