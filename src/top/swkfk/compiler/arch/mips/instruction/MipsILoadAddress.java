@@ -17,7 +17,7 @@ final public class MipsILoadAddress extends MipsInstruction {
 
     @Override
     public MipsOperand[] getOperands() {
-        return new MipsOperand[0];
+        return new MipsOperand[]{address, destination};
     }
 
     @Override
@@ -32,7 +32,7 @@ final public class MipsILoadAddress extends MipsInstruction {
 
     @Override
     public void fillPhysicalRegister(Map<MipsVirtualRegister, MipsPhysicalRegister> map) {
-        fillPhysicalRegister(destination, map);
+        destination = fillPhysicalRegister(destination, map);
     }
 
     @Override
