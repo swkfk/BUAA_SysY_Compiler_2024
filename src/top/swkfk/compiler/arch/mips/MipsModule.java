@@ -127,6 +127,9 @@ public class MipsModule implements ArchModule {
         }
 
         sb.append("\n.text\n\n");
+        sb.append("    jal main.entry\n");
+        sb.append("    li $v0, 10\n");
+        sb.append("    syscall\n\n");
 
         for (MipsFunction function : functions) {
             sb.append("# Function: ").append(function).append("\n");
