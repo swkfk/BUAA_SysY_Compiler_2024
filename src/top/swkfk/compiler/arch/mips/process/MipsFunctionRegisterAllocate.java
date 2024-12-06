@@ -2,6 +2,7 @@ package top.swkfk.compiler.arch.mips.process;
 
 import top.swkfk.compiler.arch.mips.MipsBlock;
 import top.swkfk.compiler.arch.mips.MipsFunction;
+import top.swkfk.compiler.arch.mips.instruction.MipsIBinary;
 import top.swkfk.compiler.arch.mips.instruction.MipsIBrEqu;
 import top.swkfk.compiler.arch.mips.instruction.MipsIBrZero;
 import top.swkfk.compiler.arch.mips.instruction.MipsIJump;
@@ -296,8 +297,9 @@ final public class MipsFunctionRegisterAllocate {
         // 2. Store/Recover the global registers used
         function.enlargeStackSize(4 * allocatedGlobal.size());
         for (MipsPhysicalRegister register : allocatedGlobal) {
-            function.getEntryBlock().addInstruction(
-                new MipsILoadStore(MipsILoadStore.X.sw, register, MipsPhysicalRegister.sp, new MipsImmediate(currentOffset))
+            function.getEntryBlock().addInstructionAfter(
+                new MipsILoadStore(MipsILoadStore.X.sw, register, MipsPhysicalRegister.sp, new MipsImmediate(currentOffset)),
+                instruction -> instruction instanceof MipsIBinary && instruction.getOperands()[0] == MipsPhysicalRegister.fp
             );
             function.getExitBlock().addInstructionFirst(
                 new MipsILoadStore(MipsILoadStore.X.lw, register, MipsPhysicalRegister.sp, new MipsImmediate(currentOffset))
