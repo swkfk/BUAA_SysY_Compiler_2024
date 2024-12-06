@@ -90,6 +90,13 @@ final public class MipsFunctionRegisterAllocate {
         return this;
     }
 
+    private MipsVirtualRegister fitLocalAllocate(MipsOperand operand, MipsBlock block) {
+        if (operand instanceof MipsVirtualRegister register && localVirtualRegisters.get(block).contains(register)) {
+            return register;
+        }
+        return null;
+    }
+
     /**
      * Apply the simplified linear scan algorithm to allocate the temporary registers.
      * @return this
@@ -105,7 +112,8 @@ final public class MipsFunctionRegisterAllocate {
             for (DualLinkedList.Node<MipsInstruction> iNode : block.getInstructions()) {
                 MipsInstruction instruction = iNode.getData();
                 for (MipsOperand operand : instruction.getOperands()) {
-                    if (!(operand instanceof MipsVirtualRegister register)) {
+                    MipsVirtualRegister register = fitLocalAllocate(operand, block);
+                    if (register == null) {
                         continue;
                     }
                     lastLivingMap.put(register, instruction);
@@ -119,7 +127,8 @@ final public class MipsFunctionRegisterAllocate {
             LoopInstruction: for (DualLinkedList.Node<MipsInstruction> iNode : block.getInstructions()) {
                 MipsInstruction instruction = iNode.getData();
                 for (MipsOperand operand : instruction.getOperands()) {
-                    if (!(operand instanceof MipsVirtualRegister register)) {
+                    MipsVirtualRegister register = fitLocalAllocate(operand, block);
+                    if (register == null) {
                         continue;
                     }
                     if (allocated.containsKey(register)) {
@@ -130,10 +139,11 @@ final public class MipsFunctionRegisterAllocate {
                     }
                 }
                 for (MipsOperand operand : instruction.getOperands()) {
-                    if (!(operand instanceof MipsVirtualRegister register)) {
+                    MipsVirtualRegister register = fitLocalAllocate(operand, block);
+                    if (register == null) {
                         continue;
                     }
-                    if (spilled.contains(operand) || allocated.containsKey(operand)) {
+                    if (spilled.contains(register) || allocated.containsKey(register)) {
                         continue;
                     }
                     // Allocate the register
