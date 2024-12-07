@@ -12,7 +12,7 @@ import top.swkfk.compiler.frontend.token.TokenStream;
 import top.swkfk.compiler.llvm.IrBuilder;
 import top.swkfk.compiler.llvm.IrModule;
 import top.swkfk.compiler.helpers.ParserWatcher;
-import top.swkfk.compiler.llvm.transforms.Hello;
+import top.swkfk.compiler.llvm.transforms.Dummy;
 
 import java.io.FileWriter;
 import java.io.IOException;
@@ -67,7 +67,7 @@ final public class Controller {
 
         // 5. Intermediate code optimization
         if (Configure.optimize) {
-            module.runPass(new Hello());
+            module.runPass(new Dummy());
         }
 
         // 6. Machine Code generation
