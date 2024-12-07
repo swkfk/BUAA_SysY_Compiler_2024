@@ -30,12 +30,8 @@ final public class Rename extends Pass {
         if (value.getName() == null || value.getName().isEmpty() || value.getName().charAt(0) == '@') {
             return;
         }
-        String raw = value.getName().replace("%", "");
         String prefix = value.getName().charAt(0) == '%' ? "%" : "";
-        if (!map.containsKey(raw)) {
-            map.put(raw, String.valueOf(counter.get()));
-        }
-        value.setName(prefix + map.get(raw));
+        value.setName(prefix + counter.get());
     }
 
     private void run(Function function) {
