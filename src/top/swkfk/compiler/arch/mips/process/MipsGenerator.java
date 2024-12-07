@@ -86,6 +86,18 @@ final public class MipsGenerator {
         MipsBlock.addEdge(entry, blockLLVM2Mips(blocks.getHead().getData()));
         // This will be added in the Return instruction
         // MipsBlock.addEdge(blockLLVM2Mips(blocks.getTail().getData()), exit);
+        buildValueMap();
+    }
+
+    private void buildValueMap() {
+        for (BasicBlock block : blockMap.keySet()) {
+            for (DualLinkedList.Node<User> iNode : block.getInstructions()) {
+                User instruction = iNode.getData();
+                if (instruction.getType() != null) {
+                    valueMap.put(instruction, new MipsVirtualRegister());
+                }
+            }
+        }
     }
 
     public MipsBlock blockLLVM2Mips(BasicBlock block) {
@@ -149,8 +161,7 @@ final public class MipsGenerator {
     public List<MipsInstruction> run(MipsBlock currentBlock, User instruction) {
         if (instruction instanceof IAllocate allocate) {
             int offset = enlargeStack((((TyPtr) allocate.getType()).getBase().sizeof() + 3) & ~0b0011);
-            MipsVirtualRegister register = new MipsVirtualRegister();
-            valueMap.put(allocate, register);
+            MipsVirtualRegister register = valueMap.get(allocate);
             return List.of(
                 new MipsIBinary(MipsIBinary.X.addiu, register, MipsPhysicalRegister.fp, new MipsImmediate(offset))
             );
@@ -163,8 +174,7 @@ final public class MipsGenerator {
                 opcode = ((IComparator) instruction).getOpcode();
             }
             if (Value.allConstInteger(instruction.getOperand(0), instruction.getOperand(1))) {
-                MipsVirtualRegister register = new MipsVirtualRegister();
-                valueMap.put(instruction, register);
+                MipsVirtualRegister register = valueMap.get(instruction);
                 return List.of(new MipsIBinary(
                     MipsIBinary.X.addiu, register, MipsPhysicalRegister.zero,
                     new MipsImmediate(opcode.calculate(
@@ -239,12 +249,10 @@ final public class MipsGenerator {
             } else if (call.getFunction().getName().equals("putint")) {
                 return MipsInstructionHub.buildSyscallWrite(1, call.getOperand(0), valueMap);
             } else if (call.getFunction().getName().equals("getint")) {
-                MipsVirtualRegister register = new MipsVirtualRegister();
-                valueMap.put(call, register);
+                MipsVirtualRegister register = valueMap.get(call);
                 return MipsInstructionHub.buildSyscallRead(5, register);
             } else if (call.getFunction().getName().equals("getchar")) {
-                MipsVirtualRegister register = new MipsVirtualRegister();
-                valueMap.put(call, register);
+                MipsVirtualRegister register = valueMap.get(call);
                 return MipsInstructionHub.buildSyscallRead(12, register);
             }
 
@@ -266,9 +274,8 @@ final public class MipsGenerator {
             }
             list.add(new MipsIJump(MipsIJump.X.jal, target));
             if (call.getType() != Ty.Void) {
-                MipsVirtualRegister register = new MipsVirtualRegister();
+                MipsVirtualRegister register = valueMap.get(call);
                 list.add(new MipsIBinary(MipsIBinary.X.addiu, register, MipsPhysicalRegister.v0, new MipsImmediate(0)));
-                valueMap.put(call, register);
             }
             return list;
         }
@@ -290,8 +297,7 @@ final public class MipsGenerator {
             );
         }
         if (instruction instanceof ILoad load) {
-            MipsVirtualRegister register = new MipsVirtualRegister();
-            valueMap.put(load, register);
+            MipsVirtualRegister register = valueMap.get(load);
             MipsILoadStore.X opcode;
             if (load.getType().sizeof() == 1) {
                 opcode = MipsILoadStore.X.lbu;
@@ -344,16 +350,14 @@ final public class MipsGenerator {
         if (instruction instanceof IMove move) {
             // XXX: Unchecked!
             if (move.getOperand(0) instanceof ConstInteger integer) {
-                MipsVirtualRegister register = new MipsVirtualRegister();
-                valueMap.put(move, register);
+                MipsVirtualRegister register = valueMap.get(move);
                 return List.of(new MipsIBinary(MipsIBinary.X.addiu, register, MipsPhysicalRegister.zero, new MipsImmediate(integer.getValue())));
             }
             valueMap.put(move, valueMap.get(move.getOperand(0)));
             return List.of();
         }
         if (instruction instanceof IConvert convert) {
-            MipsVirtualRegister register = new MipsVirtualRegister();
-            valueMap.put(convert, register);
+            MipsVirtualRegister register = valueMap.get(convert);
             if (convert.isTruncating()) {
                 if (convert.getOperand(0) instanceof ConstInteger integer) {
                     return List.of(new MipsIBinary(MipsIBinary.X.addiu, register, MipsPhysicalRegister.zero, new MipsImmediate(integer.getValue() % (1 << convert.getType().sizeof() * 8))));
@@ -369,8 +373,7 @@ final public class MipsGenerator {
             }
         }
         if (instruction instanceof IPhi phi) {
-            MipsVirtualRegister register = new MipsVirtualRegister();
-            valueMap.put(phi, register);
+            MipsVirtualRegister register = valueMap.get(phi);
             MipsIPhi mipsPhi = new MipsIPhi(register);
             for (Pair<BasicBlock, Value> pair : phi.getIncoming()) {
                 MipsOperand operand;
@@ -385,8 +388,7 @@ final public class MipsGenerator {
         }
         if (instruction instanceof IGep gep) {
             List<MipsInstruction> res = new LinkedList<>();
-            MipsVirtualRegister register = new MipsVirtualRegister();
-            valueMap.put(gep, register);
+            MipsVirtualRegister register = valueMap.get(gep);
             Value pointer = gep.getOperand(0);
             MipsOperand pointerOperand;
             if (pointer.getName().startsWith("@")) {
@@ -443,8 +445,7 @@ final public class MipsGenerator {
     private List<MipsInstruction> buildCompareHelper(User binary, MipsIBinary.X opcode) {
         Value lhs = binary.getOperand(0);
         Value rhs = binary.getOperand(1);
-        MipsVirtualRegister register = new MipsVirtualRegister();
-        valueMap.put(binary, register);
+        MipsVirtualRegister register = valueMap.get(binary);
         List<MipsInstruction> res = new LinkedList<>();
         MipsOperand lhsOperand, rhsOperand;
 
@@ -488,17 +489,14 @@ final public class MipsGenerator {
      */
     private List<MipsInstruction> buildBinaryHelperChooseI(User binary, MipsIBinary.X opcode, MipsIBinary.X opcodeI, Value lhs, Value rhs) {
         if (lhs instanceof ConstInteger integer) {
-            MipsVirtualRegister register = new MipsVirtualRegister();
-            valueMap.put(binary, register);
+            MipsVirtualRegister register = valueMap.get(binary);
             return List.of(new MipsIBinary(opcodeI, register, valueMap.get(rhs), new MipsImmediate(integer.getValue())));
         }
         if (rhs instanceof ConstInteger integer) {
-            MipsVirtualRegister register = new MipsVirtualRegister();
-            valueMap.put(binary, register);
+            MipsVirtualRegister register = valueMap.get(binary);
             return List.of(new MipsIBinary(opcodeI, register, valueMap.get(lhs), new MipsImmediate(integer.getValue())));
         }
-        MipsVirtualRegister register = new MipsVirtualRegister();
-        valueMap.put(binary, register);
+        MipsVirtualRegister register = valueMap.get(binary);
         return List.of(new MipsIBinary(opcode, register, valueMap.get(lhs), valueMap.get(rhs)));
     }
 
@@ -515,7 +513,7 @@ final public class MipsGenerator {
         Value lhs = binary.getOperand(0);
         Value rhs = binary.getOperand(1);
         List<MipsInstruction> list = new LinkedList<>();
-        MipsVirtualRegister resultRegister = new MipsVirtualRegister();
+        MipsVirtualRegister resultRegister = valueMap.get(binary);
         if (lhs instanceof ConstInteger integer) {
             list.add(new MipsIBinary(MipsIBinary.X.addiu, MipsPhysicalRegister.at, MipsPhysicalRegister.zero, new MipsImmediate(integer.getValue())));
             list.add(new MipsIMultDiv(opcode, MipsPhysicalRegister.at, valueMap.get(rhs)));
@@ -525,7 +523,6 @@ final public class MipsGenerator {
         } else {
             list.add(new MipsIMultDiv(opcode, valueMap.get(lhs), valueMap.get(rhs)));
         }
-        valueMap.put(binary, resultRegister);
         list.add(new MipsIHiLo(mf, resultRegister));
         return list;
     }

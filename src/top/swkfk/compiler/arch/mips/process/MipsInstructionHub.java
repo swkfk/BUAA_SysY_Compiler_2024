@@ -36,8 +36,7 @@ final public class MipsInstructionHub {
         Value rhs = binary.getOperand(1);
         if (lhs instanceof ConstInteger integer) {
             // c - x => y <- c; y - x
-            MipsVirtualRegister register = new MipsVirtualRegister();
-            valueMap.put(binary, register);
+            MipsVirtualRegister register = valueMap.get(binary);
             return List.of(
                 // X[temporary] <- lhs
                 new MipsIBinary(
@@ -51,16 +50,14 @@ final public class MipsInstructionHub {
             );
         } else if (rhs instanceof ConstInteger integer) {
             // x - c => x + (-c)
-            MipsVirtualRegister register = new MipsVirtualRegister();
-            valueMap.put(binary, register);
+            MipsVirtualRegister register = valueMap.get(binary);
             return List.of(new MipsIBinary(
                 MipsIBinary.X.addiu, register, valueMap.get(lhs),
                 new MipsImmediate(-integer.getValue())
             ));
         } else {
             // x - y
-            MipsVirtualRegister register = new MipsVirtualRegister();
-            valueMap.put(binary, register);
+            MipsVirtualRegister register = valueMap.get(binary);
             return List.of(new MipsIBinary(MipsIBinary.X.subu, register, valueMap.get(lhs), valueMap.get(rhs)));
         }
     }
