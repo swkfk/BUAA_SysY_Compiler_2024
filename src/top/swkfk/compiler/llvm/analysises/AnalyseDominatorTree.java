@@ -70,34 +70,32 @@ final public class AnalyseDominatorTree extends Pass {
             for (DualLinkedList.Node<BasicBlock> sonNode : function.getBlocks()) {
                 BasicBlock sonBlock = sonNode.getData();
                 if (!visited.contains(sonBlock)) {
-                    dominatedBy.get(block).add(sonBlock);
+                    dominatedBy.get(sonBlock).add(block);
                 }
             }
         }
 
         // Calculate the immediate dominator
-        // Reference: https://gitlab.eduxiji.net/educg-group-26173-2487151/T202410006203104-3288/-/blame/stable/src/pass/utils/DominatorTree.java#L25-47
-        // whose author is the same as the author of this file
-        Deque<BasicBlock> queue = new LinkedList<>();
-        HashMap<BasicBlock, Integer> depthMap = new HashMap<>();
-        HashMap<BasicBlock, Integer> visited = new HashMap<>();
-        queue.add(entry);
-        depthMap.put(entry, 0);
-        while (!queue.isEmpty()) {
-            BasicBlock block = queue.poll();
-            if (visited.getOrDefault(block, -1) >= depthMap.get(block)) {
-                continue;
-            }
-            visited.put(block, depthMap.get(block));
+        // Reference: https://gitlab.eduxiji.net/educg-group-26173-2487151/T202410006203104-3288/-/blame/main/src/pass/utils/DominatorTree.java#L27-55
 
-            int curDepth = depthMap.get(block) + 1;
-            for (BasicBlock child : dominatedBy.get(block)) {
-                Integer d = depthMap.getOrDefault(child, 0);
-                if (d < curDepth) {
-                    immediateDominator.put(child, block);
-                    depthMap.put(child, curDepth);
+        for (var Entry : dominatedBy.entrySet()) {
+            BasicBlock block = Entry.getKey();
+            Set<BasicBlock> dominatorSet = Entry.getValue();
+            for (BasicBlock dominator : dominatorSet) {
+                if (dominator == block) {
+                    continue;
                 }
-                queue.add(child);
+                boolean isImmediateDominator = true;
+                for (BasicBlock other : dominatorSet) {
+                    if (other != block && other != dominator && dominatedBy.get(other).contains(dominator)) {
+                        isImmediateDominator = false;
+                        break;
+                    }
+                }
+                if (isImmediateDominator) {
+                    immediateDominator.put(block, dominator);
+                    break;
+                }
             }
         }
 
