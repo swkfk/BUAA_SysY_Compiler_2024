@@ -40,7 +40,7 @@ final public class AnalyseDominatorTree extends Pass {
     @Override
     public void run(IrModule module) {
         module.getFunctions().forEach(function ->
-            function.setDom(analyse(function))
+            function.dom.set(analyse(function))
         );
         debug("finished");
     }
@@ -55,7 +55,7 @@ final public class AnalyseDominatorTree extends Pass {
             Set<BasicBlock> visited = new HashSet<>() {{
                 add(block);
             }};
-            dfs(entry, function.getCFG(), visited);
+            dfs(entry, function.cfg.get(), visited);
 
             // Add the dominator tree edge
             for (DualLinkedList.Node<BasicBlock> sonNode : function.getBlocks()) {

@@ -26,7 +26,7 @@ final public class AnalyseControlFlowGraph extends Pass {
     @Override
     public void run(IrModule module) {
         module.getFunctions().forEach(function ->
-            function.setCFG(analyse(function.getBlocks().getHead().getData()))
+            function.cfg.set(analyse(function.getBlocks().getHead().getData()))
         );
         debug("finished");
     }

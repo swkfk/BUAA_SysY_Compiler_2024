@@ -3,6 +3,7 @@ package top.swkfk.compiler.llvm.value;
 import top.swkfk.compiler.frontend.symbol.type.SymbolType;
 import top.swkfk.compiler.llvm.data_structure.ControlFlowGraph;
 import top.swkfk.compiler.llvm.data_structure.DominatorTree;
+import top.swkfk.compiler.utils.Container;
 import top.swkfk.compiler.utils.DualLinkedList;
 
 import java.util.LinkedList;
@@ -15,8 +16,9 @@ final public class Function extends Value {
     private final DualLinkedList<BasicBlock> blocks;
     private final List<Value> params;
     private boolean external;
-    private ControlFlowGraph cfg;
-    private DominatorTree dom;
+
+    public final Container<ControlFlowGraph> cfg = new Container<>();
+    public final Container<DominatorTree> dom = new Container<>();
 
     /**
      * Function is a value that represents a function.
@@ -61,30 +63,6 @@ final public class Function extends Value {
 
     public DualLinkedList<BasicBlock> getBlocks() {
         return blocks;
-    }
-
-    public ControlFlowGraph getCFG() {
-        return Objects.requireNonNull(cfg);
-    }
-
-    public void setCFG(ControlFlowGraph cfg) {
-        this.cfg = cfg;
-    }
-
-    public void invalidateCFG() {
-        cfg = null;
-    }
-
-    public DominatorTree getDom() {
-        return Objects.requireNonNull(dom);
-    }
-
-    public void setDom(DominatorTree dom) {
-        this.dom = dom;
-    }
-
-    public void invalidateDom() {
-        dom = null;
     }
 
     public String toString() {
