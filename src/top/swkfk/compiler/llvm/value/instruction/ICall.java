@@ -1,6 +1,5 @@
 package top.swkfk.compiler.llvm.value.instruction;
 
-import top.swkfk.compiler.frontend.symbol.SymbolFunction;
 import top.swkfk.compiler.llvm.value.Function;
 import top.swkfk.compiler.llvm.value.User;
 import top.swkfk.compiler.llvm.value.Value;

@@ -8,7 +8,7 @@ final public class StmtReturn extends Stmt {
      * The expression to return. Null if no expression is present.
      */
     private final Expr expr;
-    private Token token;
+    private final Token token;
 
     public StmtReturn(Expr expr, Token tk) {
         super(Type.Return);

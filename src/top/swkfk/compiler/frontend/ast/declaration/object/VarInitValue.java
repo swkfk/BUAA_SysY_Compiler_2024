@@ -2,14 +2,7 @@ package top.swkfk.compiler.frontend.ast.declaration.object;
 
 import top.swkfk.compiler.frontend.ast.ASTNode;
 import top.swkfk.compiler.frontend.ast.expression.Expr;
-import top.swkfk.compiler.frontend.ast.expression.ExprAdd;
 import top.swkfk.compiler.frontend.ast.expression.ExprConst;
-import top.swkfk.compiler.frontend.ast.expression.ExprMul;
-import top.swkfk.compiler.frontend.ast.expression.ExprPrimary;
-import top.swkfk.compiler.frontend.ast.expression.ExprUnaryPrimary;
-import top.swkfk.compiler.frontend.ast.misc.Char;
-import top.swkfk.compiler.frontend.ast.misc.Number;
-import top.swkfk.compiler.frontend.symbol.type.SymbolType;
 
 import java.util.LinkedList;
 import java.util.List;

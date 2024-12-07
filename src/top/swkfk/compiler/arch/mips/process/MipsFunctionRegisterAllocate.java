@@ -34,7 +34,6 @@ final public class MipsFunctionRegisterAllocate {
 
     private final MipsFunction function;
     private final HashMap<MipsBlock, Set<MipsVirtualRegister>> localVirtualRegisters;
-    private final Set<MipsVirtualRegister> globalVirtualRegisters;
 
     private final Map<MipsVirtualRegister, MipsPhysicalRegister> allocated = new HashMap<>();
     private final Set<MipsVirtualRegister> spilled = new HashSet<>();
@@ -47,7 +46,6 @@ final public class MipsFunctionRegisterAllocate {
     public MipsFunctionRegisterAllocate(MipsFunction function) {
         this.function = function;
         this.localVirtualRegisters = new HashMap<>();
-        this.globalVirtualRegisters = new HashSet<>();
         this.allocatedGlobal.add(MipsPhysicalRegister.ra);
     }
 
@@ -68,7 +66,6 @@ final public class MipsFunctionRegisterAllocate {
                     } else {
                         Pair<MipsBlock, Integer> record = records.get(register);
                         if (record == null || !record.equals(new Pair<>(block, blockLevel))) {
-                            globalVirtualRegisters.add(register);
                             records.put(register, null);
                         }
                     }

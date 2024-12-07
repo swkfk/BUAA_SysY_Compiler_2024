@@ -1,6 +1,6 @@
 package top.swkfk.compiler;
 
-public class HomeworkConfig {
+final public class HomeworkConfig {
     public enum Hw {
         Lexer, Syntax, Semantic, CodegenI, CodegenII
     }

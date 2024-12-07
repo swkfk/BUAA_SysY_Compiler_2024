@@ -1,14 +1,13 @@
 package top.swkfk.compiler.arch.mips;
 
 import top.swkfk.compiler.arch.mips.instruction.MipsIBinary;
-import top.swkfk.compiler.arch.mips.instruction.MipsIPhi;
 import top.swkfk.compiler.arch.mips.instruction.MipsInstruction;
 import top.swkfk.compiler.arch.mips.operand.MipsImmediate;
 import top.swkfk.compiler.arch.mips.operand.MipsOperand;
 import top.swkfk.compiler.arch.mips.operand.MipsPhysicalRegister;
 import top.swkfk.compiler.utils.DualLinkedList;
 
-public class MipsFunction extends MipsOperand {
+final public class MipsFunction extends MipsOperand {
     private final String name;
     private final DualLinkedList<MipsBlock> blocks = new DualLinkedList<>();
     private MipsBlock entry, exit;

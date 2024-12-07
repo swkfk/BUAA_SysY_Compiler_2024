@@ -15,7 +15,7 @@ import java.util.Map;
 
 import static java.util.Map.entry;
 
-public class Lexer {
+final public class Lexer {
     private final ErrorTable errors = Controller.errors;
 
     static class Reader {

@@ -6,7 +6,6 @@ import top.swkfk.compiler.frontend.symbol.FixedArray;
 import top.swkfk.compiler.frontend.symbol.FixedValue;
 import top.swkfk.compiler.frontend.symbol.SymbolVariable;
 import top.swkfk.compiler.frontend.symbol.type.SymbolType;
-import top.swkfk.compiler.frontend.symbol.type.Ty;
 import top.swkfk.compiler.frontend.symbol.type.TyArray;
 import top.swkfk.compiler.frontend.symbol.type.TyPtr;
 import top.swkfk.compiler.frontend.token.Token;
@@ -23,12 +22,6 @@ final public class LeftValue extends ASTNode {
     public LeftValue(Token identifier) {
         this.identifier = identifier;
         this.indices = new LinkedList<>();
-    }
-
-    public LeftValue(SymbolVariable symbol, List<Expr> indices) {
-        this.identifier = null;
-        this.symbol = symbol;
-        this.indices = indices;
     }
 
     public void addIndex(Expr index) {
@@ -60,7 +53,7 @@ final public class LeftValue extends ASTNode {
         if (symbol == null) {
             throw new RuntimeException("Symbol is not set to the LeftValue");
         }
-        if (!symbol.hasFixedValue()) {
+        if (symbol.hasNoFixedValue()) {
             throw new RuntimeException("Symbol does not have a fixed value in LeftValue");
         }
         Either<FixedValue, FixedArray> value = symbol.getConstantValue();

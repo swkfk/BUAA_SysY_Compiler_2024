@@ -16,7 +16,7 @@ final public class MipsILoadStore extends MipsInstruction {
     private final X operator;
     private MipsOperand dstOrSrc;
     private MipsOperand base;
-    private MipsImmediate offset;
+    private final MipsImmediate offset;
 
     public MipsILoadStore(X operator, MipsOperand dstOrSrc, MipsOperand base, MipsImmediate offset) {
         this.operator = operator;

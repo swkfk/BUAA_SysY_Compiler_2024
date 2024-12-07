@@ -6,7 +6,6 @@ import top.swkfk.compiler.frontend.ast.declaration.function.FuncFormalParam;
 import top.swkfk.compiler.frontend.ast.declaration.object.ConstDecl;
 import top.swkfk.compiler.frontend.ast.declaration.object.Decl;
 import top.swkfk.compiler.frontend.ast.declaration.object.VarDecl;
-import top.swkfk.compiler.frontend.symbol.SymbolFunction;
 import top.swkfk.compiler.frontend.symbol.SymbolVariable;
 import top.swkfk.compiler.frontend.symbol.type.SymbolType;
 import top.swkfk.compiler.frontend.symbol.type.Ty;
@@ -32,7 +31,7 @@ import java.util.Map;
  * global variables, it is the builder that traverses the AST to build them. For functions, the
  * builder only calls the traverser to visit them. This is a design flaw.
  */
-public class IrBuilder {
+final public class IrBuilder {
     private final Traverser traverser;
 
     @SuppressWarnings("SpellCheckingInspection")
@@ -124,10 +123,6 @@ public class IrBuilder {
         return function;
     }
 
-    void setInsertPoint(BasicBlock block) {
-        insertPoint = block;
-    }
-
     BasicBlock getInsertPoint() {
         return insertPoint;
     }
@@ -148,10 +143,6 @@ public class IrBuilder {
         }
         insertPoint = block;
         return block;
-    }
-
-    BasicBlock createBlock(boolean autoFallThroughInto) {
-        return createBlock(autoFallThroughInto, "");
     }
 
     Function getExternalFunction(String name) {

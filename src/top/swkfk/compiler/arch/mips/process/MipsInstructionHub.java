@@ -66,10 +66,12 @@ final public class MipsInstructionHub {
     }
 
 
+
     /**
      * <li>{@code seq $$res, $$lhs, $$rhs}</li>
      * <li>{@code seq $$res, $$lhs, ##rhs}</li>
      * <li>{@code seq $$res, ##lhs, $$rhs}</li>
+     * @deprecated
      */
     @SuppressWarnings("Duplicates")
     static List<MipsInstruction> seq(User binary, Map<Value, MipsVirtualRegister> valueMap) {
@@ -93,6 +95,7 @@ final public class MipsInstructionHub {
      * <li>{@code sne $$res, $$lhs, $$rhs}</li>
      * <li>{@code sne $$res, $$lhs, ##rhs}</li>
      * <li>{@code sne $$res, ##lhs, $$rhs}</li>
+     * @deprecated
      */
     @SuppressWarnings("Duplicates")
     static List<MipsInstruction> sne(User binary, Map<Value, MipsVirtualRegister> valueMap) {
@@ -134,6 +137,7 @@ final public class MipsInstructionHub {
      * <li>{@code slt $$res, $$lhs, $$rhs}</li>
      * <li>{@code slt $$res, $$lhs, ##rhs}</li>
      * <li>{@code slt $$res, ##lhs, $$rhs}</li>
+     * @deprecated
      */
     static List<MipsInstruction> slt(User binary, Map<Value, MipsVirtualRegister> valueMap) {
         MipsVirtualRegister register = new MipsVirtualRegister();
@@ -145,6 +149,7 @@ final public class MipsInstructionHub {
      * <li>{@code sgt $$res, $$lhs, $$rhs}</li>
      * <li>{@code sgt $$res, $$lhs, ##rhs}</li>
      * <li>{@code sgt $$res, ##lhs, $$rhs}</li>
+     * @deprecated
      */
     static List<MipsInstruction> sgt(User binary, Map<Value, MipsVirtualRegister> valueMap) {
         MipsVirtualRegister register = new MipsVirtualRegister();
@@ -177,6 +182,7 @@ final public class MipsInstructionHub {
      * <li>{@code sle $$res, $$lhs, $$rhs}</li>
      * <li>{@code sle $$res, $$lhs, ##rhs}</li>
      * <li>{@code sle $$res, ##lhs, $$rhs}</li>
+     * @deprecated
      */
     static List<MipsInstruction> sle(User binary, Map<Value, MipsVirtualRegister> valueMap) {
         MipsVirtualRegister register = new MipsVirtualRegister();
@@ -188,6 +194,7 @@ final public class MipsInstructionHub {
      * <li>{@code sge $$res, $$lhs, $$rhs}</li>
      * <li>{@code sge $$res, $$lhs, ##rhs}</li>
      * <li>{@code sge $$res, ##lhs, $$rhs}</li>
+     * @deprecated
      */
     static List<MipsInstruction> sge(User binary, Map<Value, MipsVirtualRegister> valueMap) {
         MipsVirtualRegister register = new MipsVirtualRegister();

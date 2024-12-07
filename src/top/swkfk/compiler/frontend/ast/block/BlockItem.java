@@ -4,8 +4,6 @@ import top.swkfk.compiler.frontend.ast.ASTNode;
 import top.swkfk.compiler.frontend.ast.declaration.object.Decl;
 import top.swkfk.compiler.frontend.ast.statement.Stmt;
 
-import java.util.List;
-
 final public class BlockItem extends ASTNode {
     public enum Type {
         Decl, Stmt

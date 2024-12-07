@@ -58,7 +58,7 @@ import java.util.stream.IntStream;
 /**
  * A simple traverser to build the symbol table.
  */
-public class Traverser {
+final public class Traverser {
     private final CompileUnit ast;
     private final ErrorTable errors = Controller.errors;
     private final SymbolTable symbols = Controller.symbols;

@@ -6,7 +6,7 @@ import top.swkfk.compiler.helpers.ArrayInitialString;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class MipsGlobalVariable {
+final public class MipsGlobalVariable {
     private final SymbolType type;
     private final String tag;
     private final List<Integer> initializerList;

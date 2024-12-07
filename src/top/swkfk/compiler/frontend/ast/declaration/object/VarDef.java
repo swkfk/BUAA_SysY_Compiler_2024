@@ -9,7 +9,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 final public class VarDef extends ASTNode {
-    private final Token identifer;
+    private final Token identifier;
     private SymbolVariable symbol = null;
     private final List<ExprConst> indices;
     /**
@@ -18,7 +18,7 @@ final public class VarDef extends ASTNode {
     private VarInitValue initial;
 
     public VarDef(Token identifier) {
-        this.identifer = identifier;
+        this.identifier = identifier;
         this.indices = new LinkedList<>();
         this.initial = null;
     }
@@ -32,7 +32,7 @@ final public class VarDef extends ASTNode {
     }
 
     public Token getIdentifier() {
-        return identifer;
+        return identifier;
     }
 
     public VarInitValue getInitial() {

@@ -1,8 +1,5 @@
 package top.swkfk.compiler.llvm.value.instruction;
 
-import top.swkfk.compiler.llvm.value.Value;
-import top.swkfk.compiler.llvm.value.constants.ConstInteger;
-
 public enum BinaryOp {
 
     ADD("add"),

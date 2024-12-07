@@ -59,8 +59,9 @@ import top.swkfk.compiler.utils.BackTrace;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Objects;
 
-public class Parser {
+final public class Parser {
     private final ErrorTable errors = Controller.errors;
     private final CompileUnit ast;
 
@@ -88,11 +89,11 @@ public class Parser {
             __watcher.add(token.toString());
         } catch (IllegalStateException e) {
             if (type.equals(TokenType.Semicolon)) {
-                errors.add(ErrorType.ExpectedSemicolon, __tokens.peek(-1).location());
+                errors.add(ErrorType.ExpectedSemicolon, Objects.requireNonNull(__tokens.peek(-1)).location());
             } else if (type.equals(TokenType.RParen)) {
-                errors.add(ErrorType.ExpectedRParen, __tokens.peek(-1).location());
+                errors.add(ErrorType.ExpectedRParen, Objects.requireNonNull(__tokens.peek(-1)).location());
             } else if (type.equals(TokenType.RBracket)) {
-                errors.add(ErrorType.ExpectedRBracket, __tokens.peek(-1).location());
+                errors.add(ErrorType.ExpectedRBracket, Objects.requireNonNull(__tokens.peek(-1)).location());
             } else {
                 throw e;
             }
@@ -122,7 +123,7 @@ public class Parser {
      */
     private Token next() {
         Token token = __tokens.next();
-        __watcher.add(token.toString());
+        __watcher.add(String.valueOf(token));
         return token;
     }
 
@@ -143,7 +144,11 @@ public class Parser {
      * @return The check result.
      */
     private boolean among(int next, TokenType... types) {
-        return __tokens.peek(next).among(types);
+        Token tk = __tokens.peek(next);
+        if (tk == null) {
+            return false;
+        }
+        return tk.among(types);
     }
 
     private TokenType peekType() {

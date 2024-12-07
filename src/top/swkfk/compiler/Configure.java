@@ -1,6 +1,6 @@
 package top.swkfk.compiler;
 
-public class Configure {
+final public class Configure {
     public enum Arch {
         mips
     }

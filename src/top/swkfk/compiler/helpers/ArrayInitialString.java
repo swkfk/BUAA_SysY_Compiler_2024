@@ -1,7 +1,6 @@
 package top.swkfk.compiler.helpers;
 
 import top.swkfk.compiler.frontend.symbol.type.SymbolType;
-import top.swkfk.compiler.frontend.symbol.type.Ty;
 import top.swkfk.compiler.frontend.symbol.type.TyArray;
 import top.swkfk.compiler.llvm.value.Value;
 import top.swkfk.compiler.llvm.value.constants.ConstInteger;

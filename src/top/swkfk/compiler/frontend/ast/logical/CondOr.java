@@ -6,7 +6,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 final public class CondOr extends ASTNode {
-    private List<CondAnd> condAndList;
+    private final List<CondAnd> condAndList;
 
     public CondOr() {
         this.condAndList = new LinkedList<>();

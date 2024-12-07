@@ -13,7 +13,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-public class IrModule {
+final public class IrModule {
     private final List<Function> functions;
     private final Map<String, Function> externalFunctions;
     private final List<GlobalVariable> globalVariables;

@@ -2,7 +2,6 @@ package top.swkfk.compiler.frontend.ast.declaration.object;
 
 import top.swkfk.compiler.frontend.ast.ASTNode;
 import top.swkfk.compiler.frontend.ast.declaration.BasicType;
-import top.swkfk.compiler.frontend.ast.declaration.function.FuncType;
 
 import java.util.LinkedList;
 import java.util.List;

@@ -7,9 +7,10 @@ import top.swkfk.compiler.arch.mips.operand.MipsVirtualRegister;
 
 import java.util.Map;
 
+@SuppressWarnings("unused")
 final public class MipsILui extends MipsInstruction {
     private MipsOperand res;
-    private MipsImmediate imm;
+    private final MipsImmediate imm;
 
     public MipsILui(MipsOperand res, MipsImmediate imm) {
         this.res = res;
@@ -35,7 +36,7 @@ final public class MipsILui extends MipsInstruction {
 
     @Override
     public void fillPhysicalRegister(Map<MipsVirtualRegister, MipsPhysicalRegister> map) {
-        fillPhysicalRegister(res, map);
+        res = fillPhysicalRegister(res, map);
     }
 
     @Override

@@ -37,10 +37,6 @@ public class Symbol implements Comparable<Symbol> {
         return name + "<" + mangle + "#" + symbolTableIndex + "." + index + "> : " + type;
     }
 
-    public String getMangle() {
-        return mangle;
-    }
-
     public String getName() {
         return name;
     }

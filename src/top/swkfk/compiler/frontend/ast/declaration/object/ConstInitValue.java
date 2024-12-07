@@ -10,7 +10,7 @@ final public class ConstInitValue extends ASTNode {
 
 
     public enum Type {
-        Initializer, SubInitializer, StringConst;
+        Initializer, SubInitializer, StringConst
     }
     private final Type type;
 

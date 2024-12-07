@@ -9,7 +9,7 @@ import java.util.stream.Collectors;
 /**
  * Collect tokens and provide methods to access them.
  */
-public class TokenStream implements BackTrace.Traceable {
+final public class TokenStream implements BackTrace.Traceable {
     private final List<Token> tks = new LinkedList<>();
     private int index = 0;
 

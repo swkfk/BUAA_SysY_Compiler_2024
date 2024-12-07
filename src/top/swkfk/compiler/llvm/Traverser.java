@@ -1,6 +1,5 @@
 package top.swkfk.compiler.llvm;
 
-import top.swkfk.compiler.Controller;
 import top.swkfk.compiler.frontend.ast.CompileUnit;
 import top.swkfk.compiler.frontend.ast.block.Block;
 import top.swkfk.compiler.frontend.ast.block.BlockItem;
@@ -41,7 +40,6 @@ import top.swkfk.compiler.frontend.ast.statement.StmtGetInt;
 import top.swkfk.compiler.frontend.ast.statement.StmtIf;
 import top.swkfk.compiler.frontend.ast.statement.StmtPrintf;
 import top.swkfk.compiler.frontend.ast.statement.StmtReturn;
-import top.swkfk.compiler.frontend.symbol.SymbolTable;
 import top.swkfk.compiler.frontend.symbol.SymbolVariable;
 import top.swkfk.compiler.frontend.symbol.type.SymbolType;
 import top.swkfk.compiler.frontend.symbol.type.Ty;
@@ -60,7 +58,6 @@ import top.swkfk.compiler.llvm.value.instruction.IBranch;
 import top.swkfk.compiler.llvm.value.instruction.ICall;
 import top.swkfk.compiler.llvm.value.instruction.IComparator;
 import top.swkfk.compiler.llvm.value.instruction.IConvert;
-import top.swkfk.compiler.llvm.value.instruction.IGep;
 import top.swkfk.compiler.llvm.value.instruction.ILoad;
 import top.swkfk.compiler.llvm.value.instruction.IPhi;
 import top.swkfk.compiler.llvm.value.instruction.IReturn;
@@ -68,17 +65,15 @@ import top.swkfk.compiler.llvm.value.instruction.IStore;
 import top.swkfk.compiler.llvm.value.instruction.ITerminator;
 
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Stack;
 
-class Traverser {
+final class Traverser {
     private final CompileUnit ast;
     private final IrBuilder builder;
-    private final SymbolTable symbols = Controller.symbols;
     private final Map<String, Function> functionMap = new HashMap<>();
 
     Traverser(CompileUnit ast, IrBuilder builder) {
@@ -474,7 +469,7 @@ class Traverser {
                 visitStmt(forStmt.getBody());
 
                 // update
-                BasicBlock updateBlock = builder.createBlock(true, "For Update Block" + nav);
+                BasicBlock ignoreUpdateBlock = builder.createBlock(true, "For Update Block" + nav);
                 Optional.ofNullable(forStmt.getUpdate()).ifPresent(this::visitForStmt);
                 BasicBlock updateEndBlock = builder.getInsertPoint();
                 builder.insertInstruction(

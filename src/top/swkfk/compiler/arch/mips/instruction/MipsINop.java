@@ -6,7 +6,8 @@ import top.swkfk.compiler.arch.mips.operand.MipsVirtualRegister;
 
 import java.util.Map;
 
-public class MipsINop extends MipsInstruction {
+@SuppressWarnings("unused")
+final public class MipsINop extends MipsInstruction {
     @Override
     public MipsOperand[] getOperands() {
         return new MipsOperand[0];

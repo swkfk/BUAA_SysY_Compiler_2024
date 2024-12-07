@@ -25,10 +25,6 @@ final public class MipsIBinary extends MipsInstruction {
         this.rhs = rhs;
     }
 
-    public boolean operatorEquals(X operator) {
-        return this.operator == operator;
-    }
-
     @Override
     public MipsOperand[] getOperands() {
         return new MipsOperand[] {res, lhs, rhs};

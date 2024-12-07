@@ -24,7 +24,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-public class MipsModule implements ArchModule {
+final public class MipsModule implements ArchModule {
     private final List<MipsFunction> functions = new LinkedList<>();
     private final List<MipsGlobalVariable> globalVariable = new LinkedList<>();
     private final Map<Function, MipsFunction> functionMap = new HashMap<>();

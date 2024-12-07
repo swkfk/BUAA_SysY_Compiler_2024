@@ -45,6 +45,7 @@ public class Value {
             .findFirst().ifPresent(uses::remove);
     }
 
+    @SuppressWarnings("unused")
     public void removeAllUseOfUser(User user) {
         uses.removeIf(use -> use.getUser().equals(user));
     }
@@ -68,10 +69,11 @@ public class Value {
 
     /**
      * Judge all values are constant integer. Normally used in constant folding or generating the mips
-     * code to avoid instructions list addiu $$, 1, 2.
+     * code to avoid instructions list <code>addiu $$, 1, 2</code>.
      * @param values values to be judged
      * @return whether all values are constant integer
      */
+    @SuppressWarnings("SpellCheckingInspection")
     public static boolean allConstInteger(Value... values) {
         return Arrays.stream(values).allMatch(value -> value instanceof ConstInteger);
     }

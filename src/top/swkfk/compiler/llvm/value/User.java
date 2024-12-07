@@ -37,6 +37,7 @@ abstract public class User extends Value {
         }
     }
 
+    @SuppressWarnings("unused")
     public void replaceOperand(Value old, Value value) {
         IntStream.range(0, operands.size())
             .filter(i -> operands.get(i).equals(old))

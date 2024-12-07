@@ -10,5 +10,6 @@ abstract public class ITerminator extends User {
         super(name, type);
     }
 
+    @SuppressWarnings("unused")
     abstract public BasicBlock[] getSuccessors();
 }

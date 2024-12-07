@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.Map;
 
 final public class MipsIPhi extends MipsInstruction {
-    private final MipsOperand res;
+    private MipsOperand res;
     private final List<MipsOperand> operands;
     private final List<MipsBlock> sources;
 
@@ -61,10 +61,8 @@ final public class MipsIPhi extends MipsInstruction {
 
     @Override
     public void fillPhysicalRegister(Map<MipsVirtualRegister, MipsPhysicalRegister> map) {
-        fillPhysicalRegister(res, map);
-        for (MipsOperand operand : operands) {
-            fillPhysicalRegister(operand, map);
-        }
+        res = fillPhysicalRegister(res, map);
+        operands.replaceAll(operand -> fillPhysicalRegister(operand, map));
     }
 
     @Override

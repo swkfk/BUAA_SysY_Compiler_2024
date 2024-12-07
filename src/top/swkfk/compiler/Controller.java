@@ -17,7 +17,7 @@ import top.swkfk.compiler.llvm.transforms.Hello;
 import java.io.FileWriter;
 import java.io.IOException;
 
-public class Controller {
+final public class Controller {
     public static final ErrorTable errors = new ErrorTable();
     public static final SymbolTable symbols = new SymbolTable();
 
@@ -71,10 +71,10 @@ public class Controller {
         }
 
         // 6. Machine Code generation
-        ArchModule arch = switch (Configure.arch) {
+        ArchModule arch = (switch (Configure.arch) {
             case mips -> new MipsModule();
-        };
-        arch.runParseIr(module)
+        })
+            .runParseIr(module)
             .runRemovePhi()
             .runVirtualOptimize()
             .runRegisterAllocation()

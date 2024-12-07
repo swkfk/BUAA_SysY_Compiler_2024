@@ -31,8 +31,8 @@ final public class SymbolVariable extends Symbol {
         constantValue = Either.right(value);
     }
 
-    public boolean hasFixedValue() {
-        return constantValue != null;
+    public boolean hasNoFixedValue() {
+        return constantValue == null;
     }
 
     public Either<FixedValue, FixedArray> getConstantValue() {
@@ -57,7 +57,7 @@ final public class SymbolVariable extends Symbol {
 
     @Override
     public String toDebugString() {
-        if (!hasFixedValue()) {
+        if (hasNoFixedValue()) {
             return super.toDebugString();
         }
         return super.toDebugString() + " = " + constantValue;

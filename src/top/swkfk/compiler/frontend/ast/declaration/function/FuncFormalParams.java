@@ -6,7 +6,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 final public class FuncFormalParams extends ASTNode {
-    private List<FuncFormalParam> paramList;
+    private final List<FuncFormalParam> paramList;
 
     public FuncFormalParams() {
         this.paramList = new LinkedList<>();

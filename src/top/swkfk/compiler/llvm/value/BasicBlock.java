@@ -38,10 +38,6 @@ final public class BasicBlock extends Value {
             instructions.getTail().getData();
     }
 
-    public void removeLastInstruction() {
-        instructions.getTail().drop();
-    }
-
     public Function getParent() {
         return parent;
     }
