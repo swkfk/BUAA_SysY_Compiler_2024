@@ -21,6 +21,10 @@ abstract public class User extends Value {
         Objects.requireNonNull(operand).addUse(new Use(operand, this, operands.size() - 1));
     }
 
+    public void addOperandNullable(Value operand) {
+        operands.add(operand);
+    }
+
     public Value getOperand(int index) {
         return operands.get(index);
     }

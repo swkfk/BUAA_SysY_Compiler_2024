@@ -5,18 +5,16 @@ import top.swkfk.compiler.llvm.value.User;
 import top.swkfk.compiler.llvm.value.Value;
 
 final public class IConvert extends User {
-    private final Value source;
 
     public IConvert(SymbolType target, Value value) {
         super("%" + Value.counter.get(), target);
         assert value.getType().is("int") && target.is("int") && !target.equals(value.getType()) :
             "Invalid conversion from " + value.getType() + " to " + target ;
-        this.source = value;
         addOperand(value);
     }
 
     public boolean isTruncating() {
-        return getType().sizeof() < source.getType().sizeof();
+        return getType().sizeof() < getOperand(0).getType().sizeof();
     }
 
     @SuppressWarnings("SpellCheckingInspection")
@@ -25,13 +23,13 @@ final public class IConvert extends User {
         StringBuilder sb = new StringBuilder();
         sb.append(getName()).append(" = ");
 
-        if (getType().sizeof() < source.getType().sizeof()) {
+        if (getType().sizeof() < getOperand(0).getType().sizeof()) {
             sb.append("trunc ");
         } else {
             sb.append("zext ");
         }
 
-        sb.append(source).append(" to ").append(getType());
+        sb.append(getOperand(0)).append(" to ").append(getType());
         return sb.toString();
     }
 }

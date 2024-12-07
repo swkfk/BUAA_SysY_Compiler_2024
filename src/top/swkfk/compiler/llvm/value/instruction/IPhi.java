@@ -11,26 +11,27 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 final public class IPhi extends User {
-    private final List<Pair<BasicBlock, Value>> incoming;
-
     public IPhi(SymbolType type) {
         super("%" + Value.counter.get(), type);
-        incoming = new LinkedList<>();
     }
 
     public void addIncoming(BasicBlock block, Value value) {
-        incoming.add(new Pair<>(block, value));
+        addOperand(block);
         addOperand(value);
     }
 
     public List<Pair<BasicBlock, Value>> getIncoming() {
+        List<Pair<BasicBlock, Value>> incoming = new LinkedList<>();
+        for (int i = 0; i < getOperands().size(); i += 2) {
+            incoming.add(new Pair<>((BasicBlock) getOperand(i), getOperand(i + 1)));
+        }
         return incoming;
     }
 
     @Override
     public String toLLVM() {
         return getName() + " = phi " + getType() + " " +
-            incoming.stream().map(
+            getIncoming().stream().map(
                 pair -> "[ " + pair.second().getName() + ", %" + pair.first().getName() + " ]"
             ).collect(Collectors.joining(", "));
     }
