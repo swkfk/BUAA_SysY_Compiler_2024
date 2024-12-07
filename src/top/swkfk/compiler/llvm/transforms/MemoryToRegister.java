@@ -56,7 +56,11 @@ final public class MemoryToRegister extends Pass {
         allocateDefines.clear();
 
         for (DualLinkedList.Node<BasicBlock> bNode : function.getBlocks()) {
-            for (DualLinkedList.Node<User> iNode : bNode.getData().getInstructions()) {
+            BasicBlock block = bNode.getData();
+            if (!function.cfg.get().contains(block)) {
+                continue;
+            }
+            for (DualLinkedList.Node<User> iNode : block.getInstructions()) {
                 User instruction = iNode.getData();
                 if (instruction instanceof IAllocate allocate) {
                     if (((TyPtr) allocate.getType()).getBase().is("int")) {

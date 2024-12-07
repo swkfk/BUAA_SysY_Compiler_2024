@@ -53,6 +53,6 @@ final public class AnalyseControlFlowGraph extends Pass {
             }
         }
 
-        return new ControlFlowGraph(entry, successors, predecessors);
+        return new ControlFlowGraph(entry, successors, predecessors, visited);
     }
 }
