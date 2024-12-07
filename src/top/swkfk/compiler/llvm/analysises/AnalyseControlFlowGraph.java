@@ -28,7 +28,6 @@ final public class AnalyseControlFlowGraph extends Pass {
         module.getFunctions().forEach(function ->
             function.cfg.set(analyse(function.getBlocks().getHead().getData()))
         );
-        debug("finished");
     }
 
     private ControlFlowGraph analyse(BasicBlock entry) {

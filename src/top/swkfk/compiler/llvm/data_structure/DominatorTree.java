@@ -11,13 +11,19 @@ import java.util.Set;
  *
  */
 final public class DominatorTree {
-    private final Map<BasicBlock, Set<BasicBlock>> dominator = new HashMap<>();
+    private final Map<BasicBlock, Set<BasicBlock>> dominatedBy = new HashMap<>();
+    private final Map<BasicBlock, BasicBlock> immediateDominator = new HashMap<>();
 
-    public DominatorTree(Map<BasicBlock, Set<BasicBlock>> dominator) {
-        this.dominator.putAll(dominator);
+    public DominatorTree(Map<BasicBlock, Set<BasicBlock>> dominatedBy, Map<BasicBlock, BasicBlock> immediateDominator) {
+        this.dominatedBy.putAll(dominatedBy);
+        this.immediateDominator.putAll(immediateDominator);
     }
 
     public Set<BasicBlock> getDominator(BasicBlock block) {
-        return dominator.get(block);
+        return dominatedBy.get(block);
+    }
+
+    public BasicBlock getImmediateDominator(BasicBlock block) {
+        return immediateDominator.get(block);
     }
 }
