@@ -114,6 +114,7 @@ final public class MipsGenerator {
 
     private StringBuilder reservedOutputString = new StringBuilder();
     private static final GlobalCounter stringDataCounter = new GlobalCounter();
+    private static final HashMap<String, String> strings = new HashMap<>();
 
     @SuppressWarnings("SpellCheckingInspection")
     public List<MipsInstruction> preRun(MipsBlock ignore, User instruction, List<MipsGlobalVariable> globalVariable) {
@@ -125,12 +126,18 @@ final public class MipsGenerator {
         if (reservedOutputString.isEmpty()) {
             return List.of();
         }
-        String tag = ".str." + stringDataCounter.get();
         String content = reservedOutputString.toString();
+        String tag;
+        if (strings.containsKey(content)) {
+            tag = strings.get(content);
+        } else {
+            tag = "str." + stringDataCounter.get();
+            strings.put(content, tag);
+            globalVariable.add(new MipsGlobalVariable(
+                Ty.I8, tag, content
+            ));
+        }
         reservedOutputString = new StringBuilder();
-        globalVariable.add(new MipsGlobalVariable(
-            Ty.I8, tag, content
-        ));
         return List.of(
             new MipsILoadAddress(new MipsImmediate(tag), MipsPhysicalRegister.a[0]),
             new MipsIBinary(MipsIBinary.X.addiu, MipsPhysicalRegister.v0, MipsPhysicalRegister.zero, new MipsImmediate(4)),
