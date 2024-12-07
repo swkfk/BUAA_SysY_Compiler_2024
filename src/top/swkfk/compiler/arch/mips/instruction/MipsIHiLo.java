@@ -28,12 +28,12 @@ final public class MipsIHiLo extends MipsInstruction {
 
     @Override
     public MipsVirtualRegister[] getUseVirtualRegisters() {
-        return getVirtualRegisters(operator == X.mfhi || operator == X.mflo ? operand : null);
+        return getVirtualRegisters(operator == X.mthi || operator == X.mtlo ? operand : null);
     }
 
     @Override
     public MipsVirtualRegister[] getDefVirtualRegisters() {
-        return getVirtualRegisters(operator == X.mthi || operator == X.mtlo ? operand : null);
+        return getVirtualRegisters(operator == X.mfhi || operator == X.mflo ? operand : null);
     }
 
     @Override
