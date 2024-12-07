@@ -23,6 +23,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Replace memory operations with register operations. Only for integer types. <br>
@@ -49,7 +50,7 @@ final public class MemoryToRegister extends Pass {
     private final List<Value> allocates = new LinkedList<>();
     private final Map<IPhi, Value> newPhis = new HashMap<>();
     private final Map<Value, Set<BasicBlock>> allocateDefines = new HashMap<>();
-    private final Map<BasicBlock, List<BasicBlock>> dominatorFrontiers = new HashMap<>();
+    private final Map<BasicBlock, Set<BasicBlock>> dominatorFrontiers = new HashMap<>();
 
     private void initializeAllocates(Function function) {
         allocates.clear();
@@ -87,7 +88,7 @@ final public class MemoryToRegister extends Pass {
             if (visited.contains(block)) {
                 continue;
             }
-            dominatorFrontiers.put(block, new LinkedList<>());
+            dominatorFrontiers.put(block, new HashSet<>());
             visited.add(block);
             for (BasicBlock successor : function.cfg.get().getSuccessors(block)) {
                 BasicBlock x = block;
@@ -98,6 +99,9 @@ final public class MemoryToRegister extends Pass {
                 workList.push(successor);
             }
         }
+        debug("DF of " + function.getName() + ": " + dominatorFrontiers.entrySet().stream().map(
+            entry -> entry.getKey().getName() + " -> " + entry.getValue().stream().map(BasicBlock::getName).toList()
+        ).collect(Collectors.joining("; ")));
     }
 
     private void placePhiInstruction() {

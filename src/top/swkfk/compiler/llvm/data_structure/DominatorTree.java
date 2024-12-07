@@ -34,9 +34,9 @@ final public class DominatorTree {
      * @return true if u is an ancestor of v
      */
     public boolean isAncestor(BasicBlock u, BasicBlock v) {
-        BasicBlock runner = u;
+        BasicBlock runner = v;
         while (runner != null) {
-            if (runner == v) {
+            if (runner == u) {
                 return true;
             }
             runner = immediateDominator.get(runner);
