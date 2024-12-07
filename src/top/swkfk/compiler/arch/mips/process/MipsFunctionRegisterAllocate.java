@@ -216,6 +216,23 @@ final public class MipsFunctionRegisterAllocate {
                 }
             }
         }
+        // Make up the missive virtual registers
+        for (DualLinkedList.Node<MipsBlock> bNode : function.getBlocks()) {
+            MipsBlock block = bNode.getData();
+            for (DualLinkedList.Node<MipsInstruction> iNode : block.getInstructions()) {
+                MipsInstruction instruction = iNode.getData();
+                for (MipsVirtualRegister register : instruction.getUseVirtualRegisters()) {
+                    if (haveNotAllocated(register)) {
+                        livings.get(block).getOut().add(register);
+                    }
+                }
+                for (MipsVirtualRegister register : instruction.getDefVirtualRegisters()) {
+                    if (haveNotAllocated(register)) {
+                        livings.get(block).getOut().add(register);
+                    }
+                }
+            }
+        }
         // 3. Calculate the interference graph
         UndirectedGraph<MipsVirtualRegister> interferenceGraph = new UndirectedGraph<>();
         for (DualLinkedList.Node<MipsBlock> bNode : function.getBlocks()) {
