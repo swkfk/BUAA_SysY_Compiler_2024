@@ -14,6 +14,14 @@ final public class IStore extends User {
         addOperand(pointer);
     }
 
+    public Value getPointer() {
+        return getOperand(1);
+    }
+
+    public Value getValue() {
+        return getOperand(0);
+    }
+
     @Override
     public String toLLVM() {
         return "store " + getOperand(0) + ", " + getOperand(1);

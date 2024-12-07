@@ -12,6 +12,10 @@ final public class ILoad extends User {
         addOperand(pointer);
     }
 
+    public Value getPointer() {
+        return getOperand(0);
+    }
+
     @Override
     public String toLLVM() {
         return getName() + " = load " + getType() + ", " + getOperand(0);

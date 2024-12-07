@@ -26,4 +26,21 @@ final public class DominatorTree {
     public BasicBlock getImmediateDominator(BasicBlock block) {
         return immediateDominator.get(block);
     }
+
+    /**
+     * Check if u is an ancestor of v.
+     * @param u the potential dominator
+     * @param v the potential dominated
+     * @return true if u is an ancestor of v
+     */
+    public boolean isAncestor(BasicBlock u, BasicBlock v) {
+        BasicBlock runner = u;
+        while (runner != null) {
+            if (runner == v) {
+                return true;
+            }
+            runner = immediateDominator.get(runner);
+        }
+        return false;
+    }
 }
