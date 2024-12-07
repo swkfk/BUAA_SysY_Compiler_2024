@@ -18,4 +18,8 @@ public abstract class Pass {
             System.out.println("<" + getName() + "> " + message);
         }
     }
+
+    public boolean canPrintVerbose() {
+        return true;
+    }
 }

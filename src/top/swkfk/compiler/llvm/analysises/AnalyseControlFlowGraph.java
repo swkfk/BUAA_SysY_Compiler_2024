@@ -14,6 +14,11 @@ import java.util.Set;
 
 final public class AnalyseControlFlowGraph extends Pass {
     @Override
+    public boolean canPrintVerbose() {
+        return false;
+    }
+
+    @Override
     public String getName() {
         return "control-flow-graph";
     }

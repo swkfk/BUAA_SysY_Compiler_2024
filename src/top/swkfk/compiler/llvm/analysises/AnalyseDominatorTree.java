@@ -28,6 +28,11 @@ import java.util.Set;
  */
 final public class AnalyseDominatorTree extends Pass {
     @Override
+    public boolean canPrintVerbose() {
+        return false;
+    }
+
+    @Override
     public String getName() {
         return "dom-tree";
     }

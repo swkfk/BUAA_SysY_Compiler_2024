@@ -70,7 +70,7 @@ final public class IrModule {
 
     public IrModule runPass(Pass pass) {
         pass.run(this);
-        if (Configure.debug.displayPassVerbose) {
+        if (Configure.debug.displayPassVerbose && pass.canPrintVerbose()) {
             try (FileWriter writer = new FileWriter(
                 Configure.passTarget
                     // Assume to be a '.' in the target file name
