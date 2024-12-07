@@ -12,6 +12,8 @@ import top.swkfk.compiler.frontend.token.TokenStream;
 import top.swkfk.compiler.llvm.IrBuilder;
 import top.swkfk.compiler.llvm.IrModule;
 import top.swkfk.compiler.helpers.ParserWatcher;
+import top.swkfk.compiler.llvm.analysises.AnalyseControlFlowGraph;
+import top.swkfk.compiler.llvm.analysises.AnalyseDominatorTree;
 import top.swkfk.compiler.llvm.transforms.Dummy;
 
 import java.io.FileWriter;
@@ -67,7 +69,11 @@ final public class Controller {
 
         // 5. Intermediate code optimization
         if (Configure.optimize) {
-            module.runPass(new Dummy());
+            module
+                .runPass(new Dummy())
+                .runPass(new AnalyseControlFlowGraph())
+                .runPass(new AnalyseDominatorTree())
+            ;
         }
 
         // 6. Machine Code generation

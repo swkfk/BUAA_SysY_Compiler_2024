@@ -1,6 +1,7 @@
 package top.swkfk.compiler.llvm.value;
 
 import top.swkfk.compiler.helpers.Comments;
+import top.swkfk.compiler.llvm.value.instruction.ITerminator;
 import top.swkfk.compiler.utils.DualLinkedList;
 
 final public class BasicBlock extends Value {
@@ -40,5 +41,13 @@ final public class BasicBlock extends Value {
 
     public Function getParent() {
         return parent;
+    }
+
+    public BasicBlock[] getSuccessors() {
+        User last = getLastInstruction();
+        if (!(last instanceof ITerminator terminator)) {
+            throw new RuntimeException("The last instruction of a basic block must be a terminator");
+        }
+        return terminator.getSuccessors();
     }
 }
