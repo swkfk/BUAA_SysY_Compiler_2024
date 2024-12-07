@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.stream.IntStream;
 
 public class Value {
-    private final String name;
+    private String name;
     private final SymbolType type;
     private final List<Use> uses;
 
@@ -29,6 +29,10 @@ public class Value {
 
     public String getName() {
         return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 
     public SymbolType getType() {

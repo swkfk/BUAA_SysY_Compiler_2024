@@ -16,6 +16,7 @@ import top.swkfk.compiler.llvm.analysises.AnalyseControlFlowGraph;
 import top.swkfk.compiler.llvm.analysises.AnalyseDominatorTree;
 import top.swkfk.compiler.llvm.transforms.Dummy;
 import top.swkfk.compiler.llvm.transforms.MemoryToRegister;
+import top.swkfk.compiler.llvm.transforms.Rename;
 
 import java.io.FileWriter;
 import java.io.IOException;
@@ -80,7 +81,7 @@ final public class Controller {
 
         if (Configure.debug.dumpOptimizedIr) {
             try (FileWriter writer = new FileWriter("llvm_ir.txt")) {
-                writer.write(module.toString());
+                writer.write(module.runPass(new Rename()).toString());
             }
         }
 
