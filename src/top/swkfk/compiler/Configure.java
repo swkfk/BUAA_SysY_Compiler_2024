@@ -20,6 +20,7 @@ final public class Configure {
         public static boolean displayPassDebug = false;
         public static boolean displayPassVerbose = false;
         public static boolean displayDataSegment = false;
+        public static boolean dumpOptimizedIr = false;
 
         /**
          * Display tokens with AST. For homework 3. Switch in {@link Controller#run()}.
@@ -33,6 +34,7 @@ final public class Configure {
                 case "symbols" -> displaySymbols = true;
                 case "pass-debug" -> displayPassDebug = true;
                 case "pass-verbose" -> displayPassVerbose = true;
+                case "opt-llvm" -> dumpOptimizedIr = true;
                 case ".data" -> displayDataSegment = true;
                 default -> throw new IllegalArgumentException("Unknown debug option: " + arg);
             }

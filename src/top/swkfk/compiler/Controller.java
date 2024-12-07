@@ -76,6 +76,12 @@ final public class Controller {
             ;
         }
 
+        if (Configure.debug.dumpOptimizedIr) {
+            try (FileWriter writer = new FileWriter("llvm_ir.txt")) {
+                writer.write(module.toString());
+            }
+        }
+
         // 6. Machine Code generation
         ArchModule arch = (switch (Configure.arch) {
             case mips -> new MipsModule();
