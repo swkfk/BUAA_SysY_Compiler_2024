@@ -134,7 +134,7 @@ final public class MipsGenerator {
     @SuppressWarnings("SpellCheckingInspection")
     public List<MipsInstruction> run(MipsBlock currentBlock, User instruction) {
         if (instruction instanceof IAllocate allocate) {
-            int offset = enlargeStack(((TyPtr) allocate.getType()).getBase().sizeof());
+            int offset = enlargeStack((((TyPtr) allocate.getType()).getBase().sizeof() + 3) & ~0b0011);
             MipsVirtualRegister register = new MipsVirtualRegister();
             valueMap.put(allocate, register);
             return List.of(
