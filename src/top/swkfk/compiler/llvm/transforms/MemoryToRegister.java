@@ -150,7 +150,7 @@ final public class MemoryToRegister extends Pass {
                     if (!allocates.contains(load.getPointer())) {
                         continue;
                     }
-                    replaceMap.put(load, incoming.get(load.getPointer()));
+                    replaceMap.put(load, incoming.getOrDefault(load.getPointer(), new ConstInteger(0, load.getType())));
                     iter.remove();
                 }
                 if (instruction instanceof IStore store) {
