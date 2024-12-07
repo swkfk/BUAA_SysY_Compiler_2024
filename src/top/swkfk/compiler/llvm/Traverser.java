@@ -517,14 +517,15 @@ class Traverser {
             case Block -> visitBlock(((StmtBlock) stmt).getBlock());
             case Assign -> visitAssign(((StmtAssign) stmt).getLeft(), ((StmtAssign) stmt).getRight());
             case Printf -> {
-                Iterator<Value> args = ((StmtPrintf) stmt).getArgs().stream().map(this::visitExpr).iterator();
+                List<Value> args = ((StmtPrintf) stmt).getArgs().stream().map(this::visitExpr).toList();
+                int current = 0;
                 String format = ((StmtPrintf) stmt).getFormat();
                 for (int i = 0; i < format.length(); i++) {
                     if (format.charAt(i) == '%' && i < format.length() - 1 && "dc".indexOf(format.charAt(i + 1)) >= 0) {
                         String function = format.charAt(i + 1) == 'd' ? "putint" : "putch";
                         builder.insertInstruction(
                             new ICall(builder.getExternalFunction(function), List.of(
-                                Compatibility.unityIntoInteger(args.next())
+                                Compatibility.unityIntoInteger(args.get(current++))
                             ))
                         );
                         i++;
