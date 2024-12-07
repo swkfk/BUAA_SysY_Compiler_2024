@@ -220,7 +220,9 @@ final public class MipsGenerator {
             if (call.getFunction().getName().equals("putch") && call.getOperand(0) instanceof ConstInteger integer) {
                 reservedOutputString.append((char) integer.getValue());
                 return List.of();
-            } else if (call.getFunction().getName().equals("putch") || call.getFunction().getName().equals("putint")) {
+            } else if (call.getFunction().getName().equals("putch")) {
+                return MipsInstructionHub.buildSyscallWrite(11, call.getOperand(0), valueMap);
+            } else if (call.getFunction().getName().equals("putint")) {
                 return MipsInstructionHub.buildSyscallWrite(1, call.getOperand(0), valueMap);
             } else if (call.getFunction().getName().equals("getint")) {
                 MipsVirtualRegister register = new MipsVirtualRegister();
