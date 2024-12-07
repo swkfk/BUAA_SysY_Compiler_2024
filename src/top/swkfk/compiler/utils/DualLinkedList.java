@@ -149,8 +149,14 @@ final public class DualLinkedList<T> implements Iterable<DualLinkedList.Node<T>>
                 return;
             }
             Node<T> prev = now.prev;
+            Node<T> next = now.next;
             now.drop();
-            now = prev;
+            if (prev == null) {
+                now = start;
+                start.next = next;
+            } else {
+                now = prev;
+            }
         }
     }
 }
