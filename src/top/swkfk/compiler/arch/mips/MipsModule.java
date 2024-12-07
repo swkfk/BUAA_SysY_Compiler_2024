@@ -4,6 +4,7 @@ import top.swkfk.compiler.Configure;
 import top.swkfk.compiler.arch.ArchModule;
 import top.swkfk.compiler.arch.mips.instruction.MipsIBinary;
 import top.swkfk.compiler.arch.mips.instruction.MipsIJump;
+import top.swkfk.compiler.arch.mips.instruction.MipsILoadStore;
 import top.swkfk.compiler.arch.mips.operand.MipsImmediate;
 import top.swkfk.compiler.arch.mips.operand.MipsPhysicalRegister;
 import top.swkfk.compiler.arch.mips.process.MipsFunctionRegisterAllocate;
@@ -54,6 +55,9 @@ public class MipsModule implements ArchModule {
         functionMap.put(function, mipsFunction);
 
         // Fill the entry block. Except for the sub $sp
+        if (!function.getName().equals("main")) {
+            entry.addInstruction(new MipsILoadStore(MipsILoadStore.X.sw, MipsPhysicalRegister.fp, MipsPhysicalRegister.sp, new MipsImmediate(-4)));
+        }
         entry.addInstruction(new MipsIBinary(MipsIBinary.X.addiu, MipsPhysicalRegister.fp, MipsPhysicalRegister.sp, new MipsImmediate(0)));
         for (int i = 0; i < function.getParams().size(); i++) {
             generator.addParameter(function.getParams().get(i), i).forEach(entry::addInstruction);
@@ -66,6 +70,9 @@ public class MipsModule implements ArchModule {
 
         mipsFunction.addBlock(exit);
         mipsFunction.setStackSize(generator.getStackSize());
+        if (!function.getName().equals("main")) {
+            exit.addInstruction(new MipsILoadStore(MipsILoadStore.X.lw, MipsPhysicalRegister.fp, MipsPhysicalRegister.fp, new MipsImmediate(-4)));
+        }
         exit.addInstruction(new MipsIJump(MipsIJump.X.jr, MipsPhysicalRegister.ra));
     }
 

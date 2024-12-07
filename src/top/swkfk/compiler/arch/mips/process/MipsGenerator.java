@@ -58,10 +58,12 @@ import java.util.Map;
 /// |           Caller Stack Frame           |
 /// |                                        |
 /// +========================================+  <-- Caller $sp == Callee $fp
+/// |              Caller's $fp              |
+/// +----------------------------------------+  <-- Caller $sp - 4
 /// |            The 5th Argument            |
-/// +----------------------------------------+  <-- Caller $fp - 4
+/// +----------------------------------------+  <-- Caller $sp - 8
 /// |            The 6th Argument            |
-/// +----------------------------------------+  <-- Caller $fp - 8
+/// +----------------------------------------+  <-- Caller $sp - 12
 /// |             Other Argument             |
 /// +----------------------------------------+
 /// |             Local Variable             |
@@ -75,7 +77,7 @@ final public class MipsGenerator {
     private final Map<BasicBlock, MipsBlock> blockMap = new HashMap<>();
     private final Map<Function, MipsFunction> functionMap;
     private final MipsBlock exitBlock;
-    private int stackSize = 0;
+    private int stackSize = 4;  // Initial size for caller's $fp
 
     public MipsGenerator(DualLinkedList<BasicBlock> blocks, Map<Function, MipsFunction> functionMap, MipsBlock entry, MipsBlock exit) {
         blocks.forEach(node -> blockMap.put(node.getData(), new MipsBlock(node.getData())));
@@ -90,13 +92,18 @@ final public class MipsGenerator {
         return blockMap.get(block);
     }
 
+    private static int argumentOffset(int index) {
+        assert index >= 5;
+        return (2 + index - MipsPhysicalRegister.a.length) * -4;
+    }
+
     public List<MipsInstruction> addParameter(Value value, int index) {
         MipsVirtualRegister register = new MipsVirtualRegister();
         valueMap.put(value, register);
         if (index >= MipsPhysicalRegister.a.length) {
             enlargeStack(4);
             return List.of(
-                new MipsILoadStore(MipsILoadStore.X.lw, register, MipsPhysicalRegister.fp, new MipsImmediate((1 + index - MipsPhysicalRegister.a.length) * -4))
+                new MipsILoadStore(MipsILoadStore.X.lw, register, MipsPhysicalRegister.fp, new MipsImmediate(argumentOffset(index)))
             );
         } else {
             return List.of(
@@ -247,7 +254,7 @@ final public class MipsGenerator {
             for (int i = MipsPhysicalRegister.a.length; i < call.getOperands().size(); i++) {
                 list.add(new MipsILoadStore(MipsILoadStore.X.sw,
                     eliminateImmediate(list, call.getOperand(i)),
-                    MipsPhysicalRegister.sp, new MipsImmediate((1 + i - MipsPhysicalRegister.a.length) * -4)
+                    MipsPhysicalRegister.sp, new MipsImmediate(argumentOffset(i))
                 ));
             }
             list.add(new MipsIJump(MipsIJump.X.jal, target));
