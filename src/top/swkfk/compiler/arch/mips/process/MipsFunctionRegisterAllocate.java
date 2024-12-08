@@ -18,6 +18,7 @@ import top.swkfk.compiler.utils.Pair;
 import top.swkfk.compiler.utils.UndirectedGraph;
 
 import java.util.Arrays;
+import java.util.Deque;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -256,7 +257,7 @@ final public class MipsFunctionRegisterAllocate {
         }
         // 4. Prepare the data structure for the graph coloring
         int K = Config.globalRegisters.size();
-        List<MipsVirtualRegister> removed = new LinkedList<>();
+        Deque<MipsVirtualRegister> removed = new LinkedList<>();
         UndirectedGraph<MipsVirtualRegister> originGraph = interferenceGraph.copy();
         HashMap<MipsVirtualRegister, Integer> color = new HashMap<>();
         // 5. Simplified graph coloring algorithm
@@ -273,7 +274,7 @@ final public class MipsFunctionRegisterAllocate {
                 register = interferenceGraph.getVertices().iterator().next();
                 spilled.add(register);
             } else {
-                removed.add(register);
+                removed.addFirst(register);
             }
             interferenceGraph.removeVertex(register);
         }
