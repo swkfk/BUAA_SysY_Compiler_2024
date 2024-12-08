@@ -16,6 +16,10 @@ final public class Use {
         return user;
     }
 
+    public Value getValue() {
+        return value;
+    }
+
     public Use(Value value, User user, int position) {
         this.value = value;
         this.user = user;

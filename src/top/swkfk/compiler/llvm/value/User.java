@@ -18,7 +18,7 @@ abstract public class User extends Value {
 
     public void addOperand(Value operand) {
         operands.add(operand);
-        Objects.requireNonNull(operand).addUse(new Use(operand, this, operands.size() - 1));
+        this.addUse(new Use(operand, this, operands.size() - 1));
     }
 
     public void addOperandNullable(Value operand) {
@@ -37,8 +37,9 @@ abstract public class User extends Value {
         Value old = operands.get(index);
         operands.set(index, value);
         if (old != null) {
-            old.removeSingleUseOfUser(this);
+            this.removeSingleUse(old);
         }
+        this.addUse(new Use(value, this, index));
     }
 
     @SuppressWarnings("unused")

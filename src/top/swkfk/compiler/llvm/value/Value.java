@@ -43,9 +43,13 @@ public class Value {
         uses.add(use);
     }
 
-    public void removeSingleUseOfUser(User user) {
+    public List<Use> getUses() {
+        return uses;
+    }
+
+    public void removeSingleUse(Value user) {
         IntStream.range(0, uses.size())
-            .filter(i -> uses.get(i).getUser().equals(user))
+            .filter(i -> uses.get(i).getValue().equals(user))
             .findFirst().ifPresent(uses::remove);
     }
 
@@ -56,19 +60,6 @@ public class Value {
 
     public String toString() {
         return type + " " + name;
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (obj instanceof Value) {
-            return name.equals(((Value) obj).name);
-        }
-        return false;
-    }
-
-    @Override
-    public int hashCode() {
-        return name.hashCode();
     }
 
     /**
