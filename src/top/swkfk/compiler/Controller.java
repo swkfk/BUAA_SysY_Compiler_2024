@@ -63,12 +63,6 @@ final public class Controller {
 
         // 4. Intermediate code generation
         IrModule module = new IrBuilder(ast).build().emit();
-        if (HomeworkConfig.hw == HomeworkConfig.Hw.CodegenI) {
-            try (FileWriter writer = new FileWriter(Configure.target)) {
-                writer.write(module.toString());
-            }
-            Controller.exit();
-        }
 
         // 5. Intermediate code optimization
         if (Configure.optimize) {
@@ -81,8 +75,18 @@ final public class Controller {
             ;
         }
 
+        if (HomeworkConfig.hw == HomeworkConfig.Hw.CodegenI) {
+            if (Configure.optimize) {
+                module.runPass(new Rename());
+            }
+            try (FileWriter writer = new FileWriter(Configure.target)) {
+                writer.write(module.toString());
+            }
+            Controller.exit();
+        }
+
         if (Configure.debug.dumpOptimizedIr) {
-            try (FileWriter writer = new FileWriter("llvm_ir.txt")) {
+            try (FileWriter writer = new FileWriter(Configure.dumpTarget)) {
                 writer.write(module.runPass(new Rename()).toString());
             }
         }

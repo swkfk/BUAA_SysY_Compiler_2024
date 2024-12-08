@@ -11,6 +11,7 @@ final public class Configure {
     public static String passTarget = "%(filename)-%(pass-id)-%(pass-name).ll";
     public static String error = "error.txt";
     public static boolean optimize = true;
+    public static String dumpTarget = "llvm_ir.txt";
     public static Arch arch = Arch.mips;
 
     public static class debug {
@@ -55,6 +56,8 @@ final public class Configure {
                 optimize = false;
             } else if (args[i].equals("-opt")) {
                 optimize = true;
+            } else if (args[i].equals("-dump")) {
+                dumpTarget = args[++i];
             } else if (!args[i].startsWith("-")) {
                 source = args[i];
             }

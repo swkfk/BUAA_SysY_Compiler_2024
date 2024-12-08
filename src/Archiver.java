@@ -1,3 +1,4 @@
+import top.swkfk.compiler.HomeworkConfig;
 import top.swkfk.compiler.utils.Pair;
 
 import java.nio.file.FileAlreadyExistsException;
@@ -20,12 +21,16 @@ public class Archiver {
         Map.entry("reset", "\u001B[0m")
     );
 
-    private static final String config = """
+    private static String config = """
 {
     "programming language": "java",
-    "object code": "mips"
+    "object code": "###"
 }
 """;
+
+    static {
+        config = config.replace("###", HomeworkConfig.hw == HomeworkConfig.Hw.CodegenI ? "llvm" : "mips");
+    }
 
     private static final String target = "submit";
     private static final String source = "src";
