@@ -18,7 +18,7 @@ import top.swkfk.compiler.llvm.transforms.AggressiveDeadCodeEliminate;
 import top.swkfk.compiler.llvm.transforms.DeadBlockEliminate;
 import top.swkfk.compiler.llvm.transforms.Dummy;
 import top.swkfk.compiler.llvm.transforms.MemoryToRegister;
-import top.swkfk.compiler.llvm.transforms.Rename;
+import top.swkfk.compiler.llvm.transforms.VariableRename;
 
 import java.io.FileWriter;
 import java.io.IOException;
@@ -79,7 +79,7 @@ final public class Controller {
 
         if (HomeworkConfig.hw == HomeworkConfig.Hw.CodegenI) {
             if (Configure.optimize) {
-                module.runPass(new Rename());
+                module.runPass(new VariableRename());
             }
             try (FileWriter writer = new FileWriter(Configure.target)) {
                 writer.write(module.toString());
@@ -89,7 +89,7 @@ final public class Controller {
 
         if (Configure.debug.dumpOptimizedIr) {
             try (FileWriter writer = new FileWriter(Configure.dumpTarget)) {
-                writer.write(module.runPass(new Rename()).toString());
+                writer.write(module.runPass(new VariableRename()).toString());
             }
         }
 

@@ -9,7 +9,7 @@ import top.swkfk.compiler.llvm.value.constants.ConstInteger;
 
 import java.util.HashMap;
 
-final public class Rename extends Pass {
+final public class VariableRename extends Pass {
     @Override
     public String getName() {
         return "rename";

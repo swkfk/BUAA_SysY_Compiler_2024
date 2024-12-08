@@ -3,7 +3,7 @@ package top.swkfk.compiler.llvm.transforms;
 import top.swkfk.compiler.llvm.IrModule;
 import top.swkfk.compiler.llvm.Pass;
 
-public class DeadBlockEliminate extends Pass {
+final public class DeadBlockEliminate extends Pass {
     @Override
     public String getName() {
         return "dead-block-eliminate";
