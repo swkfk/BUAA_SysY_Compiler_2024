@@ -10,7 +10,7 @@ final public class Configure {
     public static String target = HomeworkConfig.getTarget();
     public static String passTarget = "%(filename)-%(pass-id)-%(pass-name).ll";
     public static String error = "error.txt";
-    public static boolean optimize = false;
+    public static boolean optimize = true;
     public static Arch arch = Arch.mips;
 
     public static class debug {
