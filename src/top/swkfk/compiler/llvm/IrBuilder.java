@@ -93,7 +93,6 @@ final public class IrBuilder {
     }
 
     Function registerFunction(String name, SymbolType type, List<FuncFormalParam> params) {
-        Value.counter.reset();
         Function function = new Function(name, type);
         functions.add(function);
         currentFunction = function;

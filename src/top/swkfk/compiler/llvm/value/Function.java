@@ -20,6 +20,18 @@ final public class Function extends Value {
     public final Container<ControlFlowGraph> cfg = new Container<>();
     public final Container<DominatorTree> dom = new Container<>();
 
+    private int counter;
+
+    public int resumeCounter() {
+        int counter = this.counter;
+        this.counter = 0;
+        return counter;
+    }
+
+    public void saveCounter(int counter) {
+        this.counter = counter;
+    }
+
     /**
      * Function is a value that represents a function.
      * @param name function name without '@' or mangling

@@ -103,12 +103,10 @@ final class Traverser {
     }
 
     void visitFunction(FuncDef funcDef) {
-        functionMap.put(
-            funcDef.getSymbol().getName(),
-            builder.registerFunction(
-                funcDef.getSymbol().getName(), funcDef.getSymbol().getType(), funcDef.getParams()
-            )
+        Function function = builder.registerFunction(
+            funcDef.getSymbol().getName(), funcDef.getSymbol().getType(), funcDef.getParams()
         );
+        functionMap.put(funcDef.getSymbol().getName(), function);
         builder.jumpToNewBlock("First Block of Function `" + funcDef.getSymbol().getName() + "`");
         visitBlock(funcDef.getBody());
         if (funcDef.getType().is(FuncType.Type.Void) &&
@@ -117,6 +115,7 @@ final class Traverser {
                 new IReturn()
             );
         }
+        function.saveCounter(Value.counter.reset());
     }
 
     void visitDecl(Decl decl) {

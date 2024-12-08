@@ -40,10 +40,12 @@ final public class MemoryToRegister extends Pass {
     @Override
     public void run(IrModule module) {
         for (Function function : module.getFunctions()) {
+            Value.counter.set(function.resumeCounter());
             initializeAllocates(function);
             initializeDominators(function);
             placePhiInstruction();
             renameVariables(function);
+            function.saveCounter(Value.counter.reset());
         }
     }
 

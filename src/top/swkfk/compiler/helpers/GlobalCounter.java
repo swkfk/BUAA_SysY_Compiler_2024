@@ -10,7 +10,13 @@ final public class GlobalCounter {
         return counter++;
     }
 
-    public void reset() {
+    public int reset() {
+        int temp = counter;
         counter = 0;
+        return temp;
+    }
+
+    public void set(int value) {
+        counter = value;
     }
 }
