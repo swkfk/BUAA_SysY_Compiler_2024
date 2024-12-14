@@ -16,6 +16,7 @@ import top.swkfk.compiler.llvm.analysises.AnalyseControlFlowGraph;
 import top.swkfk.compiler.llvm.analysises.AnalyseDominatorTree;
 import top.swkfk.compiler.llvm.transforms.AggressiveDeadCodeEliminate;
 import top.swkfk.compiler.llvm.transforms.ConstantFolding;
+import top.swkfk.compiler.llvm.transforms.ControlFlowSimplify;
 import top.swkfk.compiler.llvm.transforms.DeadBlockEliminate;
 import top.swkfk.compiler.llvm.transforms.Dummy;
 import top.swkfk.compiler.llvm.transforms.MemoryToRegister;
@@ -76,6 +77,10 @@ final public class Controller {
                 .runPass(new MemoryToRegister())
                 .runPass(new AggressiveDeadCodeEliminate())
                 .runPass(new ConstantFolding())
+                .runPass(new AggressiveDeadCodeEliminate())
+                .runPass(new ControlFlowSimplify())
+                .runPass(new AnalyseControlFlowGraph())
+                .runPass(new AnalyseDominatorTree())
                 .runPass(new AggressiveDeadCodeEliminate())
             ;
         }

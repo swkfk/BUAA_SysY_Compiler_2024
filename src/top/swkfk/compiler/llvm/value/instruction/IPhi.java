@@ -28,6 +28,11 @@ final public class IPhi extends User {
         return incoming;
     }
 
+    public void dropIncomingIndex(int index) {
+        dropOperand(index * 2);
+        dropOperand(index * 2);
+    }
+
     @Override
     public String toLLVM() {
         return getName() + " = phi " + getType() + " " +

@@ -49,5 +49,11 @@ abstract public class User extends Value {
             .forEach(i -> replaceOperand(i, value));
     }
 
+    public void dropOperand(int index) {
+        Value old = operands.get(index);
+        operands.remove(index);
+        this.removeSingleUse(old);
+    }
+
     abstract public String toLLVM();
 }
