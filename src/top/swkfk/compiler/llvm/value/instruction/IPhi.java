@@ -40,4 +40,25 @@ final public class IPhi extends User {
                 pair -> "[ " + pair.second().getName() + ", %" + pair.first().getName() + " ]"
             ).collect(Collectors.joining(", "));
     }
+
+    @Override
+    public Integer numbering() {
+        return getOperands().stream().map(Value::hashCode).reduce(0, Integer::sum);
+    }
+
+    @Override
+    public boolean numberingEquals(User obj) {
+        if (!(obj instanceof IPhi other)) {
+            return false;
+        }
+        if (this.getOperands().size() != other.getOperands().size()) {
+            return false;
+        }
+        for (int i = 0; i < this.getOperands().size(); i++) {
+            if (this.getOperand(i).equals(other.getOperand(i))) {
+                return false;
+            }
+        }
+        return true;
+    }
 }

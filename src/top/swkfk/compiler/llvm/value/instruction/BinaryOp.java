@@ -52,4 +52,11 @@ public enum BinaryOp {
             case Ge -> lhs >= rhs ? 1 : 0;
         };
     }
+
+    public boolean swappable() {
+        return switch (this) {
+            case ADD, MUL, AND, OR, XOR, Eq, Ne -> true;
+            case SUB, DIV, MOD, Separator, Lt, Le, Gt, Ge -> false;
+        };
+    }
 }

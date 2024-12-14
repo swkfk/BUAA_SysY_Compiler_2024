@@ -19,6 +19,7 @@ import top.swkfk.compiler.llvm.transforms.ConstantFolding;
 import top.swkfk.compiler.llvm.transforms.ControlFlowSimplify;
 import top.swkfk.compiler.llvm.transforms.DeadBlockEliminate;
 import top.swkfk.compiler.llvm.transforms.Dummy;
+import top.swkfk.compiler.llvm.transforms.LocalVariableNumbering;
 import top.swkfk.compiler.llvm.transforms.MemoryToRegister;
 import top.swkfk.compiler.llvm.transforms.VariableRename;
 
@@ -79,6 +80,7 @@ final public class Controller {
                 .runPass(new ConstantFolding())
                 .runPass(new AggressiveDeadCodeEliminate())
                 .runPass(new ControlFlowSimplify())
+                .runPass(new LocalVariableNumbering())
                 .runPass(new AnalyseControlFlowGraph())
                 .runPass(new AnalyseDominatorTree())
                 .runPass(new AggressiveDeadCodeEliminate())

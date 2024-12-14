@@ -42,7 +42,6 @@ abstract public class User extends Value {
         this.addUse(new Use(value, this, index));
     }
 
-    @SuppressWarnings("unused")
     public void replaceOperand(Value old, Value value) {
         IntStream.range(0, operands.size())
             .filter(i -> operands.get(i).equals(old))
@@ -53,6 +52,14 @@ abstract public class User extends Value {
         Value old = operands.get(index);
         operands.remove(index);
         this.removeSingleUse(old);
+    }
+
+    public Integer numbering() {
+        return null;
+    }
+
+    public boolean numberingEquals(User other) {
+        return false;
     }
 
     abstract public String toLLVM();
