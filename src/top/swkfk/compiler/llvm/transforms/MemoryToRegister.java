@@ -81,26 +81,24 @@ final public class MemoryToRegister extends Pass {
 
     private void initializeDominators(Function function) {
         dominatorFrontiers.clear();
-        Deque<BasicBlock> workList = new LinkedList<>();
-        HashSet<BasicBlock> visited = new HashSet<>();
-
-        workList.push(function.getBlocks().getHead().getData());
-        while (!workList.isEmpty()) {
-            BasicBlock block = workList.pop();
-            if (visited.contains(block)) {
+        for (DualLinkedList.Node<BasicBlock> bNode : function.getBlocks()) {
+            BasicBlock block = bNode.getData();
+            dominatorFrontiers.put(block, new HashSet<>());
+        }
+        for (DualLinkedList.Node<BasicBlock> bNode : function.getBlocks()) {
+            BasicBlock block = bNode.getData();
+            if (function.cfg.get().getPredecessors(block).size() <= 1) {
                 continue;
             }
-            dominatorFrontiers.put(block, new HashSet<>());
-            visited.add(block);
-            for (BasicBlock successor : function.cfg.get().getSuccessors(block)) {
-                BasicBlock x = block;
-                while (x != null && !function.dom.get().isAncestor(x, successor)) {
-                    dominatorFrontiers.get(x).add(successor);
-                    x = function.dom.get().getImmediateDominator(x);
+            for (BasicBlock predecessor : function.cfg.get().getPredecessors(block)) {
+                BasicBlock prevBlock = predecessor;
+                while (prevBlock != function.dom.get().getImmediateDominator(block)) {
+                    dominatorFrontiers.get(prevBlock).add(block);
+                    prevBlock = function.dom.get().getImmediateDominator(prevBlock);
                 }
-                workList.push(successor);
             }
         }
+
         debug("DF of " + function.getName() + ": " + dominatorFrontiers.entrySet().stream().map(
             entry -> entry.getKey().getName() + " -> " + entry.getValue().stream().map(BasicBlock::getName).toList()
         ).collect(Collectors.joining("; ")));
@@ -119,7 +117,9 @@ final public class MemoryToRegister extends Pass {
                         IPhi phi = new IPhi(((TyPtr) allocate.getType()).getBase());
                         new DualLinkedList.Node<User>(phi).insertBefore(df.getInstructions().getHead());
                         newPhis.put(phi, allocate);
-                        workList.push(df);
+                        if (!workList.contains(df)) {
+                            workList.push(df);
+                        }
                     }
                 }
             }
