@@ -37,6 +37,17 @@ final public class IGep extends User {
         return loadedFromArgument;
     }
 
+    @Override
+    public Integer numbering() {
+        return getOperand(0).hashCode() ^ getOperand(1).hashCode();
+    }
+
+    @Override
+    public boolean numberingEquals(User obj) {
+        return (obj instanceof IGep other) && getOperand(0).equals(obj.getOperand(0)) &&
+            getOperand(1).equals(obj.getOperand(1)) && other.loadedFromArgument == loadedFromArgument;
+    }
+
     @SuppressWarnings("SpellCheckingInspection")
     @Override
     public String toLLVM() {
