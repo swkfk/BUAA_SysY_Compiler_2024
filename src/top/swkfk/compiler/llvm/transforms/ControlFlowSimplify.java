@@ -17,7 +17,7 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.stream.Collectors;
 
-public class ControlFlowSimplify extends Pass {
+final public class ControlFlowSimplify extends Pass {
     @Override
     public String getName() {
         return "control-flow-simplify";
