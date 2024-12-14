@@ -12,6 +12,9 @@ public enum BinaryOp {
     AND("and"),
     OR("or"),
     XOR("xor"),
+    SHL("shl"),
+    @SuppressWarnings("SpellCheckingInspection")
+    SHR("ashr"),
 
     Separator("===="),
 
@@ -43,6 +46,8 @@ public enum BinaryOp {
             case AND -> lhs & rhs;
             case OR -> lhs | rhs;
             case XOR -> lhs ^ rhs;
+            case SHL -> lhs << rhs;
+            case SHR -> lhs >> rhs;
             case Separator -> throw new RuntimeException("Separator is not a valid operator");
             case Eq -> lhs == rhs ? 1 : 0;
             case Ne -> lhs != rhs ? 1 : 0;
@@ -56,7 +61,7 @@ public enum BinaryOp {
     public boolean swappable() {
         return switch (this) {
             case ADD, MUL, AND, OR, XOR, Eq, Ne -> true;
-            case SUB, DIV, MOD, Separator, Lt, Le, Gt, Ge -> false;
+            case SUB, DIV, MOD, Separator, Lt, Le, Gt, Ge, SHL, SHR -> false;
         };
     }
 }

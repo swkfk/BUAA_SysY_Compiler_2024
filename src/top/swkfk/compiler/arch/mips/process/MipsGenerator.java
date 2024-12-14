@@ -206,6 +206,12 @@ final public class MipsGenerator {
                 case XOR -> buildBinaryHelperChooseI(
                     instruction, MipsIBinary.X.xor, MipsIBinary.X.xori
                 );
+                case SHL -> buildShiftHelper(
+                    instruction, MipsIBitShift.X.sllv, MipsIBitShift.X.sll
+                );
+                case SHR -> buildShiftHelper(
+                    instruction, MipsIBitShift.X.srav, MipsIBitShift.X.sra
+                );
                 case Separator -> throw new RuntimeException("Separator is not a valid binary operator");
                 case Eq -> buildCompareHelper(instruction, MipsIBinary.X.seq);
                 case Ne -> buildCompareHelper(instruction, MipsIBinary.X.sne);
@@ -524,6 +530,26 @@ final public class MipsGenerator {
             list.add(new MipsIMultDiv(opcode, valueMap.get(lhs), valueMap.get(rhs)));
         }
         list.add(new MipsIHiLo(mf, resultRegister));
+        return list;
+    }
+
+    private List<MipsInstruction> buildShiftHelper(User user, MipsIBitShift.X opcode, MipsIBitShift.X opcodeI) {
+        List<MipsInstruction> list = new LinkedList<>();
+        Value lhs = user.getOperand(0);
+        Value rhs = user.getOperand(1);
+        MipsOperand lhsOperand;
+        if (lhs instanceof ConstInteger integer) {
+            lhsOperand = new MipsVirtualRegister();
+            list.add(new MipsIBinary(MipsIBinary.X.addiu, lhsOperand, MipsPhysicalRegister.zero, new MipsImmediate(integer.getValue())));
+        } else {
+            lhsOperand = valueMap.get(lhs);
+        }
+        MipsVirtualRegister result = valueMap.get(user);
+        if (rhs instanceof ConstInteger integer) {
+            list.add(new MipsIBitShift(opcodeI, result, lhsOperand, new MipsImmediate(integer.getValue())));
+        } else {
+            list.add(new MipsIBitShift(opcode, result, lhsOperand, valueMap.get(rhs)));
+        }
         return list;
     }
 
