@@ -82,7 +82,11 @@ final public class Controller {
                 .runPass(new ConstantFolding())
                 .runPass(new AggressiveDeadCodeEliminate())
                 .runPass(new ControlFlowSimplify())
-                .runPass(new LocalVariableNumbering())
+                // Let's talk about the LVN.
+                // LVN pass will make the temporary variable's lifetime longer, which will make the
+                // register allocation more difficult. Especially when using the local register allocation.
+                // When I shut down the LVN pass, the performance is better.
+                // .runPass(new LocalVariableNumbering())
                 .runPass(new AnalyseControlFlowGraph())
                 .runPass(new AnalyseDominatorTree())
                 .runPass(new AggressiveDeadCodeEliminate())
