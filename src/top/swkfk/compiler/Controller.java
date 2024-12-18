@@ -21,6 +21,7 @@ import top.swkfk.compiler.llvm.transforms.DeadBlockEliminate;
 import top.swkfk.compiler.llvm.transforms.Dummy;
 import top.swkfk.compiler.llvm.transforms.LocalVariableNumbering;
 import top.swkfk.compiler.llvm.transforms.MemoryToRegister;
+import top.swkfk.compiler.llvm.transforms.MultiplySimplify;
 import top.swkfk.compiler.llvm.transforms.ReadonlyGlobalEliminate;
 import top.swkfk.compiler.llvm.transforms.VariableRename;
 
@@ -80,6 +81,7 @@ final public class Controller {
                 .runPass(new ReadonlyGlobalEliminate())
                 .runPass(new AggressiveDeadCodeEliminate())
                 .runPass(new ConstantFolding())
+                .runPass(new MultiplySimplify())
                 .runPass(new AggressiveDeadCodeEliminate())
                 .runPass(new ControlFlowSimplify())
                 // Let's talk about the LVN.
