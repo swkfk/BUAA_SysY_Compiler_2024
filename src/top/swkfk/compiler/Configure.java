@@ -12,6 +12,7 @@ final public class Configure {
     public static String error = "error.txt";
     public static boolean optimize = true;
     public static String dumpTarget = "llvm_ir.txt";
+    public static String dumpVirtualTarget = "virtual_mips.txt";
     public static Arch arch = Arch.mips;
 
     public static class debug {
@@ -22,6 +23,7 @@ final public class Configure {
         public static boolean displayPassVerbose = false;
         public static boolean displayDataSegment = false;
         public static boolean dumpOptimizedIr = false;
+        public static boolean dumpVirtualMips = false;
 
         /**
          * Display tokens with AST. For homework 3. Switch in {@link Controller#run()}.
@@ -37,6 +39,7 @@ final public class Configure {
                 case "pass-verbose" -> displayPassVerbose = true;
                 case "opt-llvm" -> dumpOptimizedIr = true;
                 case ".data" -> displayDataSegment = true;
+                case "vir" -> dumpVirtualMips = true;
                 default -> throw new IllegalArgumentException("Unknown debug option: " + arg);
             }
         }
@@ -58,6 +61,8 @@ final public class Configure {
                 optimize = true;
             } else if (args[i].equals("-dump")) {
                 dumpTarget = args[++i];
+            } else if (args[i].equals("-dump-vir")) {
+                dumpVirtualTarget = args[++i];
             } else if (!args[i].startsWith("-")) {
                 source = args[i];
             }

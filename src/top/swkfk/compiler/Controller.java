@@ -109,7 +109,15 @@ final public class Controller {
         })
             .runParseIr(module)
             .runRemovePhi()
-            .runVirtualOptimize()
+            .runVirtualOptimize();
+
+        if (Configure.debug.dumpVirtualMips) {
+            try (FileWriter writer = new FileWriter(Configure.dumpVirtualTarget)) {
+                writer.write(arch.toString());
+            }
+        }
+
+        arch = arch
             .runRegisterAllocation()
             .runPhysicalOptimize();
         if (HomeworkConfig.hw == HomeworkConfig.Hw.CodegenII) {
