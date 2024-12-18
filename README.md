@@ -237,3 +237,132 @@ Procedure condition( fsys : symset );
     }
   + reader.unread(nxt);  // unread a char to avoid missing '*/'
   ```
+
+## 语法分析设计
+
+### 编码前的设计
+
+#### 整体的代码组织结构
+
+同词法分析一样，语法分析部分的数据结构与代码同样位于 `@.frontend` 中。整体采用**带有回溯的递归下降方法**完成。
+
+#### 数据结构
+
+考虑了使用内部类造成的类名过长的问题，此次设计中将每一个语法成分均设计出了一个单独的类，它们均继承自同一个**抽象类** `ASTNode`，该类提供了一个 `getName` 的抽象方法，用于输出题目要求输出的内容。
+
+抽象类并没有提供其他功能，仅作为一个**组织作用**。
+
+`@.frontend.ast.CompileUnit` 类组织了全部的语法单元，并暴露了一些接口给 `@.frontend.Parser`，供其进行相关内容的填充。
+
+符号表相关内容位于 `@.frontend.symbol` 中，其中提供了符号项的基类 `Symbol`，包括符号的名字、类型、索引编号等，以及全局、不可变等属性。
+
+符号类派生出了变量（`@.frontend.symbol.SymbolVariable`）与函数（`@.frontend.SymbolFunction`）两种。前者附有**潜在的静态初值**，后者附有**参数列表**。
+
+#### 方法实现
+
+语法分析采用带有回溯与超前查看的递归下降分析法，通过 Token 流中提供的一系列方法，进行超前查看、移进等。
+
+下列代码展示了语法分析的入口方法，`among` 方法提供了超前查看并进行指定 token 类型的判断。
+
+```java
+while (!eof()) {
+    if (among(1, TokenType.SpMain)) {
+        // Main Function
+        ast.setMainFunc(parseMainFuncDef());
+    } else if (among(2, TokenType.LParen)) {
+        // Function
+        ast.addFunction(parseFuncDef());
+    } else {
+        // Declaration
+        ast.addDeclaration(parseDeclaration());
+    }
+}
+```
+
+### 编码完成之后的修改
+
+修改主要围绕课程需求进行，以及前期设计的不足而进行。
+
+#### 架构变动
+
+首先是增加了用于输出解析过程字符串的类与方法，为了集中统一管理且避免对结构造成过多的破坏，我增加了一个辅助类 `@.helpers.ParserWatcher` 进行。通过解析类中的 `watch` 方法，进行**规约时的记录**。
+
+```java
+private<T> T watch(T inst) {
+    __watcher.add(inst.toString());
+    return inst;
+}
+```
+
+例如，下列代码中，使用这个方法对返回语句进行了记录，对整体解析器的结构几乎没有影响，唯一存在的问题就是遗漏。
+
+```java
+if (among(TokenType.Return)) {
+    Token tk = consume(TokenType.Return);
+    if (FirstSet.getFirst(Expr.class).contains(peekType())) {
+        Expr expr = parseExpr();
+        consume(TokenType.Semicolon);
+        return watch(new StmtReturn(expr, tk));
+    }
+    consume(TokenType.Semicolon);
+    return watch(new StmtReturn(tk));
+}
+```
+
+因为需要考虑进行错误处理，而**回溯**是一个比较好的策略，在回溯时，需要**保存三样东西**：错误表、`ParserWatcher` 的记录、token 流的移进状态。我设计了 `@.utils.BackTrace` 类以及其内部接口 `Traceable` 进行。`BackTrace` 类中记录了**需要回溯的对象**，并提供方便的记录与恢复接口。而 `Traceable` 接口提供的接口也非常简单，只需要实现它们，就可以实现全自动的回溯！
+
+```java
+public interface Traceable {
+    /**
+     * Save the state of the traceable object.
+     * @return the state defined by the object itself
+     */
+    Object save();
+
+    /**
+     * Restore the state of the traceable object.
+     * @param state the state defined by the object itself, returned by {@link #save()}
+     */
+    void restore(Object state);
+}
+```
+
+比如在判断是否是赋值语句时，采用了先试探 `LVal`，并检查是否有一个赋值号的方法进行，代码如下：
+
+```java
+try (BackTrace ignore = trace.save()) {
+    parseLVal();
+    if (!among(TokenType.Assign)) {
+        throw new IllegalStateException("Not an assignment");
+    }
+} catch (Exception e) {
+    return false;
+}
+```
+
+一旦试探过程中产生错误，则会返回 `false`，表示不是一个赋值语句。无论试探结果如何，都会**自动回溯**，这虽然会略微影响性能，但对程序结构进行了极大的化简。
+
+#### 调试与 Debug
+
+主要是一些情况的遗漏、笔误等等。主要是错误处理的一些 corner case，导致先前架构的无力处理，可以通过回溯解决。其余错误没有留下过于深刻的影响，不再赘述。
+
+
+## 中间代码生成
+
+### 编码前的设计
+#### 整体的代码组织结构
+#### 数据结构
+#### 方法实现
+### 编码完成之后的修改
+#### 架构变动
+#### 调试与 Debug
+
+## 目标代码生成
+
+### 编码前的设计
+#### 整体的代码组织结构
+#### 数据结构
+#### 方法实现
+### 编码完成之后的修改
+#### 架构变动
+#### 调试与 Debug
