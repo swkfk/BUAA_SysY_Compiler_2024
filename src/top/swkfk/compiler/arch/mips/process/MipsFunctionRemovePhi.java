@@ -52,6 +52,8 @@ final public class MipsFunctionRemovePhi {
                         // Only one successor, just use a move instruction. Pay attention to the temporary register used.
                         MipsOperand temporary = new MipsVirtualRegister();
                         toBeInserted.computeIfAbsent(incomingBlock, k -> new LinkedList<>()).addAll(List.of(
+                            // Pay attention to the order of the following two instructions.
+                            // When inserting, we should insert like 1st, 3rd, 5th, ..., 2nd, 4th, 6th, ...
                             buildMoveInstruction(temporary, incomingValue),
                             buildMoveInstruction(phi.getResult(), temporary)
                         ));
@@ -82,8 +84,12 @@ final public class MipsFunctionRemovePhi {
         }
         for (var entry : toBeInserted.entrySet()) {
             DualLinkedList.Node<MipsInstruction> tail = entry.getKey().getInstructions().getTail();
-            for (MipsInstruction instruction : entry.getValue()) {
-                new DualLinkedList.Node<>(instruction).insertBefore(tail);
+            List<MipsInstruction> instructions = entry.getValue();
+            for (int i = 0; i < instructions.size(); i += 2) {
+                new DualLinkedList.Node<>(instructions.get(i)).insertBefore(tail);
+            }
+            for (int i = 1; i < instructions.size(); i += 2) {
+                new DualLinkedList.Node<>(instructions.get(i)).insertBefore(tail);
             }
         }
     }
