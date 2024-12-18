@@ -28,8 +28,15 @@ import java.util.Set;
 
 final public class MipsFunctionRegisterAllocate {
     static class Config {
-        static final List<MipsPhysicalRegister> localRegisters = Arrays.asList(MipsPhysicalRegister.t);
-        static final List<MipsPhysicalRegister> globalRegisters = Arrays.asList(MipsPhysicalRegister.s);
+        static final List<MipsPhysicalRegister> localRegisters = List.of(
+            MipsPhysicalRegister.t[0], MipsPhysicalRegister.t[1], MipsPhysicalRegister.t[2], MipsPhysicalRegister.t[3],
+            MipsPhysicalRegister.t[4], MipsPhysicalRegister.t[5], MipsPhysicalRegister.t[6], MipsPhysicalRegister.t[7]
+        );
+        static final List<MipsPhysicalRegister> globalRegisters = List.of(
+            MipsPhysicalRegister.s[0], MipsPhysicalRegister.s[1], MipsPhysicalRegister.s[2], MipsPhysicalRegister.s[3],
+            MipsPhysicalRegister.s[4], MipsPhysicalRegister.s[5], MipsPhysicalRegister.s[6], MipsPhysicalRegister.s[7],
+            MipsPhysicalRegister.v1, MipsPhysicalRegister.t[8], MipsPhysicalRegister.t[9]
+        );
         static final List<MipsPhysicalRegister> temporaryRegisters = Arrays.asList(MipsPhysicalRegister.k0, MipsPhysicalRegister.k1);
     }
 
