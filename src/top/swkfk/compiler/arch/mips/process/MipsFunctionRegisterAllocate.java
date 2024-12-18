@@ -250,7 +250,21 @@ final public class MipsFunctionRegisterAllocate {
                 }
                 for (MipsVirtualRegister other : living.getIn()) {
                     if (register != other) {
-                        interferenceGraph.addEdge(register, other);
+                        // Do not add the edge if they are in the same block directly
+                        // This is a very slow implementation, but it is enough for the current situation
+                        boolean intersect = false;
+                        for (DualLinkedList.Node<MipsInstruction> iNode : block.getInstructions()) {
+                            MipsInstruction instruction = iNode.getData();
+                            if (Arrays.stream(instruction.getOperands()).anyMatch(
+                                operand -> operand instanceof MipsVirtualRegister r && r == other
+                            )) {
+                                intersect = true;
+                                break;
+                            }
+                        }
+                        if (!intersect) {
+                            interferenceGraph.addEdge(register, other);
+                        }
                     }
                 }
             }
