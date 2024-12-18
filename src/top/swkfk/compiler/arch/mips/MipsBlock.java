@@ -102,9 +102,23 @@ final public class MipsBlock extends MipsOperand {
         sb.append("    # Predecessors: ").append(predecessors).append("\n");
         sb.append("    # Successors:   ").append(successors).append("\n");
         sb.append("  ").append(name).append(":").append("\n");
+        if (isMainExit()) {
+            sb.append("#### exit ####\n");
+            sb.append("    li $v0, 10\n");
+            sb.append("    syscall\n");
+            sb.append("#### origin ####\n");
+        }
         for (DualLinkedList.Node<MipsInstruction> node : instructions) {
             sb.append(node.getData()).append("\n");
         }
         return sb.toString();
+    }
+
+    public boolean isMainExit() {
+        return name.equals("main.exit");
+    }
+
+    public boolean isMainEntry() {
+        return name.equals("main.entry");
     }
 }

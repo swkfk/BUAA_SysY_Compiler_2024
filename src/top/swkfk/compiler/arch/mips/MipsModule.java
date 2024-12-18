@@ -28,6 +28,7 @@ final public class MipsModule implements ArchModule {
     private final List<MipsFunction> functions = new LinkedList<>();
     private final List<MipsGlobalVariable> globalVariable = new LinkedList<>();
     private final Map<Function, MipsFunction> functionMap = new HashMap<>();
+    private MipsFunction mainFunction;
 
     @Override
     public ArchModule runParseIr(IrModule module) {
@@ -74,6 +75,10 @@ final public class MipsModule implements ArchModule {
             exit.addInstruction(new MipsILoadStore(MipsILoadStore.X.lw, MipsPhysicalRegister.fp, MipsPhysicalRegister.fp, new MipsImmediate(-4)));
         }
         exit.addInstruction(new MipsIJump(MipsIJump.X.jr, MipsPhysicalRegister.ra));
+
+        if (function.getName().equals("main")) {
+            mainFunction = mipsFunction;
+        }
     }
 
     private void parseBlock(BasicBlock block, MipsFunction mipsFunction, MipsGenerator generator) {
@@ -135,11 +140,13 @@ final public class MipsModule implements ArchModule {
         }
 
         sb.append("\n.text\n\n");
-        sb.append("    jal main.entry\n");
-        sb.append("    li $v0, 10\n");
-        sb.append("    syscall\n\n");
+        sb.append("#### main ####\n");
+        sb.append(mainFunction.toMips()).append("\n");
 
         for (MipsFunction function : functions) {
+            if (function == mainFunction) {
+                continue;
+            }
             sb.append("# Function: ").append(function).append("\n");
             sb.append(function.toMips()).append("\n");
         }

@@ -77,7 +77,7 @@ final public class MipsGenerator {
     private final Map<BasicBlock, MipsBlock> blockMap = new HashMap<>();
     private final Map<Function, MipsFunction> functionMap;
     private final MipsBlock exitBlock;
-    private int stackSize = 4;  // Initial size for caller's $fp
+    private int stackSize;
 
     public MipsGenerator(DualLinkedList<BasicBlock> blocks, Map<Function, MipsFunction> functionMap, MipsBlock entry, MipsBlock exit) {
         blocks.forEach(node -> blockMap.put(node.getData(), new MipsBlock(node.getData())));
@@ -87,6 +87,11 @@ final public class MipsGenerator {
         // This will be added in the Return instruction
         // MipsBlock.addEdge(blockLLVM2Mips(blocks.getTail().getData()), exit);
         buildValueMap();
+        if (entry.isMainEntry()) {
+            stackSize = 0;
+        } else {
+            stackSize = 4;  // Initial size for caller's $fp
+        }
     }
 
     private void buildValueMap() {

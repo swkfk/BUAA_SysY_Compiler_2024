@@ -54,7 +54,9 @@ final public class MipsFunctionRegisterAllocate {
     public MipsFunctionRegisterAllocate(MipsFunction function) {
         this.function = function;
         this.localVirtualRegisters = new HashMap<>();
-        this.allocatedGlobal.add(MipsPhysicalRegister.ra);
+        if (MipsFunction.isCaller(function)) {
+            this.allocatedGlobal.add(MipsPhysicalRegister.ra);
+        }
     }
 
     public MipsFunctionRegisterAllocate runCheckAllocateStrategy() {

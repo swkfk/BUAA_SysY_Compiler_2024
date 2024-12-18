@@ -1,6 +1,7 @@
 package top.swkfk.compiler.arch.mips;
 
 import top.swkfk.compiler.arch.mips.instruction.MipsIBinary;
+import top.swkfk.compiler.arch.mips.instruction.MipsIJump;
 import top.swkfk.compiler.arch.mips.instruction.MipsInstruction;
 import top.swkfk.compiler.arch.mips.operand.MipsImmediate;
 import top.swkfk.compiler.arch.mips.operand.MipsOperand;
@@ -72,5 +73,17 @@ final public class MipsFunction extends MipsOperand {
             new MipsIBinary(MipsIBinary.X.addiu, MipsPhysicalRegister.sp, MipsPhysicalRegister.sp, new MipsImmediate(-getStackSize())),
             instruction -> instruction instanceof MipsIBinary && instruction.getOperands()[0] == MipsPhysicalRegister.fp
         );
+    }
+
+    public static boolean isCaller(MipsFunction function) {
+        for (DualLinkedList.Node<MipsBlock> bNode : function.getBlocks()) {
+            for (DualLinkedList.Node<MipsInstruction> iNode : bNode.getData().getInstructions()) {
+                MipsInstruction instruction = iNode.getData();
+                if (instruction instanceof MipsIJump jump && jump.isCall()) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 }

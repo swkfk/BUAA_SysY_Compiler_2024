@@ -28,6 +28,10 @@ final public class MipsIJump extends MipsInstruction {
         this.operand = Either.right(operand);
     }
 
+    public boolean isCall() {
+        return operator == X.jal;
+    }
+
     @Override
     public MipsOperand[] getOperands() {
         if (operand.isLeft()) {
