@@ -21,6 +21,7 @@ import top.swkfk.compiler.llvm.transforms.DeadBlockEliminate;
 import top.swkfk.compiler.llvm.transforms.Dummy;
 import top.swkfk.compiler.llvm.transforms.LocalVariableNumbering;
 import top.swkfk.compiler.llvm.transforms.MemoryToRegister;
+import top.swkfk.compiler.llvm.transforms.ReadonlyGlobalEliminate;
 import top.swkfk.compiler.llvm.transforms.VariableRename;
 
 import java.io.FileWriter;
@@ -76,6 +77,7 @@ final public class Controller {
                 .runPass(new DeadBlockEliminate())
                 .runPass(new AnalyseDominatorTree())
                 .runPass(new MemoryToRegister())
+                .runPass(new ReadonlyGlobalEliminate())
                 .runPass(new AggressiveDeadCodeEliminate())
                 .runPass(new ConstantFolding())
                 .runPass(new AggressiveDeadCodeEliminate())

@@ -17,6 +17,7 @@ import java.util.stream.IntStream;
 final public class GlobalVariable extends Value {
 
     private final Either<Value, Map<Integer, Value>> initializer;
+    private SymbolVariable symbol;
 
     /**
      * Global variable which is not an array. Initializer shall not be null even if it has no
@@ -58,17 +59,25 @@ final public class GlobalVariable extends Value {
     }
 
     public static GlobalVariable from(ConstDef def) {
-        return from(def.getSymbol());
+        GlobalVariable gv = from(def.getSymbol());
+        gv.symbol = def.getSymbol();
+        return gv;
     }
 
     public static GlobalVariable from(VarDef def) {
-        return from(def.getSymbol());
+        GlobalVariable gv = from(def.getSymbol());
+        gv.symbol = def.getSymbol();
+        return gv;
     }
 
     public List<Integer> getInitializerList() {
         return initializer.isLeft() ?
             List.of(((ConstInteger) initializer.getLeft()).getValue()) :
             mappedValueToListInteger(initializer.getRight());
+    }
+
+    public SymbolVariable getSymbol() {
+        return symbol;
     }
 
     private List<Integer> mappedValueToListInteger(Map<Integer, Value> map) {
