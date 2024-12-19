@@ -196,12 +196,14 @@ final public class MipsGenerator {
                 case MUL -> buildMultDivHelper(
                     instruction, MipsIHiLo.X.mflo, MipsIMultDiv.X.mult
                 );
-                case DIV -> buildMultDivHelper(
-                    instruction, MipsIHiLo.X.mflo, MipsIMultDiv.X.div
-                );
-                case MOD -> buildMultDivHelper(
-                    instruction, MipsIHiLo.X.mfhi, MipsIMultDiv.X.div
-                );
+                case DIV -> {
+                    assert instruction instanceof IBinary;
+                    yield buildFastDivide((IBinary) instruction, MipsIHiLo.X.mflo);
+                }
+                case MOD -> {
+                    assert instruction instanceof IBinary;
+                    yield buildFastDivide((IBinary) instruction, MipsIHiLo.X.mfhi);
+                }
                 case AND -> buildBinaryHelperChooseI(
                     instruction, MipsIBinary.X.and, MipsIBinary.X.andi
                 );
@@ -536,6 +538,138 @@ final public class MipsGenerator {
         }
         list.add(new MipsIHiLo(mf, resultRegister));
         return list;
+    }
+
+    private List<MipsInstruction> buildFastDivide(IBinary instruction, MipsIHiLo.X operator) {
+//        if (!(instruction.getOperand(0) instanceof ConstInteger) && (instruction.getOperand(1) instanceof ConstInteger integer) && integer.getValue() != 0 && operator == MipsIHiLo.X.mflo) {
+//            int divisor = integer.getValue();
+//
+//            // Corner case: 1 / -1
+//            if (divisor == -1) {
+//                // Unreachable!
+//                MipsVirtualRegister register = valueMap.get(instruction);
+//                return List.of(
+//                    new MipsIBinary(MipsIBinary.X.subu, register, MipsPhysicalRegister.zero, valueMap.get(instruction.getOperand(0)))
+//                );
+//            }
+//            if (divisor == 1) {
+//                MipsVirtualRegister register = valueMap.get(instruction);
+//                return List.of(
+//                    new MipsIBinary(MipsIBinary.X.addu, register, MipsPhysicalRegister.zero, valueMap.get(instruction.getOperand(0)))
+//                );
+//            }
+//
+//            int abstractDivisor = Math.abs(divisor);
+//            int k = 32 - Integer.numberOfLeadingZeros(abstractDivisor - 1);
+//
+//            // Corner case: 2^k
+//            if (false && abstractDivisor == (1 << k)) {
+//                // Now, the divisor must be positive.
+//                MipsVirtualRegister register = valueMap.get(instruction);
+//                MipsVirtualRegister bareRes = new MipsVirtualRegister();
+//                MipsVirtualRegister tempAdd = new MipsVirtualRegister();
+//                MipsVirtualRegister tempRes = new MipsVirtualRegister();
+//                MipsVirtualRegister fakeRes = new MipsVirtualRegister();
+//
+//                List<MipsInstruction> res = new LinkedList<>(List.of(
+//                    new MipsIBitShift(MipsIBitShift.X.sra, bareRes, valueMap.get(instruction.getOperand(0)), new MipsImmediate(k - 1)),
+//                    new MipsIBitShift(MipsIBitShift.X.srl, tempRes, bareRes, new MipsImmediate(32 - k)),
+//                    new MipsIBinary(MipsIBinary.X.addu, tempAdd, tempRes, bareRes),
+//                    new MipsIBitShift(MipsIBitShift.X.sra, fakeRes, tempAdd, new MipsImmediate(k))
+//                ));
+//                if (divisor < 0) {
+//                    // Unreachable!
+//                    res.add(new MipsIBinary(MipsIBinary.X.subu, register, MipsPhysicalRegister.zero, fakeRes));
+//                } else {
+//                    res.add(new MipsIBinary(MipsIBinary.X.addu, register, MipsPhysicalRegister.zero, fakeRes));
+//                }
+//                return res;
+//            }
+//
+//            if (true || abstractDivisor != (1 << k)) {
+//                return buildMultDivHelper(instruction, operator, MipsIMultDiv.X.div);
+//            }
+//
+//            // Unreachable!
+//
+//            long low = (1L << (32 + k)) / abstractDivisor;
+//            long high = ((1L << (32 + k)) + (1L << (k + 1))) / abstractDivisor;
+//            while ((low >> 1) < (high >> 1) && k > 0) {
+//                low >>= 1;
+//                high >>= 1;
+//                k--;
+//            }
+//            long multiplier = high;
+//
+//            MipsOperand dividend = valueMap.get(instruction.getOperand(0));
+//            MipsVirtualRegister hi = new MipsVirtualRegister();
+//            MipsVirtualRegister tempMultiplier = new MipsVirtualRegister();
+//            MipsVirtualRegister tempHi = new MipsVirtualRegister();
+//            MipsVirtualRegister temp = new MipsVirtualRegister();
+//            MipsVirtualRegister multiplierRegister = new MipsVirtualRegister();
+//
+//            List<MipsInstruction> res = new LinkedList<>();
+//
+//            if ((multiplier >>> 31) == 0) {
+//                res.addAll(List.of(
+//                    new MipsILui(tempMultiplier, new MipsImmediate((int) (multiplier >> 16) & 0xFFFF)),
+//                    new MipsIBinary(MipsIBinary.X.ori, multiplierRegister, tempMultiplier, new MipsImmediate((int) (multiplier & 0xFFFF))),
+//                    new MipsIMultDiv(MipsIMultDiv.X.mult, dividend, multiplierRegister),
+//                    new MipsIHiLo(MipsIHiLo.X.mfhi, tempHi),
+//                    new MipsIBitShift(MipsIBitShift.X.sra, hi, tempHi, new MipsImmediate(k)),
+//                    new MipsIBitShift(MipsIBitShift.X.srl, temp, dividend, new MipsImmediate(31)),
+//                    new MipsIBinary(MipsIBinary.X.addu, valueMap.get(instruction), hi, temp)
+//                ));
+//            } else {
+//                multiplier &= ~0x80000000;
+//                MipsVirtualRegister tempQuotient = new MipsVirtualRegister();
+//                res.addAll(List.of(
+//                    new MipsILui(tempMultiplier, new MipsImmediate((int) (multiplier >> 16) & 0xFFFF)),
+//                    new MipsIBinary(MipsIBinary.X.ori, multiplierRegister, tempMultiplier, new MipsImmediate((int) (multiplier & 0xFFFF))),
+//                    new MipsIMultDiv(MipsIMultDiv.X.mult, dividend, multiplierRegister),
+//                    new MipsIHiLo(MipsIHiLo.X.mfhi, tempHi),
+//                    new MipsIBinary(MipsIBinary.X.addu, tempQuotient, tempHi, dividend),
+//                    new MipsIBitShift(MipsIBitShift.X.sra, hi, tempHi, new MipsImmediate(k)),
+//                    new MipsIBitShift(MipsIBitShift.X.srl, temp, dividend, new MipsImmediate(31)),
+//                    new MipsIBinary(MipsIBinary.X.addu, valueMap.get(instruction), hi, temp)
+//                ));
+//            }
+//
+//            if (divisor < 0) {
+//                res.add(new MipsIBinary(MipsIBinary.X.subu, valueMap.get(instruction), MipsPhysicalRegister.zero, valueMap.get(instruction)));
+//            }
+//
+//            return res;
+//        }
+//
+        // rem
+        if (!(instruction.getOperand(0) instanceof ConstInteger) && (instruction.getOperand(1) instanceof ConstInteger integer) && integer.getValue() != 0 && operator == MipsIHiLo.X.mfhi) {
+            if (integer.getValue() == 1) {
+                MipsVirtualRegister register = valueMap.get(instruction);
+                return List.of(
+                    new MipsIBinary(MipsIBinary.X.addu, register, MipsPhysicalRegister.zero, MipsPhysicalRegister.zero)
+                );
+            }
+            if (integer.getValue() > 0 && Integer.numberOfLeadingZeros(integer.getValue()) + Integer.numberOfTrailingZeros(integer.getValue()) == 31) {
+                int k = Integer.numberOfTrailingZeros(integer.getValue());
+                MipsOperand dividend = valueMap.get(instruction.getOperand(0));
+                MipsVirtualRegister register = valueMap.get(instruction);
+                MipsVirtualRegister fakeRes1 = new MipsVirtualRegister();
+                MipsVirtualRegister fakeRes2 = new MipsVirtualRegister();
+                MipsVirtualRegister fakeRes3 = new MipsVirtualRegister();
+                MipsVirtualRegister temp1 = new MipsVirtualRegister();
+                MipsVirtualRegister temp2 = new MipsVirtualRegister();
+                return List.of(
+                    new MipsIBinary(MipsIBinary.X.andi, fakeRes1, dividend, new MipsImmediate(integer.getValue() - 1)),
+                    new MipsIBinary(MipsIBinary.X.addiu, fakeRes2, fakeRes1, new MipsImmediate(-1)),
+                    new MipsIBitShift(MipsIBitShift.X.sra, temp1, dividend, new MipsImmediate(31)),
+                    new MipsIBitShift(MipsIBitShift.X.sll, temp2, temp1, new MipsImmediate(k)),
+                    new MipsIBinary(MipsIBinary.X.or, fakeRes3, fakeRes2, temp2),
+                    new MipsIBinary(MipsIBinary.X.addiu, register, fakeRes3, new MipsImmediate(1))
+                );
+            }
+        }
+        return buildMultDivHelper(instruction, operator, MipsIMultDiv.X.div);
     }
 
     private List<MipsInstruction> buildShiftHelper(User user, MipsIBitShift.X opcode, MipsIBitShift.X opcodeI) {

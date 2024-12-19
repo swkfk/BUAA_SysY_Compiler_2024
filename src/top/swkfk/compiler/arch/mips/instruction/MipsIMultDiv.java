@@ -1,5 +1,6 @@
 package top.swkfk.compiler.arch.mips.instruction;
 
+import top.swkfk.compiler.arch.mips.operand.MipsImmediate;
 import top.swkfk.compiler.arch.mips.operand.MipsOperand;
 import top.swkfk.compiler.arch.mips.operand.MipsPhysicalRegister;
 import top.swkfk.compiler.arch.mips.operand.MipsVirtualRegister;
@@ -41,6 +42,10 @@ final public class MipsIMultDiv extends MipsInstruction {
     public void fillPhysicalRegister(Map<MipsVirtualRegister, MipsPhysicalRegister> map) {
         lhs = fillPhysicalRegister(lhs, map);
         rhs = fillPhysicalRegister(rhs, map);
+    }
+
+    public X getOperator() {
+        return operator;
     }
 
     @Override

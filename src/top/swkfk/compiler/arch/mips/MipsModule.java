@@ -37,6 +37,10 @@ final public class MipsModule implements ArchModule {
         return this;
     }
 
+    public List<MipsFunction> getFunctions() {
+        return functions;
+    }
+
     private void parseGlobalVariable(GlobalVariable globalVariable) {
         this.globalVariable.add(new MipsGlobalVariable(
             globalVariable.getType(),
