@@ -3,9 +3,11 @@ package top.swkfk.compiler.llvm.value;
 import top.swkfk.compiler.frontend.symbol.type.SymbolType;
 import top.swkfk.compiler.llvm.data_structure.ControlFlowGraph;
 import top.swkfk.compiler.llvm.data_structure.DominatorTree;
+import top.swkfk.compiler.llvm.data_structure.LoopInformation;
 import top.swkfk.compiler.utils.Container;
 import top.swkfk.compiler.utils.DualLinkedList;
 
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
@@ -19,6 +21,9 @@ final public class Function extends Value {
 
     public final Container<ControlFlowGraph> cfg = new Container<>();
     public final Container<DominatorTree> dom = new Container<>();
+    public final Container<HashMap<BasicBlock, LoopInformation>> loopMap = new Container<>();
+    public final Container<List<LoopInformation>> loops = new Container<>();
+    public final Container<List<LoopInformation>> allLoops = new Container<>();
 
     private int counter;
 

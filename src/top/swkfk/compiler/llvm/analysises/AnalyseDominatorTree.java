@@ -12,6 +12,7 @@ import java.util.Deque;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -50,10 +51,12 @@ final public class AnalyseDominatorTree extends Pass {
     public DominatorTree analyse(Function function) {
         BasicBlock entry = function.getBlocks().getHead().getData();
         Map<BasicBlock, Set<BasicBlock>> dominatedBy = new HashMap<>();
+        Map<BasicBlock, List<BasicBlock>> dominates = new HashMap<>();
         HashMap<BasicBlock, BasicBlock> immediateDominator = new HashMap<>();
 
         for (DualLinkedList.Node<BasicBlock> bNode : function.getBlocks()) {
             dominatedBy.put(bNode.getData(), new HashSet<>());
+            dominates.put(bNode.getData(), new LinkedList<>());
         }
 
         // Calculate the dominator tree
@@ -94,6 +97,7 @@ final public class AnalyseDominatorTree extends Pass {
                 }
                 if (isImmediateDominator) {
                     immediateDominator.put(block, dominator);
+                    dominates.get(dominator).add(block);
                     break;
                 }
             }
@@ -105,12 +109,16 @@ final public class AnalyseDominatorTree extends Pass {
             k -> k.getName() + " -> <" + dominatedBy.get(k).stream().map(BasicBlock::getName).collect(Collectors.joining(", ")) + ">"
         ).collect(Collectors.joining(", ")));
 
+        debug("Dominates:" + dominates.keySet().stream().map(
+            k -> k.getName() + " -> <" + dominates.get(k).stream().map(BasicBlock::getName).collect(Collectors.joining(", ")) + ">"
+        ).collect(Collectors.joining(", ")));
+
         debug("IDom: " + immediateDominator.keySet().stream().map(
             k -> k.getName() + " -> " + immediateDominator.get(k).getName()
         ).collect(Collectors.joining(", ")));
 
         // Copied in the constructor of DominatorTree
-        return new DominatorTree(dominatedBy, immediateDominator);
+        return new DominatorTree(dominatedBy, immediateDominator, dominates);
     }
 
     private void dfs(BasicBlock block, ControlFlowGraph cfg, Set<BasicBlock> visited) {

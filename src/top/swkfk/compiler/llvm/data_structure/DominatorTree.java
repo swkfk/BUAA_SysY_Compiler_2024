@@ -3,20 +3,32 @@ package top.swkfk.compiler.llvm.data_structure;
 import top.swkfk.compiler.llvm.value.BasicBlock;
 
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.Stack;
 
 /**
  * Represents the dominator tree of a function.
  *
  */
 final public class DominatorTree {
+    /// Key is dominated by the values
     private final Map<BasicBlock, Set<BasicBlock>> dominatedBy = new HashMap<>();
+    ///  Key dominates the values
+    private final Map<BasicBlock, List<BasicBlock>> dominates = new HashMap<>();
     private final Map<BasicBlock, BasicBlock> immediateDominator = new HashMap<>();
 
-    public DominatorTree(Map<BasicBlock, Set<BasicBlock>> dominatedBy, Map<BasicBlock, BasicBlock> immediateDominator) {
+    public DominatorTree(
+        Map<BasicBlock, Set<BasicBlock>> dominatedBy,
+        Map<BasicBlock, BasicBlock> immediateDominator,
+        Map<BasicBlock, List<BasicBlock>> dominates
+    ) {
         this.dominatedBy.putAll(dominatedBy);
         this.immediateDominator.putAll(immediateDominator);
+        this.dominates.putAll(dominates);
     }
 
     public Set<BasicBlock> getDominator(BasicBlock block) {
@@ -42,5 +54,25 @@ final public class DominatorTree {
             runner = immediateDominator.get(runner);
         }
         return false;
+    }
+
+    public List<BasicBlock> getPostOrder(BasicBlock entry) {
+        List<BasicBlock> postOrder = new LinkedList<>();
+        HashSet<BasicBlock> visited = new HashSet<>();
+        Stack<BasicBlock> stack = new Stack<>();
+        stack.push(entry);
+        while (!stack.isEmpty()) {
+            BasicBlock block = stack.peek();
+            if (visited.contains(block)) {
+                postOrder.add(block);
+                stack.pop();
+                continue;
+            }
+            for (BasicBlock child : dominates.get(block)) {
+                stack.push(child);
+            }
+            visited.add(block);
+        }
+        return postOrder;
     }
 }

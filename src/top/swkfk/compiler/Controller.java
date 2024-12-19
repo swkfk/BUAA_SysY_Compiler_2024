@@ -14,12 +14,14 @@ import top.swkfk.compiler.llvm.IrModule;
 import top.swkfk.compiler.helpers.ParserWatcher;
 import top.swkfk.compiler.llvm.analysises.AnalyseControlFlowGraph;
 import top.swkfk.compiler.llvm.analysises.AnalyseDominatorTree;
+import top.swkfk.compiler.llvm.analysises.AnalyseLoop;
 import top.swkfk.compiler.llvm.transforms.AggressiveDeadCodeEliminate;
 import top.swkfk.compiler.llvm.transforms.ConstantFolding;
 import top.swkfk.compiler.llvm.transforms.ControlFlowSimplify;
 import top.swkfk.compiler.llvm.transforms.DeadBlockEliminate;
 import top.swkfk.compiler.llvm.transforms.Dummy;
 import top.swkfk.compiler.llvm.transforms.LocalVariableNumbering;
+import top.swkfk.compiler.llvm.transforms.LoopHoist;
 import top.swkfk.compiler.llvm.transforms.MemoryToRegister;
 import top.swkfk.compiler.llvm.transforms.MultiplySimplify;
 import top.swkfk.compiler.llvm.transforms.ReadonlyGlobalEliminate;
@@ -80,6 +82,8 @@ final public class Controller {
                 .runPass(new MemoryToRegister())
                 .runPass(new ReadonlyGlobalEliminate())
                 .runPass(new AggressiveDeadCodeEliminate())
+                .runPass(new AnalyseLoop())
+                .runPass(new LoopHoist())
                 .runPass(new ConstantFolding())
                 .runPass(new MultiplySimplify())
                 .runPass(new AggressiveDeadCodeEliminate())
