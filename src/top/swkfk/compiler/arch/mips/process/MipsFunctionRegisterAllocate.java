@@ -35,7 +35,8 @@ final public class MipsFunctionRegisterAllocate {
         static final List<MipsPhysicalRegister> globalRegisters = List.of(
             MipsPhysicalRegister.s[0], MipsPhysicalRegister.s[1], MipsPhysicalRegister.s[2], MipsPhysicalRegister.s[3],
             MipsPhysicalRegister.s[4], MipsPhysicalRegister.s[5], MipsPhysicalRegister.s[6], MipsPhysicalRegister.s[7],
-            MipsPhysicalRegister.v1, MipsPhysicalRegister.t[8], MipsPhysicalRegister.t[9]
+            MipsPhysicalRegister.v1, MipsPhysicalRegister.t[8], MipsPhysicalRegister.t[9],
+            MipsPhysicalRegister.gp  // Hey, more registers!
         );
         static final List<MipsPhysicalRegister> temporaryRegisters = Arrays.asList(MipsPhysicalRegister.k0, MipsPhysicalRegister.k1);
     }
