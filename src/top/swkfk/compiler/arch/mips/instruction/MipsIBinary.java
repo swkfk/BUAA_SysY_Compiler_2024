@@ -25,6 +25,10 @@ final public class MipsIBinary extends MipsInstruction {
         this.rhs = rhs;
     }
 
+    public X getOperator() {
+        return operator;
+    }
+
     @Override
     public MipsOperand[] getOperands() {
         return new MipsOperand[] {res, lhs, rhs};

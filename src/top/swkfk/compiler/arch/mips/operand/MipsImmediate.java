@@ -15,4 +15,8 @@ final public class MipsImmediate extends MipsOperand {
     public String toString() {
         return String.valueOf(value);
     }
+
+    public int asInt() {
+        return (int) value;
+    }
 }

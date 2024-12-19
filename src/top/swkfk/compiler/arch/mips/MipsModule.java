@@ -7,6 +7,7 @@ import top.swkfk.compiler.arch.mips.instruction.MipsIJump;
 import top.swkfk.compiler.arch.mips.instruction.MipsILoadStore;
 import top.swkfk.compiler.arch.mips.operand.MipsImmediate;
 import top.swkfk.compiler.arch.mips.operand.MipsPhysicalRegister;
+import top.swkfk.compiler.arch.mips.optimize.Peephole;
 import top.swkfk.compiler.arch.mips.process.MipsFunctionRegisterAllocate;
 import top.swkfk.compiler.arch.mips.process.MipsFunctionRemovePhi;
 import top.swkfk.compiler.arch.mips.process.MipsGenerator;
@@ -123,6 +124,7 @@ final public class MipsModule implements ArchModule {
 
     @Override
     public ArchModule runPhysicalOptimize() {
+        new Peephole().run(this);
         return this;
     }
 
