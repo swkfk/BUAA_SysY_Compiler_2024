@@ -96,8 +96,6 @@ statement( [semicolon,endsym]+fsys);
 
 在 `statement` 中，又根据符号种类的不同，调用了不同的语法成分的处理过程，实现了对整个源代码的处理。
 
-> TODO: 后续内容
-
 ### 接口设计
 
 参考编译器采用**函数式**的写法，很多时候都采用全局变量进行信息的传递。
@@ -118,8 +116,6 @@ Procedure condition( fsys : symset );
 
 > `symset` 是符号类型的集合，这个参数用来标记该过程中接受的符号集
 
-> TODO: 后续内容
-
 ### 文件组织
 
 参考编译器只有**单文件**，不存在文件组织的讨论。
@@ -138,50 +134,68 @@ Procedure condition( fsys : symset );
 
 **符号 symbol**，存放在符号表（`@.frontend.symbol.SymbolTable`）中的表项，包含原名、类型、mangle 名以及其他属性。
 
-> mangle 这一词来自 Rust 的相关内容，表示对原有符号名进行唯一混淆得到的新名字，这一举措可以化解不同作用于的同名符号。
+> mangle 这一词来自 Rust 的相关内容，表示对原有符号名进行唯一混淆得到的新名字，这一举措可以化解不同作用域的同名符号。但后续使用并不充分，这其实是吸取了暑假开发的相关教训，**减少了通过“名字”进行特定内容识别的行为**。
 
-> TODO: 后续内容
+**LLVM 中间代码**，以 `@.llvm.IrModule` 为核心进行组织，并依次有 `Function`，`BasicBlock` 与 `User`（指令）这一系列的层次结构，共同组成了 LLVM 中间代码的内容。
+
+**代码优化**，并没有特定的数据结构，仅通过 `@.llvm.Pass` 抽象类，对各个 pass 进行了一个抽象，便于通过 `IrModule` 中的方法进行快速调用。
 
 #### 编译过程
 
 我实现编译器清晰地分为下列过程：
 
-- 词法分析（产生 `@.frontend.token.TokenStream` 供后续翻译过程使用）
-- 语法分析（产生 `@.frontend.ast.CompileUnit`，存储全局常变量与函数，实际上是语法树）
-- 语义分析（产生 `@.frontend.symbol.SymbolTable`，并将语法树中涉及到的符号与表项的引用绑定）
-- 中间代码生成（/TODO/）
-- 代码优化（/TODO/）
-- 目标代码生成（/TODO/）
+- **词法分析**（产生 `@.frontend.token.TokenStream` 供后续翻译过程使用）
+- **语法分析**（产生 `@.frontend.ast.CompileUnit`，存储全局常变量与函数，实际上是语法树）
+- **语义分析**（产生 `@.frontend.symbol.SymbolTable`，并将语法树中涉及到的符号与表项的引用绑定）
+- **中间代码生成**（借助 `@.llvm.IrBuilder` 提供的辅助方法，通过 `@.llvm.Traverser` 进行语法树的构建，产生 `@.llvm.IrModule` 为中间代码的组织结构）
+- **代码优化**（通过继承 `@.llvm.Pass` 抽象类定义 Pass，并在 `Controller` 中正确组织与排列）
+- **目标代码生成**（依次执行 `@.arch.ArchModule` 中定义的一系列方法，进行 IR 解析、Phi 指令移除、虚拟寄存器优化、寄存器分配、物理寄存器优化，最终生产其对象，并通过 `toString()` 方法输出相关体系结构的代码）
 
 ### 接口设计
 
 在设计各个类时，我进行了较为严格的访问权限管理，除了偶尔疏忽，不暴露给外部的方法均不使用 `public`，同时，兼顾到了给子类使用的 `protected` 以及包内可见。
 
-- 词法解析 `@.frontend.Lexer`：暴露构造方法、`lex()` 方法（进行词法解析）与 `emit()` 方法（返回 Token 流）
-- 语法分析 `@.frontend.Parser`：暴露构造方法、`parse()` 方法（进行语法分析）与 `emit()` 方法（返回编译单元对象，语法树）
+- **词法解析** `@.frontend.Lexer`：暴露构造方法、`lex()` 方法（进行词法解析）与 `emit()` 方法（返回 Token 流）
+- **语法分析** `@.frontend.Parser`：暴露构造方法、`parse()` 方法（进行语法分析）与 `emit()` 方法（返回编译单元对象，语法树）
   - 语法分析需要提供一个 `@.frontend.token.TokenStream` 对象，通过其提供的非常丰富的方法访问 Token
   - 语法分析需要提供一个 `@.helpers.ParserWatcher` 对象，通过其 `add(String)` 方法进行作业要求的输出
-
-> TODO: 后续内容
+- **语义分析** `@.frontend.Traverser`：暴露构造方法、`spawn()` 方法（进行语义分析），产生符号表（`Controller.symbols`）与错误记录（`Controller.errors`）
+- **中间代码生成** `@.llvm.Traverser`，通过给定的 `CompileUnit` 解析语法树，并借由 `@.llvm.IrBuilder` 提供的方法产生 `@.llvm.IrModule` 的 LLVM IR 结构
+- **代码优化** 通过继承 `@.llvm.Pass` 接口定义 LLVM Pass，并在 `@.llvm.IrModule` 的 `runPass` 方法中被调用，实现对 LLVM IR 的分析与修改
+- **目标代码生成** 通过 `@.arch.mips.process.MipsGenerator` 进行 Mips 代码的生成，以及 `@.arch.mips.process` 中的其他类与方法执行相应的操作
 
 ### 文件组织
 
-- `Compiler.java`：编译器入口，调用方法解析参数，并调用相关过程。
-- `@/Controller.java`：编译器的控制中心，承接编译过程中产生的对象，并根据配置选择执行内容。
+- `Compiler.java`：编译器**入口**，调用方法解析参数，并调用相关过程。
+- `@/Controller.java`：编译器的**控制中心**，承接编译过程中产生的对象，并根据配置选择执行内容。
 - `@/Configure.java`，`@/HomeworkConfig.java`：对编译器的各项内容、调试、针对哪次作业进行配置。
-- `@/helpers/`：存放与编译器有关的数据结构与算法内容。
-- `@/utils/`：存放与编译器无关的数据结构。
-- `@/error/`：对编译过程中产生的错误进行记录、输出的组件。
-- `@/frontend/`：编译器前端内容：
+- `@/helpers/`：存放**与编译器有关**的数据结构与算法内容。
+- `@/utils/`：存放**与编译器无关**的数据结构。
+- `@/error/`：对编译过程中产生的**错误**进行记录、输出的组件。
+- `@/frontend/`：编译器**前端内容**：
   - `./ast/`：语法树及各级组件的定义
   - `./symbol/`：定义符号与符号表，以及各种奇怪的符号实体
   - `./token/`：定义 Token、类型、流等
   - `./Navigation.java`：提供记录元素在源代码中的位置信息
   - `./Lexer.java`：词法分析器，提取全部的 Token
   - `./Parser.java`：递归下降分析 Token，构建语法树
-  - `./Traveser.java`：遍历语法树，构建符号表
-
-> TODO: 后续内容
+  - `./Traverser.java`：遍历语法树，构建符号表
+- `@/llvm/`：**LLVM IR 相关内容**，包括结构定义与操作
+  - `./IrModule.java`：LLVM IR 数据结构的顶层组织
+  - `./IrBuilder.java`：LLVM IR 构建器的辅助代码
+  - `./Traverser.java`：遍历语法树，产生 LLVM IR 的核心代码
+  - `./Pass.java`：LLVM Pass 的基类
+  - `./Use.java`：定义了 LLVM `Value` 之间的使用关系
+  - `./value`：定义了 LLVM 的全部 `Value`，包括函数、基本块、常量、指令等
+  - `./data_structure`：定义了优化需要使用到的数据结构
+  - `./analysises`：定义了一系列不对 IR 进行修改，仅作分析的 Pass
+  - `./transforms`：定义了对 IR 进行修改的 Pass
+- `@/arch/mips`：**Mips 相关内容**，包括结构定义与操作
+  - `./Mips*.java`：定义了 Mips 相关的数据结构
+  - `./instruction`：定义了 Mips 中使用到的全部指令
+  - `./operand`：定义了 Mips 中使用到的操作数
+  - `./optimize`：对 Mips 进行直接优化的内容
+  - `./process`：代码生成的主要过程，包括指令生成、Phi 指令移除、寄存器分配等
 
 ## 词法分析设计
 
@@ -346,23 +360,324 @@ try (BackTrace ignore = trace.save()) {
 
 主要是一些情况的遗漏、笔误等等。主要是错误处理的一些 corner case，导致先前架构的无力处理，可以通过回溯解决。其余错误没有留下过于深刻的影响，不再赘述。
 
-
 ## 中间代码生成
 
 ### 编码前的设计
+
 #### 整体的代码组织结构
+
+中间代码生成的相关内容位于 `@.llvm` 中，整体思路为使用其中的 `Traverser` 类的相关方法，对语法树进行遍历，并逐一生成。
+
+在构建基本块时，引入了“**插入点**”的概念，方便了在构建分支等指令时的操作，同时也使得插入指令的逻辑更加清晰。
+
+在构建基本块时，同时引入 `@.helpers.Comments` 类，为基本块维护一些注释，会包含一些语法树、代码行数等信息，例如：
+
+```llvm
+  21:			; For Cond Block @@5:5-5:7
+    ; == snipped ==
+    br i1 %24, label %25, label %55
+
+  25:			; For Body Block @@5:5-5:7
+    ; == snipped ==
+    br i1 %31, label %32, label %51
+```
+
 #### 数据结构
+
+对于 LLVM 来说，万物皆为 `Value`，基本块、指令、操作数都可以成为 `Value`，并可进一步细分为 `Constant`，`User`，`BasicBlock`，`Fucntion`，`GlobalVariable` 等。
+
+`User` 一般用作指令（这个名字真的很怪，很讨厌），具备与其他 `Value` 的 `Use` 关系。每一种指令在创建与修改时，均会通过其操作数维护这样一种**使用**关系。
+
+`User` 类中提供了众多的方法，对操作数进行操作，同时维护其 `use-def` 信息，例如：
+
+```java
+public void dropOperand(int index) {
+    Value old = operands.get(index);
+    operands.remove(index);
+    this.removeSingleUse(old);
+}
+```
+
+`Function` 类中通过自定义实现的双向链表，维护了函数体中的每一个基本块，以及函数的**形参**，它们也是 `Value` 类型。
+
+`BasicBlock` 块通过双向链表维护了每一个指令，并能够提供常见的对指令的维护与判断操作。
+
+整体 LLVM 按照下面的层次结构组织：
+
+```
+IrModule
+  |
+  |- GlobalVariable
+  |
+  `- Function
+      |
+      |- Value (params)
+      |
+      `- BasicBlock
+          |
+          `- User (instructions)
+```
+
+同时，每一层均通过重写 `toString()` 方法生成 LLVM IR 代码，其中会下降地调用下层结构。事实上，使用 `toString` 方法并不是一个很有趣的想法，因为调试的时候可能会比较麻烦。
+
+> `DualLinkedList` **双向链表**的设计，提供了方便的遍历手段，以及向**任意一个节点**的前面或者后面插入内容，或者**删除任一节点的**的手段，以**内部类** `Node<T>` 为核心类，聚合于 `@.utils.DualLinkedList<T>` 中，非常方便好用，极大地辅助了后续代码优化的相关工作。
+
 #### 方法实现
+
+翻译过程整体上按照语法树进行，并逐一访问、生成各语法树成分。以表达式 `Stmt` 的翻译过程为例：
+
+```java
+void visitStmt(Stmt stmt) {
+    switch (stmt.getType()) {
+        case Break -> {
+            localLoops.lastElement().breaks().add((IBranch) builder.insertInstruction(
+                new IBranch(null)
+            ));
+            builder.createBlock(false, "Dummy Block for Break");
+        }
+        case Block -> visitBlock(((StmtBlock) stmt).getBlock());
+        case GetInt -> performAssign(((StmtGetInt) stmt).getLeft(), builder.insertInstruction(
+            new ICall(builder.getExternalFunction("getint"), List.of())
+        ));
+        case Expr -> Optional.ofNullable(((StmtExpr) stmt).getExpr()).ifPresent(this::visitExpr);
+        case /* snipped */
+    }
+}
+```
+
+当然，类中提供了一些辅助方法，比如 `performAssign`，就具备了处理统一处理赋值语句的能力，并生成相应的 `gep` 以及 `store` 指令：
+
+```java
+void performAssign(LeftValue left, Value right) {
+    Value pointer;
+    if (left.getIndices().isEmpty()) {
+        pointer = left.getSymbol().getValue();
+    } else {
+        pointer = builder.getGep(
+            left.getSymbol(), left.getIndices().stream().map(this::visitExpr).toList()
+        );
+    }
+    Value value = Compatibility.unityIntoPointer(pointer, right)[0];
+    builder.insertInstruction(
+        new IStore(value, pointer)
+    );
+}
+```
+
+在处理 `break` 与 `continue` 时，所插入的指令会跳转到 `null` 中，因为我执意维护块的逻辑顺序，所以暂时还无法生成目标块，因此采用 “**拉链——回填**” 技术，后续处理完整个循环后，会回过头去检视各个跳转语句，并填入正确的目标块。
+
+在生成具体的 LLVM 指令时，我并没有将类似于 `getint` 特殊处理，它们仍然像普通函数那样被调用。对于 `printf` 等打印字符串的方法，我并没有使用 LLVM 的字符串类型，而是简单处理为逐字符打印。
+
 ### 编码完成之后的修改
+
 #### 架构变动
+
+在具体实现时，我错误地估计了类型转换的重要性与复杂性，最终，我添加了 `@.helpers.Compatibility` 这一个辅助类，通过插入相关的转换语句，进行指定类型的统一：
+
+```java
+public static Value[] unityIntoInteger(SymbolType target, Value... values) {
+    return Stream.of(values).map(value -> {
+        if (value.getType().equals(target)) {
+            return value;
+        } else {
+            return builder.apply(new IConvert(target, value));
+        }
+    }).toArray(Value[]::new);
+}
+```
+
+上述代码可以将 `values` 全部统一为 `target` 类型，并在需要的时候通过 `builder` 方法插入相关语句，并返回统一后的变量。`builder` 其实为 `IrBuilder::insertInstruction` 方法，会在构造时进行赋值。
+
+```java
+switch (expr.getOps().get(i)) {
+    case ADD -> now = builder.insertInstruction(new IBinary(
+      BinaryOp.ADD, Compatibility.unityIntoInteger(now, right)
+    ));
+    case SUB -> now = builder.insertInstruction(new IBinary(
+      BinaryOp.SUB, Compatibility.unityIntoInteger(now, right)
+    ));
+}
+```
+
+这种调整，尽可能地维护了原有代码的逻辑，并且充分完成了其使命。
+
 #### 调试与 Debug
+
+在测试时，我发现在翻译 `printf` 语句时，因为对于**迭代器的误用**，导致参数调用顺序的问题，例如：
+
+```c
+int foo() {
+    printf("FFF");
+    return 1;
+}
+
+int main() {
+    printf("AAA%dBBB", foo());
+    return 0;
+}
+```
+
+我会输出为 `AAADDD1BBB`，无论从什么角度看，这种输出方式都是极其异端的。核心的错误源于：
+
+```java
+Iterator<Value> args = ((StmtPrintf) stmt).getArgs().stream().map(this::visitExpr).iterator();
+```
+
+流生成的迭代器，只有在取用时才会执行 `map` 中注册的方法，也才会翻译为 LLVM 语句，而我正是在遍历字符串，碰到 `%d` 等时，才会取用迭代器的内容，遂导致了这个错误。解决方法是先转 `List`，让迭代器先走一遍，后续逐个取用即可。
+
+此外遇到的问题便是控制流过于复杂，导致生成的基本块缺少跳转语句，常见于相遇的 `}`，例如：
+
+```c
+if (1) {
+  if (2) {
+    // == snipped ==
+  }
+  // 这里没有语句，生成时会忘记加跳转语句等等
+}
+```
+
+解决方法是，仔细考虑生成逻辑，递归生成时多多关照其中的逻辑，将情况考虑全面。（~~说了等于没说~~）
+
+## 代码优化
+
+详见优化文章。
+
+### 编码前的设计
+
+#### 整体的代码组织结构
+
+这一部分的代码优化主要集中于对于 LLVM IR 的分析（**analysises**）与变形（**transform**），因此我在 `@.llvm` 中又新建了这样的两个软件包，它们均需要继承 `@.llvm.Pass` 类，才能成为一个 Pass. 抽象类中有如下内容：
+
+```java
+public abstract class Pass {
+    private static int passCounter = 0;
+
+    public abstract String getName();
+
+    public int getPassID() {
+        return ++passCounter;
+    }
+
+    public abstract void run(IrModule module);
+
+    public void debug(String message) {
+        if (Configure.debug.displayPassDebug) {
+            System.out.println("<" + getName() + "> " + message);
+        }
+    }
+
+    public boolean canPrintVerbose() {
+        return true;
+    }
+}
+```
+
+核心为 `run` 方法，目前没有细分是针对 `IrModule` 或者 `Function` 或者 `BasicBlock`，全部统一传递 `IrModule` 对象。`debug` 方法实际应为 `final`，用于 pass 中的调试输出，受外部统一控制。`canPrintVerbose` 用于标记是否需要显示详细信息（即每执行一个 pass，就将得到的全新的 LLVM IR 输出到文件）。
+
+在 `IrModule` 中，设计了一个 `runPass` 方法，可以快捷地执行不同的 pass，并根据配置输出相应的内容。执行的方法为：
+
+```java
+module
+  .runPass(new Dummy())
+  .runPass(new AnalyseControlFlowGraph())
+  .runPass(new DeadBlockEliminate())
+  .runPass(new AnalyseDominatorTree())
+  . // == snipped ==
+```
+
+#### 数据结构
+
+主要涉及的数据结构为 `ControlFlowGraph`，`DominatorTree` 与 `LoopInformation`，它们均位于 `@.llvm.data_structure` 中。它们分别提供了函数的**控制流图**与**支配树**模型，以及**单个循环**的相关属性与信息。
+
+#### 方法实现
+
+通过 `@.llvm.analysises.Analyse*` 相关 pass，可以解析函数等的信息，并填入相关数据结构，供后续优化 pass 使用。
+
+### 编码完成之后的修改
+
+#### 架构变动
+
+在进行代码优化时，这些数据结构可能会遭到破坏，这就要求能够方便、准确地进行维护。`Optional` 并不是一个良好的选择，因此我另外实现了一个类 `@.utils.Container<T>`，进行相关对象的存储。常用的为 `set()`，`get()`，与 `invalidate()` 方法，分别设置、获取对象，以及标记为不可用。
+
+在函数中，实际使用如下，这是为数不多的 `public` 成员对象。
+
+```java
+public final Container<ControlFlowGraph> cfg = new Container<>();
+public final Container<DominatorTree> dom = new Container<>();
+public final Container<HashMap<BasicBlock, LoopInformation>> loopMap = new Container<>();
+public final Container<List<LoopInformation>> loops = new Container<>();
+public final Container<List<LoopInformation>> allLoops = new Container<>();
+```
+
+#### 调试与 Debug
+
+主要涉及代码优化的验证。在调试时，通过针对性的样例进行有效性检测，并通过测试库进行正确性的检测。
 
 ## 目标代码生成
 
+首先，采用**虚拟寄存器**形式的后端代码表示，这种设计简化了 LLVM 向 Mips 的翻译，也使得后续工作（比如寄存器分配、Phi 指令移除）的目标更加纯粹。同时，Mips 相关体系结构也有**独立的结构层次**，这种设计更加清晰，但是使代码更加冗长。
+
+针对寄存器翻译前后的两种表示，均预留了优化接口，但实际并未使用很多。
+
 ### 编码前的设计
+
 #### 整体的代码组织结构
+
+Mips 相关内容位于 `@.arch.mips` 中。`@.arch.ArchModule` 接口的意义是想做**多体系结构的兼容**，但从目前的设计来看比较失败，比如寄存器分配、Phi 指令移除等内容，都与 Mips 体系结构高度耦合，而没有进行进一步的抽象。
+
+同 LLVM 一样，Mips 相关内容有着 `module -- function -- block -- instruction` 的体系，并通过 `toMips` 方法输出。
+
+Mips 的操作数共有五种类型：基本块、函数、**立即数**、**物理寄存器**、**虚拟寄存器**，在生成 Mips 指令时，1️ 以立即数与虚拟寄存器为主，而后进行 Phi 指令移除，并将虚拟寄存器分配到物理寄存器之中。
+
+在生成 Mips 指令时，我也设计了很多辅助方法，诸如 `buildBinaryHelperChooseI` 用于判断并快速选择是否使用带有 `i` 的指令；`buildMultDivHelper` 用于构建合法的乘除法指令，及其配套的 `mf*` 指令。
+
+为了避免栈中**偏移量的回填或者修改**，我在处理函数调用时，对**栈约定**进行了调整，如下所示。主要变动是将参数放在靠近调用者的位置，这样即使不知道被调用者的栈大小，也可以顺利填入相关参数。同时，也动用了 `$fp` 寄存器，初步体会到了其存在的意义。
+
+```
+|                                        |
+|           Caller Stack Frame           |
+|                                        |
++========================================+  <-- Caller $sp == Callee $fp
+|              Caller's $fp              |
++----------------------------------------+  <-- Caller $sp - 4
+|            The 5th Argument            |
++----------------------------------------+  <-- Caller $sp - 8
+|            The 6th Argument            |
++----------------------------------------+  <-- Caller $sp - 12
+|             Other Argument             |
++----------------------------------------+
+|             Local Variable             |
++----------------------------------------+
+|           Reserved register            |
++----------------------------------------+  <-- Callee $sp
+```
+
 #### 数据结构
+
+全部的 Mips 指令位于 `@.arch.mips.instruction` 中，继承自其中的 `MipsInstruction` 类，维护了虚拟寄存器的 use 与 def 关系，以及进行操作数替换的相关方法。
+
+同 LLVM 不同的是，`MipsBlock` 中维护了块之间的**前驱后继关系**，并且在进行指令翻译时，维护 LLVM 块到 Mips 块的映射关系。
+
 #### 方法实现
+
+因为虚拟寄存器的存在，在进行指令翻译时，可以专心进行“翻译”这一件事情，因此这一部分的实现并不复杂，问题在于如何“优雅”地实现。因为 Mips（或者说是 Mars）的限制，很多时候需要进行特判，我在这些方法做得不够好。
+
+针对一些预定义的**外部函数**，应该将它们转化为 Mars 的 `syscall` 指令，这也是在其中进行的特殊判断。
+
 ### 编码完成之后的修改
+
 #### 架构变动
+
+架构没有发生较大变动，只是 `@.arch.mips.process.MipsInstructionHub` 类的设计过于失败，后面逐渐弃用其中的方法。其根源在于，我在一开始**计划不使用伪指令**，所以对很多指令的生成进行了特殊判断，以达成直接生成基础指令的目的。但后续发现，这种执念没有意义，并且不利于进一步优化，便放弃了这种举措，带来了一定的架构变化。
+
+此外，`@.arch.mips.process.MipsGenerator` 类承载了过多的内容，一些内容，比如构建具体指令的辅助方法，实际上应该放入 `MipsInstructionHub` 中，这也是架构设计的一些不足之处。
+
+同时，在对于**函数运行栈大小**的维护与确定上，还存在着众多的问题，修改点过于分散，存在很多对于特殊情况的特殊处理导致可维护性较差，且存在较多的风险代码。
+
+在后续进行优化时，我添加了对除常数的相关优化，因为时间有限，遂直接在翻译指令时进行，造成了架构的变动与愈发混乱。
+
 #### 调试与 Debug
+
+主要涉及 Phi 指令移除与寄存器分配的相关调试，以及对栈的维护上，前者相见优化文章，后者主要是搞清楚各个寄存器的含义与在函数调用前后的变化与恢复。
+
+一个比较突出的问题在于，忽视了对于 `$ra` 寄存器的维护，以及对于 `$fp` 寄存器的保存上，在意识到相关问题后，也比较容易解决。
