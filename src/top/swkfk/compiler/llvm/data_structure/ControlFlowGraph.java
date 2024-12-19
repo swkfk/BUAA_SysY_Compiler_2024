@@ -2,6 +2,7 @@ package top.swkfk.compiler.llvm.data_structure;
 
 import top.swkfk.compiler.llvm.value.BasicBlock;
 
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -35,5 +36,14 @@ final public class ControlFlowGraph {
 
     public boolean contains(BasicBlock block) {
         return blocks.contains(block);
+    }
+
+    public void insertPredecessor(BasicBlock block, BasicBlock predecessor, BasicBlock newBlock) {
+        predecessors.get(block).remove(predecessor);
+        predecessors.computeIfAbsent(newBlock, k -> new HashSet<>()).add(predecessor);
+        predecessors.get(block).add(newBlock);
+        successors.get(predecessor).remove(block);
+        successors.get(predecessor).add(newBlock);
+        successors.computeIfAbsent(newBlock, k -> new HashSet<>()).add(block);
     }
 }

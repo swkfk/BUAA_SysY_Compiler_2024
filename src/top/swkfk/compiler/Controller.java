@@ -84,6 +84,7 @@ final public class Controller {
                 .runPass(new AggressiveDeadCodeEliminate())
                 .runPass(new AnalyseLoop())
                 .runPass(new LoopHoist())
+                .runPass(new AnalyseControlFlowGraph())
                 .runPass(new ConstantFolding())
                 .runPass(new MultiplySimplify())
                 .runPass(new AggressiveDeadCodeEliminate())

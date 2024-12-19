@@ -12,6 +12,7 @@ final public class LoopInformation {
     private final BasicBlock header;
     private LoopInformation parent;
 
+    private BasicBlock hoistedBlock;
     private final List<LoopInformation> subLoops = new LinkedList<>();
     private final List<BasicBlock> blocks = new LinkedList<>();
     private final List<BasicBlock> exitBlocks = new LinkedList<>();
@@ -77,6 +78,23 @@ final public class LoopInformation {
 
     public List<LoopInformation> getSubLoops() {
         return subLoops;
+    }
+
+    public void setHoistedBlock(BasicBlock block) {
+        hoistedBlock = block;
+    }
+
+    public List<BasicBlock> getLatch() {
+        return latchBlocks;
+    }
+
+    public void insertBefore(BasicBlock block, BasicBlock newBlock) {
+        int index = blocks.indexOf(block);
+        blocks.add(index, newBlock);
+    }
+
+    public void addInvariant(Value invariant) {
+        invariants.add(invariant);
     }
 
     @Override
