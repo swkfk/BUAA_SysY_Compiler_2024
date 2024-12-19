@@ -8,17 +8,21 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * Loop information record.
+ * Direct reference: <a href="https://gitlab.eduxiji.net/educg-group-26173-2487151/T202410006203104-3288/-/blame/main/src/pass/utils/LoopInfo.java">compiler2024-x</a>
+ * Whose author is the same as the author of this project. <br />
+ * <img src="https://llvm.org/docs/_images/loop-terminology.svg" />
+ */
 final public class LoopInformation {
     private final BasicBlock header;
     private LoopInformation parent;
 
-    private BasicBlock hoistedBlock;
     private final List<LoopInformation> subLoops = new LinkedList<>();
     private final List<BasicBlock> blocks = new LinkedList<>();
     private final List<BasicBlock> exitBlocks = new LinkedList<>();
     private final List<BasicBlock> exitingBlocks = new LinkedList<>();
     private final List<BasicBlock> latchBlocks = new LinkedList<>();
-    private final List<Value> invariants = new LinkedList<>();
 
     public LoopInformation(BasicBlock header) {
         blocks.add(header);
@@ -80,10 +84,6 @@ final public class LoopInformation {
         return subLoops;
     }
 
-    public void setHoistedBlock(BasicBlock block) {
-        hoistedBlock = block;
-    }
-
     public List<BasicBlock> getLatch() {
         return latchBlocks;
     }
@@ -91,10 +91,6 @@ final public class LoopInformation {
     public void insertBefore(BasicBlock block, BasicBlock newBlock) {
         int index = blocks.indexOf(block);
         blocks.add(index, newBlock);
-    }
-
-    public void addInvariant(Value invariant) {
-        invariants.add(invariant);
     }
 
     @Override

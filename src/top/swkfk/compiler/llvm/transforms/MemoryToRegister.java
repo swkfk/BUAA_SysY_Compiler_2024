@@ -28,7 +28,7 @@ import java.util.stream.Collectors;
 /**
  * Replace memory operations with register operations. Only for integer types. <br>
  * Original Reference: <a href="https://roife.github.io/posts/mem2reg-pass/">Roife Blog</a> ;<br>
- * Direct Reference: <a href="https://gitlab.eduxiji.net/educg-group-26173-2487151/T202410006203104-3288/-/blame/stable/src/pass/ir/Mem2Reg.java">compiler2024-x</a>
+ * Direct Reference: <a href="https://gitlab.eduxiji.net/educg-group-26173-2487151/T202410006203104-3288/-/blame/main/src/pass/ir/Mem2Reg.java">compiler2024-x</a>
  * , whose author is the same as the author of this project.
  */
 final public class MemoryToRegister extends Pass {

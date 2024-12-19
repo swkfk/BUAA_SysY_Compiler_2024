@@ -24,6 +24,8 @@ import java.util.Objects;
 
 /**
  * Loop hoisting optimization.
+ * Direct reference: <a href="https://gitlab.eduxiji.net/educg-group-26173-2487151/T202410006203104-3288/-/blame/main/src/pass/ir/LoopHoist.java">compiler2024-x</a>
+ * Whose author is the same as the author of this project.
  */
 public class LoopHoist extends Pass {
     // Function-level local variables
@@ -62,7 +64,6 @@ public class LoopHoist extends Pass {
         for (var loop : loopsToHoist) {
             // 2.1 Create a new block before the loop header.
             currentHoistedBlock = new BasicBlock(function, loop.getHeader().getName() + "_hoisted");
-            loop.setHoistedBlock(currentHoistedBlock);
             for (var predecessor : new LinkedList<>(function.cfg.get().getPredecessors(loop.getHeader()))) {
                 if (!loop.getLatch().contains(predecessor)) {
                     continue;
@@ -124,7 +125,6 @@ public class LoopHoist extends Pass {
                             new DualLinkedList.Node<>(instruction).insertIntoTail(currentHoistedBlock.getInstructions());
 
                             valuePointInner.remove(instruction);
-                            loop.addInvariant(instruction);
 
                             changed = true;
                         }

@@ -11,10 +11,14 @@ import top.swkfk.compiler.llvm.value.Function;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Optional;
 import java.util.Stack;
 import java.util.stream.Collectors;
 
+/**
+ * Loop analysis.
+ * Direct reference: <a href="https://gitlab.eduxiji.net/educg-group-26173-2487151/T202410006203104-3288/-/blame/main/src/pass/ir/LoopAnalysis.java">compiler2024-x</a>
+ * Whose author is the same as the author of this project.
+ */
 final public class AnalyseLoop extends Pass {
     @Override
     public String getName() {
