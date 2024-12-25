@@ -5,18 +5,26 @@ import top.swkfk.compiler.frontend.Navigation;
 
 import java.util.Arrays;
 
+/**
+ * Token 流的元素，包含类型、值和位置信息。
+ * @param type Token 类型
+ * @param value Token 值
+ * @param location 在源代码中的位置
+ */
 public record Token(TokenType type, String value, Navigation location) {
 
     public String toString() {
         String value = this.value;
         // We put the '\\' in the front of the escape characters to make it right.
         value = value.replace("\\", "\\\\");
+        // 这里使用了一些很丑陋的方法来还原转义字符
         for (var entry : Lexer.escape.entrySet()) {
             if (entry.getKey() == '\\') {
                 continue;
             }
             value = value.replace("" + entry.getValue(), "\\" + entry.getKey());
         }
+        // 对字符串与字符添加相应的引号
         if (type == TokenType.StrConst) {
             value = "\"" + value + "\"";
         }

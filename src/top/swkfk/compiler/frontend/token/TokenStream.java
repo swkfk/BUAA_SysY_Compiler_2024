@@ -8,6 +8,8 @@ import java.util.stream.Collectors;
 
 /**
  * Collect tokens and provide methods to access them.
+ * Token 流，用于收集 Token 并提供访问方法。具体见每个方法的注释。
+ * 同时，Token 流实现了 BackTrace.Traceable 接口，可以保存和恢复状态。
  */
 final public class TokenStream implements BackTrace.Traceable {
     private final List<Token> tks = new LinkedList<>();

@@ -103,22 +103,30 @@ final public class Lexer {
     public Lexer lex() throws IOException {
         int chr;
         while ((chr = reader.read()) != -1) {
+            // 跳过空白字符
             if (Character.isWhitespace(chr)) {
                 continue;
             }
+            // 这里就不是空白字符了，回退一个
             reader.unread(chr);
 
             if (Character.isDigit(chr)) {
+                // 处理数字
                 scanNumber();
             } else if (Character.isLetter(chr) || chr == '_') {
+                // 处理标识符
                 scanIdentifier();
             } else if (chr == '"') {
+                // 读取字符串
                 scanString();
             } else if (chr == '\'') {
+                // 读取字符
                 scanChar();
             } else if (chr == '/') {
+                // 处理注释和除号
                 scanSlash();
             } else {
+                // 处理其他符号
                 scanSymbol();
             }
         }
@@ -129,6 +137,7 @@ final public class Lexer {
         int chr = reader.read();
         Pair<Integer, Integer> start = reader.location();
         switch (chr) {
+            // 这里重复代码较多，主要就是处理双字符符号
             case '|' -> {
                 chr = reader.read();
                 if (chr != '|') {
@@ -178,7 +187,7 @@ final public class Lexer {
                 }
             }
             default -> {
-                // Single-character symbol
+                // 剩下的单字符符号
                 assert symbols.containsKey((char) chr) : "Invalid symbol `" + chr + "`.";
                 addToken(symbols.get((char) chr), String.valueOf((char) chr), start);
             }
@@ -228,6 +237,7 @@ final public class Lexer {
     }
 
     private void scanNumber() throws IOException {
+        // 读取数字，只会出现简单的整数形式，不会出现浮点数，也不允许前导零
         int chr = reader.read();
         Pair<Integer, Integer> start = reader.location();
         StringBuilder number = new StringBuilder();
@@ -246,13 +256,16 @@ final public class Lexer {
         StringBuilder str = new StringBuilder();
         while ((chr = reader.read()) != '"') {
             if (chr == '%') {
+                // 原本是在这里处理格式化字符串的，但是今年不需要了，但也保留了特殊处理的分支
                 chr = reader.read();
                 str.append('%').append((char) chr);
             } else if (chr == '\\') {
+                // 处理转义字符
                 chr = reader.read();
                 assert escape.containsKey((char) chr) : "Invalid escape character `\\" + chr + "`.";
                 str.append(escape.get((char) chr));
             } else {
+                // 通常字符，直接添加即可
                 str.append((char) chr);
             }
         }
@@ -265,6 +278,7 @@ final public class Lexer {
         Pair<Integer, Integer> start = reader.location();
         chr = reader.read();
         if (chr == '\\') {
+            // 处理转义字符
             chr = reader.read();
             assert escape.containsKey((char) chr) : "Invalid escape character `\\" + chr + "`.";
             chr = escape.get((char) chr);
