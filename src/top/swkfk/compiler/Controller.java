@@ -71,7 +71,7 @@ final public class Controller {
 
         if (!errors.noError()) {
             try (FileWriter writer = new FileWriter(Configure.error)) {
-                writer.write((errors.noError() ? symbols.toString() : errors).toString());
+                writer.write("" + errors);
             }
             Controller.exit();
         }
