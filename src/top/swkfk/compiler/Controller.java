@@ -69,6 +69,13 @@ final public class Controller {
             Controller.exit();
         }
 
+        if (!errors.noError()) {
+            try (FileWriter writer = new FileWriter(Configure.error)) {
+                writer.write((errors.noError() ? symbols.toString() : errors).toString());
+            }
+            Controller.exit();
+        }
+
         // 4. Intermediate code generation
         IrModule module = new IrBuilder(ast).build().emit();
 
