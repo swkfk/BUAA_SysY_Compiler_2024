@@ -16,6 +16,7 @@ final public class SymbolTable {
     private final Map<String, SymbolVariable> allVariables;
     private final Map<String, SymbolFunction> allFunctions;
     private final Stack<Map<String, SymbolVariable>> stack;
+    /// 栈中每个元素对应的符号表的 ID，不是层次，而是题目要求的编号
     private final Stack<Integer> stackOfScopeId;
 
     private final List<Symbol> outputList = new ArrayList<>();
@@ -42,6 +43,11 @@ final public class SymbolTable {
         stackOfScopeId.pop();
     }
 
+    /**
+     * 目的是在错误处理时，检查潜在的重定义，保留标识符不应该被重定义，虽然可能不是考察的内容
+     * @param name 标识符名
+     * @return 是否是保留标识符
+     */
     @SuppressWarnings("SpellCheckingInspection")
     private boolean bumpKeepIdentifier(String name) {
         return name.equals("main") || name.equals("printf") || name.equals("getint") || name.equals("getchar");
@@ -56,8 +62,10 @@ final public class SymbolTable {
      */
     public SymbolVariable addVariable(String name, SymbolType type) {
         if (stack.peek().containsKey(name) || bumpKeepIdentifier(name)) {
+            // 这里表示重定义
             return null;
         }
+        // stack.size() == 1 是判断是否是全局变量的标志
         SymbolVariable variable = new SymbolVariable(name, type, stack.size() == 1, stackOfScopeId.peek());
         allVariables.put(name, variable);
         stack.peek().put(name, variable);
@@ -73,18 +81,22 @@ final public class SymbolTable {
     public SymbolVariable getVariable(String name) {
         var iter = stack.listIterator(stack.size());
         while (iter.hasPrevious()) {
+            // 从后往前找当前符号表栈中的变量
             var variables = iter.previous();
             if (variables.containsKey(name)) {
                 SymbolVariable var = variables.get(name);
+                // 符号的索引与名称当然要一致
                 assert var.getName().equals(name) : "Inconsistent variable name for `" + name + "`";
                 return var;
             }
         }
+        // 找不到，返回 null
         return null;
     }
 
     public SymbolFunction addFunction(String name, FuncType type) {
         if (stack.peek().containsKey(name) || allFunctions.containsKey(name) || bumpKeepIdentifier(name)) {
+            // 这里表示重定义
             return null;
         }
         SymbolFunction function = new SymbolFunction(name, SymbolType.from(type), stackOfScopeId.peek());
@@ -94,12 +106,14 @@ final public class SymbolTable {
     }
 
     public SymbolFunction getFunction(String name) {
+        // 从函数符号表中查找函数，找不到会返回 null
         return allFunctions.get(name);
     }
 
     public SymbolVariable addParameter(SymbolFunction function, String name, SymbolType type) {
         SymbolVariable parameter = addVariable(name, type);
         if (parameter == null) {
+            // 这里是 null，表示参数重定义了，返回 null 告知上层
             return null;
         }
         allVariables.put(name, parameter);

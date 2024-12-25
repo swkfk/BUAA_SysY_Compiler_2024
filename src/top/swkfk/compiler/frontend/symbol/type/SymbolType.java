@@ -6,6 +6,10 @@ abstract public class SymbolType {
 
     abstract public boolean is(String type);
 
+    /**
+     * 获取类型占用的大小
+     * @return 字节数
+     */
     abstract public int sizeof();
 
     abstract public String toString();
@@ -36,10 +40,19 @@ abstract public class SymbolType {
         }
     }
 
+    /**
+     * 判断两个类型是否兼容，要么相同，要么都是 int
+     * @param other 另一个类型
+     * @return 是否兼容
+     */
     public boolean compatible(SymbolType other) {
         return this.equals(other) || (this.is("int") && other.is("int"));
     }
 
+    /**
+     * 获取最终的基础类型，即去掉所有的指针和数组
+     * @return 最终的基础类型
+     */
     public SymbolType getFinalBaseType() {
         if (this.is("array")) {
             return ((TyArray) this).getBase().getFinalBaseType();

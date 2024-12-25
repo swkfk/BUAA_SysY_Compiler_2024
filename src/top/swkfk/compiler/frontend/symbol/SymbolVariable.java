@@ -4,7 +4,11 @@ import top.swkfk.compiler.frontend.symbol.type.SymbolType;
 import top.swkfk.compiler.llvm.value.Value;
 import top.swkfk.compiler.utils.Either;
 
+/**
+ * 变量符号，主要包含了变量的（潜在的）常量值，以及在 IR 中的值（指针）
+ */
 final public class SymbolVariable extends Symbol {
+    /// 常量值，包含多重类型，但只针对 const 变量
     private Either<FixedValue, FixedArray> constantValue = null;
 
     /**

@@ -6,11 +6,16 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * 函数符号，主要包含了函数的参数列表
+ */
 final public class SymbolFunction extends Symbol {
 
+    /// 函数的参数列表，均为变量符号，且有属性 {@link SymbolVariable#isFromParam()} 为 true
     private final List<SymbolVariable> parameters;
 
     public SymbolFunction(String name, SymbolType type, int symbolTableIndex) {
+        // 函数符号是全局的
         super(name, type, true, symbolTableIndex);
         parameters = new LinkedList<>();
     }
