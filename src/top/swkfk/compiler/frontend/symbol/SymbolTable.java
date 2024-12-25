@@ -44,7 +44,7 @@ final public class SymbolTable {
 
     @SuppressWarnings("SpellCheckingInspection")
     private boolean bumpKeepIdentifier(String name) {
-        return name.equals("main") || name.equals("printf") || name.equals("getint");
+        return name.equals("main") || name.equals("printf") || name.equals("getint") || name.equals("getchar");
     }
 
     /**
