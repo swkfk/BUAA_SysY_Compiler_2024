@@ -5,6 +5,7 @@ import java.util.Set;
 
 /**
  * BlockLivingData, including use, def, in, out
+ * 存储每个基本块的活跃变量信息
  *
  * @param <T> Normally it is Arch's Virtual Register Class
  */

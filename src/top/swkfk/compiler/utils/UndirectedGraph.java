@@ -5,6 +5,10 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+/**
+ * 无向图的工具栏，并提供了一些基本的操作
+ * @param <T> 顶点存储数据的类型
+ */
 final public class UndirectedGraph<T> {
     private final Set<T> vertices;
     private final Map<T, Set<T>> edges;

@@ -9,6 +9,9 @@ import top.swkfk.compiler.utils.Pair;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * 生成适用于 LLVM 的数组初始化字符串
+ */
 final public class ArrayInitialString {
     /**
      * Generate the string representation of an array initializer. Return the string and whether the

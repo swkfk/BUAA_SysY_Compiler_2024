@@ -2,6 +2,12 @@ package top.swkfk.compiler.utils;
 
 import java.util.Stack;
 
+/**
+ * 快速回溯工具类，用于保存和恢复对象的状态。对于需要回溯的对象，实现 {@link Traceable} 接口，
+ * 定义保存和恢复状态的方法即可。在使用时，创建一个 {@link BackTrace} 对象，将需要回溯的对象传入，
+ * 调用 {@link #save()} 方法保存状态，调用 {@link #restore()} 方法恢复状态。
+ * 也可以使用 try-with-resources 语法，自动恢复状态。
+ */
 final public class BackTrace implements AutoCloseable {
 
     public interface Traceable {

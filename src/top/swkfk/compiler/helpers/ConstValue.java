@@ -3,6 +3,9 @@ package top.swkfk.compiler.helpers;
 import top.swkfk.compiler.frontend.ast.expression.ExprAdd;
 import top.swkfk.compiler.frontend.ast.expression.ExprMul;
 
+/**
+ * 提供常量计算的方法
+ */
 final public class ConstValue {
     public enum CalcType {
         Add, Sub, Mul, Div, Mod

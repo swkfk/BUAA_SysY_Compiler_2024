@@ -1,5 +1,8 @@
 package top.swkfk.compiler.helpers;
 
+/**
+ * 一个简易的存储注释的类，可以被挂载在一些类中
+ */
 final public class Comments {
     private String comment = "";
     private final String prefix;

@@ -1,5 +1,10 @@
 package top.swkfk.compiler.utils;
 
+/**
+ * 将两个不相干的类型封装在一起，只能保存并访问其中一个
+ * @param <T> 左边的类型
+ * @param <U> 右边的类型
+ */
 final public class Either<T, U> {
     private T left;
     private U right;

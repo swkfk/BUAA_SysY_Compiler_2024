@@ -1,5 +1,8 @@
 package top.swkfk.compiler.helpers;
 
+/**
+ * 并非全局的全局计数器，可以重置、设置计数值
+ */
 final public class GlobalCounter {
     private int counter = 0;
 

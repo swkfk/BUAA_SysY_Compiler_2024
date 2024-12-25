@@ -6,6 +6,9 @@ import top.swkfk.compiler.utils.BackTrace;
 import java.util.LinkedList;
 import java.util.List;
 
+/**
+ * 对语法分析过程进行监视并记录，方便输出
+ */
 final public class ParserWatcher implements BackTrace.Traceable {
     private final List<String> lines;
 

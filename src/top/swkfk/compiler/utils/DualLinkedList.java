@@ -3,6 +3,10 @@ package top.swkfk.compiler.utils;
 import java.util.Iterator;
 import java.util.Optional;
 
+/**
+ * 双向链表工具类，提供了方便地遍历、插入、删除等操作。详见代码中的具体使用方法。
+ * @param <T> 链表中保存的数据类型
+ */
 final public class DualLinkedList<T> implements Iterable<DualLinkedList.Node<T>> {
 
     private Node<T> head;
