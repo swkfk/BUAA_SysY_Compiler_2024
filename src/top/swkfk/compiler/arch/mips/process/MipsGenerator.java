@@ -110,7 +110,7 @@ final public class MipsGenerator {
     }
 
     private static int argumentOffset(int index) {
-        assert index >= 5;
+        assert index >= 4;
         return (2 + index - MipsPhysicalRegister.a.length) * -4;
     }
 
