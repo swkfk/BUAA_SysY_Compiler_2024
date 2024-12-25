@@ -8,6 +8,9 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * 对错误进行记录，并提供回溯方法
+ */
 final public class ErrorTable implements BackTrace.Traceable {
     private final List<ErrorEntry> errors;
 

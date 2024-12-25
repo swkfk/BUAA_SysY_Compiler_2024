@@ -2,6 +2,9 @@ package top.swkfk.compiler.error;
 
 import top.swkfk.compiler.frontend.Navigation;
 
+/**
+ * 错误记录，包含错误类型和错误位置
+ */
 final public class ErrorEntry {
     private final ErrorType type;
     private final Navigation navigation;
