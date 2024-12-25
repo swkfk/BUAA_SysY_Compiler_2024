@@ -88,6 +88,7 @@ final public class Parser {
             token = __tokens.consume(type);
             __watcher.add(token.toString());
         } catch (IllegalStateException e) {
+            // 这里只检查一部分错误，当使用 consume 方法时，默认只会出现这些，如果出现其他错误，抛出异常，可能有上层处理。
             if (type.equals(TokenType.Semicolon)) {
                 errors.add(ErrorType.ExpectedSemicolon, Objects.requireNonNull(__tokens.peek(-1)).location());
             } else if (type.equals(TokenType.RParen)) {
@@ -217,6 +218,7 @@ final public class Parser {
         FuncType returnType = parseFuncType();
         Token identifier = consume(TokenType.Ident);
         consume(TokenType.LParen);
+        // 即使右括号缺失，parseFuncFormalParams 也能处理
         FuncFormalParams params =
             among(TokenType.RParen) ? new FuncFormalParams() : parseFuncFormalParams();
         consume(TokenType.RParen);
@@ -226,6 +228,7 @@ final public class Parser {
 
     private FuncFormalParams parseFuncFormalParams() {
         FuncFormalParams params = new FuncFormalParams();
+        // 只有以下两种类型
         while (among(TokenType.Int, TokenType.Char)) {
             params.addParam(parseFuncFormalParam());
             checkConsume(TokenType.Comma);
@@ -278,6 +281,7 @@ final public class Parser {
             consume(TokenType.RBracket);
         }
         consume(TokenType.Assign);
+        // 各种形式的初始化都会被处理
         ConstInitValue initial = parseConstInitial(false);
         return watch(new ConstDef(identifier, indices, initial));
     }
@@ -321,6 +325,7 @@ final public class Parser {
             }
         }
         ConstInitValue constInitValue = new ConstInitValue();
+        // 这里是考虑了大括号嵌套的情况，但今年没有出现
         while (!among(TokenType.RBrace)) {
             constInitValue.addSubInitializer(parseConstInitial(true));
             checkConsume(TokenType.Comma);
@@ -355,6 +360,7 @@ final public class Parser {
         while (!among(TokenType.RBrace)) {
             block.addBlock(parseBlockItem());
         }
+        // 用于错误处理，记录块的结束位置，右大括号
         block.setEndToken(consume(TokenType.RBrace));
         return watch(block);
     }
@@ -366,10 +372,16 @@ final public class Parser {
         return new BlockItem(parseStmt());  // Skip watching
     }
 
+    /**
+     * 试读一下是否是赋值语句
+     * @return 是否是赋值语句
+     */
     private boolean tryParseAssign() {
+        // 只有左值才可能是赋值语句，通过 First 集判断
         if (!FirstSet.getFirst(LeftValue.class).contains(peekType())) {
             return false;
         }
+        // 尝试读取，如果失败，返回 false，并回溯
         try (BackTrace ignore = trace.save()) {
             parseLVal();
             if (!among(TokenType.Assign)) {
@@ -439,6 +451,7 @@ final public class Parser {
             return watch(printf);
         }
         if (tryParseAssign()) {
+            // 试读赋值语句，如果是，直接解析
             LeftValue lVal = parseLVal();
             consume(TokenType.Assign);
             if (checkConsume(TokenType.SpGetInt)) {
@@ -457,6 +470,7 @@ final public class Parser {
             consume(TokenType.Semicolon);
             return watch(new StmtAssign(lVal, expr));
         }
+        // 不是赋值语句，只能是 '[Expr] ;'
         if (among(TokenType.Semicolon)) {
             Stmt stmt = new StmtExpr(null);
             consume(TokenType.Semicolon);
@@ -509,6 +523,7 @@ final public class Parser {
         FuncRealParams params = new FuncRealParams();
         do {
             // Pay attention, this is just for passing the test
+            // 缺少右括号的情况，后面不能有东西了，否则无法界定，因此判断是否是右括号或分号
             if (among(TokenType.RParen) || among(TokenType.Semicolon)) {
                 break;
             }
@@ -522,6 +537,7 @@ final public class Parser {
             return watch(new ExprUnaryUnary(parseUnaryOp(), parseUnaryExpr()));
         }
         if (among(TokenType.Ident) && among(1, TokenType.LParen)) {
+            // 函数调用
             Token identifier = consume(TokenType.Ident);
             consume(TokenType.LParen);
             ExprUnaryCall call;

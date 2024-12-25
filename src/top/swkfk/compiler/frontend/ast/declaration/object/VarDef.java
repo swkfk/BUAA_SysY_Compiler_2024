@@ -15,7 +15,7 @@ final public class VarDef extends ASTNode {
     /**
      * Initial value of the variable. <code>null</code> if not initialized.
      */
-    private VarInitValue initial;
+    private VarInitValue initial;  // 注意，这里是语法树节点，不是符号表中的初始值
 
     public VarDef(Token identifier) {
         this.identifier = identifier;

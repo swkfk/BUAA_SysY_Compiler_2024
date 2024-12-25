@@ -11,7 +11,7 @@ final public class ConstDef extends ASTNode {
     private final Token identifier;
     private SymbolVariable symbol = null;
     private final List<ExprConst> indices;
-    private final ConstInitValue initial;
+    private final ConstInitValue initial;  // 注意，这里是语法树节点，不是符号表中的初始值
 
     /**
      * Why the three arguments are needed at a time? Because the initial is needed in any case.
