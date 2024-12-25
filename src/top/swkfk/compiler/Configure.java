@@ -5,14 +5,21 @@ final public class Configure {
         mips
     }
 
-    @SuppressWarnings("SpellCheckingInspection")
+    /// 源代码文件，从这里读取 SysY 代码
     public static String source = "testfile.txt";
+    /// 默认的输出文件
     public static String target = HomeworkConfig.getTarget();
+    /// 每一遍 Pass 的输出文件名（如果开启了相关选项则会输出）
     public static String passTarget = "%(filename)-%(pass-id)-%(pass-name).ll";
+    /// 输出错误信息的默认文件名
     public static String error = "error.txt";
+    /// 是否默认开启优化，请注意，RemovePhi 与寄存器分配是必然执行的
     public static boolean optimize = true;
+    /// 输出优化后的 IR
     public static String dumpTarget = "llvm_ir.txt";
+    /// 输出虚拟 MIPS 代码
     public static String dumpVirtualTarget = "virtual_mips.txt";
+    /// 选用的目标架构
     public static Arch arch = Arch.mips;
 
     public static class debug {

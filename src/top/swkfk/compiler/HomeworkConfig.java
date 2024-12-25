@@ -5,9 +5,13 @@ final public class HomeworkConfig {
         Lexer, Syntax, Semantic, CodegenI, CodegenII
     }
 
+    // 通过这里修改作业
     public static Hw hw = Hw.CodegenII;
-    //  Modify this  ^^  to change the homework  //
 
+    /**
+     * 获取不同作业的默认输出目标文件名
+     * @return 目标文件名
+     */
     public static String getTarget() {
         return switch (hw) {
             case Lexer -> "lexer.txt";

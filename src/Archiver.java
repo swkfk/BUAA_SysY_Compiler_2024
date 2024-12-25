@@ -11,7 +11,11 @@ import java.util.Map;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
+/**
+ * Java 打包姬！
+ */
 public class Archiver {
+    /// 我比较喜欢花花绿绿的输出信息
     private static final Map<String, String> colors = Map.ofEntries(
         Map.entry("red", "\u001B[31m"),
         Map.entry("green", "\u001B[32m"),
@@ -21,6 +25,7 @@ public class Archiver {
         Map.entry("reset", "\u001B[0m")
     );
 
+    /// 按照要求添加的配置文件，'###' 会被替换为 'mips' 或 'llvm'
     private static String config = """
 {
     "programming language": "java",
@@ -32,7 +37,9 @@ public class Archiver {
         config = config.replace("###", HomeworkConfig.hw == HomeworkConfig.Hw.CodegenI ? "llvm" : "mips");
     }
 
+    /// 生成压缩文件的位置（文件夹）
     private static final String target = "submit";
+    /// 源代码文件夹
     private static final String source = "src";
 
     private static String colorize(String color, String text) {
@@ -57,10 +64,18 @@ public class Archiver {
         return new Pair<>(color, text);
     }
 
+    /**
+     * 获取当前时间，例如：241018_144346
+     * @return 当前时间字符串
+     */
     private static String getTime() {
         return new java.text.SimpleDateFormat("yyMMdd_HHmmss").format(new java.util.Date());
     }
 
+    /**
+     * 遍历全部 Java 源代码文件（通过拓展名判断）
+     * @return 源文件列表
+     */
     private static List<String> searchJavaFiles() {
         List<String> javaFiles = new LinkedList<>();
         try (var walker = Files.walk(Paths.get(Archiver.source))) {
