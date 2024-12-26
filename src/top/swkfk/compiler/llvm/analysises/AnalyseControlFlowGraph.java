@@ -39,6 +39,9 @@ final public class AnalyseControlFlowGraph extends Pass {
 
         while (!queue.isEmpty()) {
             BasicBlock block = queue.poll();
+            if (visited.contains(block)) {
+                continue;
+            }
             visited.add(block);
 
             predecessors.putIfAbsent(block, new HashSet<>());
@@ -46,10 +49,7 @@ final public class AnalyseControlFlowGraph extends Pass {
             for (BasicBlock successor : block.getSuccessors()) {
                 successors.get(block).add(successor);
                 predecessors.computeIfAbsent(successor, k -> new HashSet<>()).add(block);
-
-                if (!visited.contains(successor)) {
-                    queue.add(successor);
-                }
+                queue.add(successor);
             }
         }
 
