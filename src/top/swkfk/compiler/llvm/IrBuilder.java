@@ -164,7 +164,7 @@ final public class IrBuilder {
         // is no terminator in it. But sometimes, we need to insert a terminator instruction
         // after create a new block. So we need to check if the last instruction is a terminator.
         // If it is, we should remove it and add the new terminator instruction.
-        // ^^^ 但这里并没有移除前面存在的 terminator，而是直接将其返回
+        // ^^^ 但这里并没有移除前面存在的 terminator，而是直接将其返回，并且不再插入新的语句
         if (block.getLastInstruction() instanceof ITerminator) {
             return instruction;
         }
