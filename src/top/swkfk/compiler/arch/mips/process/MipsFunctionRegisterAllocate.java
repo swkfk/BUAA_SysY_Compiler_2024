@@ -28,24 +28,31 @@ import java.util.Set;
 
 final public class MipsFunctionRegisterAllocate {
     static class Config {
+        // 可用局部寄存器
         static final List<MipsPhysicalRegister> localRegisters = List.of(
             MipsPhysicalRegister.t[0], MipsPhysicalRegister.t[1], MipsPhysicalRegister.t[2], MipsPhysicalRegister.t[3],
             MipsPhysicalRegister.t[4], MipsPhysicalRegister.t[5], MipsPhysicalRegister.t[6], MipsPhysicalRegister.t[7]
         );
+        // 可用全局寄存器，比通常的约定多了 $v1, $t8, $t9, $gp
         static final List<MipsPhysicalRegister> globalRegisters = List.of(
             MipsPhysicalRegister.s[0], MipsPhysicalRegister.s[1], MipsPhysicalRegister.s[2], MipsPhysicalRegister.s[3],
             MipsPhysicalRegister.s[4], MipsPhysicalRegister.s[5], MipsPhysicalRegister.s[6], MipsPhysicalRegister.s[7],
             MipsPhysicalRegister.v1, MipsPhysicalRegister.t[8], MipsPhysicalRegister.t[9],
             MipsPhysicalRegister.gp  // Hey, more registers!
         );
+        // 临时寄存器，用于从栈中加载/存储溢出的寄存器，最多同时使用两个，因此选定 $k0 与 $k1
+        // 使用时，通过异或操作来切换，确保连续使用的两个不一样，以避免冲突
         static final List<MipsPhysicalRegister> temporaryRegisters = Arrays.asList(MipsPhysicalRegister.k0, MipsPhysicalRegister.k1);
     }
 
     private final MipsFunction function;
     private final HashMap<MipsBlock, Set<MipsVirtualRegister>> localVirtualRegisters;
 
+    // 分配了物理寄存器的虚拟寄存器
     private final Map<MipsVirtualRegister, MipsPhysicalRegister> allocated = new HashMap<>();
+    // 溢出的虚拟寄存器
     private final Set<MipsVirtualRegister> spilled = new HashSet<>();
+    // 已经使用了的全局物理寄存器，在分配时，优先使用已经用过的
     private final Set<MipsPhysicalRegister> allocatedGlobal = new HashSet<>();
 
     private boolean haveNotAllocated(MipsVirtualRegister register) {
@@ -56,6 +63,7 @@ final public class MipsFunctionRegisterAllocate {
         this.function = function;
         this.localVirtualRegisters = new HashMap<>();
         if (MipsFunction.isCaller(function)) {
+            // 如果函数会调用其他函数，那么 ra 寄存器必须被标记为分配，也即需要保存/恢复
             this.allocatedGlobal.add(MipsPhysicalRegister.ra);
         }
     }
@@ -73,15 +81,19 @@ final public class MipsFunctionRegisterAllocate {
                         continue;
                     }
                     if (!records.containsKey(register)) {
+                        // 这个虚拟寄存器首次出现
                         records.put(register, new Pair<>(block, blockLevel));
                     } else {
                         Pair<MipsBlock, Integer> record = records.get(register);
+                        // 已经出现过，检查是否在同一个块中
                         if (record == null || !record.equals(new Pair<>(block, blockLevel))) {
+                            // 但凡出过一次问题，就标记为 null，不分配局部寄存器
                             records.put(register, null);
                         }
                     }
                 }
                 if (instruction instanceof MipsIJump || instruction instanceof MipsIBrZero || instruction instanceof MipsIBrEqu) {
+                    // 它们都会存在破坏局部寄存器的可能性，因此需要增加 blockLevel
                     blockLevel++;
                 }
             }
@@ -92,6 +104,7 @@ final public class MipsFunctionRegisterAllocate {
 
         for (var entry : records.entrySet()) {
             if (entry.getValue() != null) {
+                // 所有标记过的，且最后不为 null 的，都分配局部寄存器
                 localVirtualRegisters.computeIfAbsent(entry.getValue().first(), k -> new HashSet<>()).add(entry.getKey());
             }
         }
@@ -117,6 +130,7 @@ final public class MipsFunctionRegisterAllocate {
                 continue;
             }
 
+            // 首先考察一下每个虚拟寄存器的活跃区间，重点是最后一次活跃的位置（指令）
             HashMap<MipsVirtualRegister, MipsInstruction> lastLivingMap = new HashMap<>();
             for (DualLinkedList.Node<MipsInstruction> iNode : block.getInstructions()) {
                 MipsInstruction instruction = iNode.getData();
@@ -129,36 +143,42 @@ final public class MipsFunctionRegisterAllocate {
                 }
             }
 
+            // 目前已经分配的寄存器所对应的结束活跃的指令
             HashMap<MipsPhysicalRegister, MipsInstruction> currentAllocateMap = new HashMap<>();
             for (MipsPhysicalRegister register : Config.localRegisters) {
                 currentAllocateMap.put(register, null);
             }
             LoopInstruction: for (DualLinkedList.Node<MipsInstruction> iNode : block.getInstructions()) {
                 MipsInstruction instruction = iNode.getData();
+                // 遍历全部操作数，检查是否需要释放
                 for (MipsOperand operand : instruction.getOperands()) {
                     MipsVirtualRegister register = fitLocalAllocate(operand, block);
                     if (register == null) {
                         continue;
                     }
                     if (allocated.containsKey(register)) {
+                        // 这里表示已经分配了物理寄存器，检查是否需要释放
                         if (currentAllocateMap.get(allocated.get(register)) == instruction) {
                             // Release the register
                             currentAllocateMap.put(allocated.get(register), null);
                         }
                     }
                 }
+                // 遍历全部操作数，检查是否需要分配
                 for (MipsOperand operand : instruction.getOperands()) {
                     MipsVirtualRegister register = fitLocalAllocate(operand, block);
                     if (register == null) {
                         continue;
                     }
                     if (spilled.contains(register) || allocated.containsKey(register)) {
+                        // 已经溢出或者已经分配了物理寄存器，不再分配
                         continue;
                     }
                     // Allocate the register
                     for (MipsPhysicalRegister physicalRegister : Config.localRegisters) {
                         if (currentAllocateMap.get(physicalRegister) == null) {
                             if (lastLivingMap.get(register) != instruction) {
+                                // 设置为寄存器结束活跃的指令
                                 currentAllocateMap.put(physicalRegister, lastLivingMap.get(register));
                             }
                             allocated.put(register, physicalRegister);

@@ -45,6 +45,7 @@ final public class MipsFunctionRemovePhi {
                 if (!(instruction instanceof MipsIPhi phi)) {
                     continue;
                 }
+                // 捕获到了一条 phi 指令，遍历它的每一对 incoming
                 for (int i = 0; i < phi.getOperandsSize(); i++) {
                     MipsBlock incomingBlock = phi.getSource(i);
                     MipsOperand incomingValue = phi.getOperand(i);
@@ -56,11 +57,15 @@ final public class MipsFunctionRemovePhi {
                             // When inserting, we should insert like 1st, 3rd, 5th, ..., 2nd, 4th, 6th, ...
                             buildMoveInstruction(temporary, incomingValue),
                             buildMoveInstruction(phi.getResult(), temporary)
+                            // 上述的核心思想是，先将全部的 incomingValue 移动到对应的临时虚拟寄存器中，
+                            // 然后再集中赋值，这是为了避免前一个赋值影响后一个赋值。所以才有了这样一个奇怪的插入顺序。
+                            // 例如：$t0 <- $t1; $t2 <- $t0，这两个赋值应该“同时”进行，类似于 Verilog 的非阻塞赋值
                         ));
                     } else {
                         if (!blockToReplace.containsKey(incomingBlock)) {
+                            // 新建一个块，用于存放 phi 指令的结果，同时避免重复创建
                             MipsBlock newBlock = new MipsBlock(incomingBlock + ".phi" + currentBlock);
-                            // Judge the graph structure
+                            // Modify the graph structure
                             MipsBlock.removeEdge(incomingBlock, currentBlock);
                             MipsBlock.addEdge(incomingBlock, newBlock);
                             MipsBlock.addEdge(newBlock, currentBlock);
@@ -74,14 +79,17 @@ final public class MipsFunctionRemovePhi {
                     }
                 }
             }
+            // 移除全部的 phi 指令
             while (currentBlock.getInstructions().getHead().getData() instanceof MipsIPhi) {
                 currentBlock.getInstructions().getHead().drop();
             }
+            // 新建的块，添加到函数中，并添加跳转指令（在最后添加，很好理解）
             for (MipsBlock newBlock : blockToReplace.values()) {
                 function.addBlock(newBlock);
                 newBlock.addInstruction(new MipsIJump(MipsIJump.X.j, currentBlock));
             }
         }
+        // 按照上面说的奇怪的顺序插入直接移动指令
         for (var entry : toBeInserted.entrySet()) {
             DualLinkedList.Node<MipsInstruction> tail = entry.getKey().getInstructions().getTail();
             List<MipsInstruction> instructions = entry.getValue();
@@ -94,6 +102,12 @@ final public class MipsFunctionRemovePhi {
         }
     }
 
+    /**
+     * 生成移动指令，处理 src 的不同情况
+     * @param dst 目标寄存器
+     * @param src 源寄存器或立即数
+     * @return 生成的移动指令
+     */
     private static MipsInstruction buildMoveInstruction(MipsOperand dst, MipsOperand src) {
         if (src instanceof MipsImmediate) {
             return new MipsIBinary(MipsIBinary.X.addiu, dst, MipsPhysicalRegister.zero, src);
