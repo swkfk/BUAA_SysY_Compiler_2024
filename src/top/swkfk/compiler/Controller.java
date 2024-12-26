@@ -20,7 +20,6 @@ import top.swkfk.compiler.llvm.transforms.ConstantFolding;
 import top.swkfk.compiler.llvm.transforms.ControlFlowSimplify;
 import top.swkfk.compiler.llvm.transforms.DeadBlockEliminate;
 import top.swkfk.compiler.llvm.transforms.Dummy;
-import top.swkfk.compiler.llvm.transforms.LocalVariableNumbering;
 import top.swkfk.compiler.llvm.transforms.LoopHoist;
 import top.swkfk.compiler.llvm.transforms.MemoryToRegister;
 import top.swkfk.compiler.llvm.transforms.MultiplySimplify;
@@ -108,6 +107,11 @@ final public class Controller {
                 // register allocation more difficult. Especially when using the local register allocation.
                 // When I shut down the LVN pass, the performance is better.
                 // .runPass(new LocalVariableNumbering())
+                .runPass(new AnalyseControlFlowGraph())
+                .runPass(new AnalyseDominatorTree())
+                .runPass(new AggressiveDeadCodeEliminate())
+                .runPass(new ControlFlowSimplify())
+                // Run the AggressiveDeadCodeEliminate pass again to eliminate more dead code caused by the dead block elimination
                 .runPass(new AnalyseControlFlowGraph())
                 .runPass(new AnalyseDominatorTree())
                 .runPass(new AggressiveDeadCodeEliminate())

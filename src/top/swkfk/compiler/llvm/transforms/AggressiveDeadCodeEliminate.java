@@ -7,6 +7,7 @@ import top.swkfk.compiler.llvm.value.BasicBlock;
 import top.swkfk.compiler.llvm.value.Function;
 import top.swkfk.compiler.llvm.value.User;
 import top.swkfk.compiler.llvm.value.Value;
+import top.swkfk.compiler.llvm.value.instruction.IBranch;
 import top.swkfk.compiler.llvm.value.instruction.ICall;
 import top.swkfk.compiler.llvm.value.instruction.IPhi;
 import top.swkfk.compiler.llvm.value.instruction.IReturn;
@@ -14,10 +15,13 @@ import top.swkfk.compiler.llvm.value.instruction.IStore;
 import top.swkfk.compiler.llvm.value.instruction.ITerminator;
 import top.swkfk.compiler.utils.DualLinkedList;
 
+import java.util.Arrays;
 import java.util.Deque;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
+import java.util.List;
+import java.util.Objects;
 
 final public class AggressiveDeadCodeEliminate extends Pass {
     @Override
@@ -82,6 +86,8 @@ final public class AggressiveDeadCodeEliminate extends Pass {
             }
         }
 
+        List<BasicBlock> deadBlocks = new LinkedList<>();
+
         for (DualLinkedList.Node<BasicBlock> bNode : function.getBlocks()) {
             BasicBlock block = bNode.getData();
             if (!liveBlocks.contains(block)) {
@@ -94,6 +100,33 @@ final public class AggressiveDeadCodeEliminate extends Pass {
                     debug("Remove dead code: " + instruction.toLLVM());
                     iter.remove();
                 }
+            }
+            if (block.getInstructions().isEmpty()) {
+                bNode.drop();
+                deadBlocks.add(block);
+            }
+        }
+
+        if (!deadBlocks.isEmpty()) {
+            debug("Remove dead blocks: " + deadBlocks.stream().map(BasicBlock::getName).toList());
+        }
+
+        for (DualLinkedList.Node<BasicBlock> bNode : function.getBlocks()) {
+            BasicBlock block = bNode.getData();
+            ITerminator terminator = (ITerminator) block.getLastInstruction();
+            assert terminator != null : "The last instruction of a basic block must be a terminator and not null";
+            if (Arrays.stream(terminator.getSuccessors()).anyMatch(deadBlocks::contains)) {
+                debug("Replace dead terminator: " + block.getLastInstruction().toLLVM());
+                if (terminator.getSuccessors().length != 2) {
+                    throw new RuntimeException("Only two successors can be replaced");
+                }
+                BasicBlock successor = Arrays.stream(terminator.getSuccessors())
+                    .filter(Objects::nonNull)
+                    .filter(b -> !deadBlocks.contains(b))
+                    .findFirst()
+                    .orElseThrow();
+                block.getInstructions().getTail().drop();
+                block.addInstruction(new IBranch(successor));
             }
         }
     }
