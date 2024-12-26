@@ -3,6 +3,9 @@ package top.swkfk.compiler.llvm.value.constants;
 import top.swkfk.compiler.frontend.symbol.type.SymbolType;
 import top.swkfk.compiler.frontend.symbol.type.Ty;
 
+/**
+ * 整数字面量，附带类型信息
+ */
 final public class ConstInteger extends Constant {
 
     private final int value;

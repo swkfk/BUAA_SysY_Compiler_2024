@@ -56,6 +56,7 @@ final public class IrBuilder {
     }
 
     public IrBuilder build() {
+        // 构建全局变量，在相应的 def 中标记 value
         buildGlobalVariables();
         buildFunctions();
         return this;
@@ -63,10 +64,13 @@ final public class IrBuilder {
 
     private void buildGlobalVariables() {
         for (Decl decl : traverser.getGlobalVariables()) {
+            // 两者没有本质区别，只是在语法树中的表示不同
             if (decl.getType().equals(Decl.Type.Const)) {
                 globalVariables.addAll(((ConstDecl) decl.getDeclaration()).getDefs().stream().map(
                     def -> {
+                        // 这一行设置了 def 中 symbol 对应的 ir value，是指针类型！
                         traverser.markGlobalVars(def);
+                        // 这里的 GlobalVariable 是 llvm 中的全局变量，只用来输出 IR 代码，不参与具体的构建！
                         return GlobalVariable.from(def);
                     }
                 ).toList());
@@ -85,6 +89,7 @@ final public class IrBuilder {
         for (FuncDef funcDef : traverser.getFunctions()) {
             traverser.visitFunction(funcDef);
         }
+        // 这里产生了一个临时 FuncDef，用于方便遍历
         traverser.visitFunction(traverser.getMainFunction().into());
     }
 
@@ -98,6 +103,7 @@ final public class IrBuilder {
         currentFunction = function;
 
         for (FuncFormalParam param : params) {
+            // 将每个参数都产生一个 IR Value，存储在语法树对应的 symbol 中
             param.getSymbol().setValue(function.addParam(param.getSymbol().getType()));
         }
 
@@ -105,6 +111,7 @@ final public class IrBuilder {
         function.addBlock(entry);
         insertPoint = entry;
 
+        // 这里是将每一个形式参数都存储在内存中
         for (FuncFormalParam param : params) {
             Value raw = param.getSymbol().getValue();
             Value pointer = insertInstruction(
@@ -157,6 +164,7 @@ final public class IrBuilder {
         // is no terminator in it. But sometimes, we need to insert a terminator instruction
         // after create a new block. So we need to check if the last instruction is a terminator.
         // If it is, we should remove it and add the new terminator instruction.
+        // ^^^ 但这里并没有移除前面存在的 terminator，而是直接将其返回
         if (block.getLastInstruction() instanceof ITerminator) {
             return instruction;
         }
@@ -174,12 +182,15 @@ final public class IrBuilder {
     }
 
     Value getGep(SymbolVariable symbol, List<Value> indices) {
+        // 如果是形式参数，那么需要先加载一下
         Value loaded = symbol.isFromParam() ?
             insertInstruction(new ILoad(symbol.getValue()))
             : symbol.getValue();
         Value res = insertInstruction(
+            // gep 函数内部会处理好，但是需要传递一下是否是形式参数
             new IGep(loaded, indices.get(0), symbol.isFromParam())
         );
+        // 这里还支持了多维数组，但是今年不会用到
         for (int i = 1; i < indices.size(); i++) {
             res = insertInstruction(
                 new IGep(res, indices.get(i), false)

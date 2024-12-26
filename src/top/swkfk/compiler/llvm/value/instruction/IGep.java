@@ -19,6 +19,7 @@ final public class IGep extends User {
 
     public IGep(Value pointer, Value offset, boolean loadedFromArgument) {
         super("%" + Value.counter.get(),
+            // 这里针对是否是从参数中加载的进行了特殊处理
             loadedFromArgument ?
                 // ( Arg: int [][2] ==> (int [2])* ) -> ( Loaded: (int [2])* ) -> (int [2])*, invoke
                 // this once even if the dimension is more than one.

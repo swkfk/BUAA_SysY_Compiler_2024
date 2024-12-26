@@ -29,11 +29,13 @@ final public class IrModule {
 
     public String toString() {
         StringBuilder sb = new StringBuilder();
+        // 输出代码头信息
         sb.append(";; Module: ").append(Configure.source).append("\n");
 
         String time = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date());
         sb.append(";; Compiled at: ").append(time).append("\n");
 
+        // 输出外部函数的定义
         sb.append("\n;; External Functions:\n");
         for (Function externalFunction : externalFunctions.values()) {
             sb.append("declare ")
@@ -46,11 +48,13 @@ final public class IrModule {
                 ).append(")\n");
         }
 
+        // 输出全局变量
         sb.append("\n;; Global Variables:\n");
         for (GlobalVariable globalVariable : globalVariables) {
             sb.append(globalVariable).append("\n");
         }
 
+        // 输出函数
         sb.append("\n;; Functions:\n");
         for (Function function : functions) {
             sb.append(function).append("\n");
@@ -67,9 +71,15 @@ final public class IrModule {
         return globalVariables;
     }
 
+    /**
+     * 跑一个 pass，根据调试配置输出中间结果
+     * @param pass 指定的 pass 对象
+     * @return Self
+     */
     public IrModule runPass(Pass pass) {
         pass.run(this);
         if (Configure.debug.displayPassVerbose && pass.canPrintVerbose()) {
+            // 针对需要输出的 pass，将中间结果输出到文件
             try (FileWriter writer = new FileWriter(
                 Configure.passTarget
                     // Assume to be a '.' in the target file name

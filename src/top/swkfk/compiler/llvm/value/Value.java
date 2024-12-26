@@ -13,6 +13,7 @@ import java.util.stream.IntStream;
 public class Value {
     private String name;
     private final SymbolType type;
+    /// 这里的 uses，只记录使用了别的 value，被使用者不会有 use 记录，这里的设计有点奇怪
     private final List<Use> uses;
 
     public final static GlobalCounter counter = new GlobalCounter();

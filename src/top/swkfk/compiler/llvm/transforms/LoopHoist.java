@@ -27,7 +27,7 @@ import java.util.Objects;
  * Direct reference: <a href="https://gitlab.eduxiji.net/educg-group-26173-2487151/T202410006203104-3288/-/blame/main/src/pass/ir/LoopHoist.java">compiler2024-x</a>
  * Whose author is the same as the author of this project.
  */
-public class LoopHoist extends Pass {
+final public class LoopHoist extends Pass {
     // Function-level local variables
     private final List<LoopInformation> loopsToHoist = new LinkedList<>();
 

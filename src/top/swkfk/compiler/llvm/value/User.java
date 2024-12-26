@@ -5,9 +5,11 @@ import top.swkfk.compiler.llvm.Use;
 
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Objects;
 import java.util.stream.IntStream;
 
+/**
+ * 使用别的 value 的 value，这里特指指令
+ */
 abstract public class User extends Value {
     protected List<Value> operands;
 
