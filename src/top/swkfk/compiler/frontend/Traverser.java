@@ -63,8 +63,11 @@ final public class Traverser {
     private final ErrorTable errors = Controller.errors;
     private final SymbolTable symbols = Controller.symbols;
 
+    // 循环深度，只用来检查 break 和 continue 语句的合法性
     private int loopDepth = 0;
+    // 用于检查函数是否出现了带返回值的 return 语句
     private boolean returnIntFound = false;
+    // 用于检查函数是否不允许有返回值（void）
     private boolean notAllowIntReturn = false;
 
     public Traverser(CompileUnit ast) {
@@ -72,29 +75,41 @@ final public class Traverser {
     }
 
     public void spawn() {
+        // 注册所有的全局声明
         ast.getDeclarations().forEach(this::registerDecl);
+        // 依次处理每一个函数
         for (FuncDef func : ast.getFunctions()) {
+            // 向符号表中添加函数，同时会进行查找
             SymbolFunction symbolFunc = symbols.addFunction(func.getIdentifier().value(), func.getType());
             if (symbolFunc == null) {
+                // 如果函数名重复，或与全局变量重名，报错
                 errors.add(ErrorType.DuplicatedDeclaration, func.getIdentifier().location());
                 continue;
             }
+            // 向语法树结构中设置符号
             func.setSymbol(symbolFunc);
 
             symbols.newScope();
             for (FuncFormalParam param : func.getParams()) {
+                // 向符号表中添加参数，同时会进行查找
                 SymbolVariable symbolParam = symbols.addParameter(
                     symbolFunc, param.getIdentifier().value(), TyArray.from(param.getType().into(), param.getIndices())
                 );
                 if (symbolParam == null) {
+                    // 如果参数名重复，报错
                     errors.add(ErrorType.DuplicatedDeclaration, param.getIdentifier().location());
                 } else {
+                    // 向语法树结构中设置符号
                     param.setSymbol(symbolParam);
                 }
             }
+            // 初始化返回值状态
             returnIntFound = false;
+            // 这里注意在新增类型时需要修改！
             notAllowIntReturn = !func.getType().is(FuncType.Type.Int) && !func.getType().is(FuncType.Type.Char);
+            // 访问函数体
             visitBlock(func.getBody());
+            // 缺少必要的返回值
             if (!returnIntFound && !func.getType().is(FuncType.Type.Void)) {
                 errors.add(ErrorType.MissingReturnStatement, func.getBody().getEndToken().location());
             }
@@ -112,18 +127,24 @@ final public class Traverser {
     }
 
     private void registerDecl(Decl decl) {
+        // 处理变量声明，局部的，或者全局的
+        // 两个分支几乎一致，只是
         if (decl.getType().equals(Decl.Type.Const)) {
             ConstDecl constDecl = (ConstDecl) decl.getDeclaration();
             for (ConstDef def : constDecl.getDefs()) {
+                // 遍历数组索引，访问其中的变量
                 def.getIndices().forEach(this::visitExprConst);
                 SymbolType ty = TyArray.from(constDecl.getType().into(), def.getIndices());
+                // 向符号表中添加变量，同时会进行查找
                 SymbolVariable symbol = symbols.addVariable(def.getIdentifier().value(), ty);
                 if (symbol == null) {
                     errors.add(ErrorType.DuplicatedDeclaration, def.getIdentifier().location());
                 } else {
                     symbol.setConst();
+                    // 访问初始化值，每个遍历一遍
                     visitConstInitValue(def.getInitial());
                     try {
+                        // 两种不同的初始化值，分别处理，这里会进行常量值的计算！
                         if (def.getIndices().isEmpty()) {
                             // It is impossible that the def.getInitial() is null
                             symbol.setConstantValue(new FixedValue(def.getInitial().getExpr().calculate(), ty));
@@ -132,6 +153,7 @@ final public class Traverser {
                         }
                     } catch (Exception e) {
                         // Ignore the error, it will be reported by the error handler
+                        // 这里面的错误，比如变量未定义，在之前已经被捕获了，这里就直接忽略
                     }
                     def.setSymbol(symbol);
                 }
@@ -149,9 +171,12 @@ final public class Traverser {
                     try {
                         // It is certain that the VarInitValue in global scope shall be a ConstInitValue
                         if (symbol.isGlobal()) {
+                            // 全局变量的初始化值必须是常量，会进行计算！
                             if (def.getIndices().isEmpty()) {
+                                // 不是数组
                                 VarInitValue init = def.getInitial();
                                 if (init == null) {
+                                    // 缺省初始化值为 0
                                     symbol.setConstantValue(new FixedValue(0, ty));
                                 } else {
                                     symbol.setConstantValue(new FixedValue(
@@ -159,11 +184,13 @@ final public class Traverser {
                                     ));
                                 }
                             } else {
+                                // 是数组
                                 if (def.getInitial() != null) {
                                     symbol.setConstantValue(
                                         FixedArray.from(((TyArray) ty).getIndices(), def.getInitial().into(), ty.getFinalBaseType())
                                     );
                                 } else {
+                                    // 缺省初始化值为 0
                                     symbol.setConstantValue(
                                         new FixedArray(((TyArray) ty).getIndices(), ty.getFinalBaseType())
                                     );
@@ -180,6 +207,7 @@ final public class Traverser {
     }
 
     private void visitBlock(Block block) {
+        // 并不在这里新建符号表！
         for (BlockItem item : block.getItems()) {
             visitBlockItem(item);
         }
@@ -286,11 +314,14 @@ final public class Traverser {
     }
 
     private void visitLeftValue(LeftValue leftValue) {
+        // 这里查找符号表
         SymbolVariable symbol = symbols.getVariable(leftValue.getIdentifier().value());
         if (symbol == null) {
             errors.add(ErrorType.UndefinedReference, leftValue.getIdentifier().location());
         } else {
+            // 查到了，就将符号设置到语法树节点中
             leftValue.setSymbol(symbol);
+            // 遍历每一个索引！
             leftValue.getIndices().forEach(this::visitExpr);
         }
     }
@@ -312,6 +343,7 @@ final public class Traverser {
     }
 
     private void visitConstInitValue(ConstInitValue init) {
+        // 根据文法，这里的 init 一定不是 null
         if (init.getSubInitializers() != null) {
             init.getSubInitializers().forEach(this::visitConstInitValue);
         }
@@ -344,18 +376,23 @@ final public class Traverser {
             case Primary -> visitPrimaryExpr(((ExprUnaryPrimary) unary).getPrimary());
             case Call -> {
                 ExprUnaryCall call = (ExprUnaryCall) unary;
+                // 遍历参数，进行访问
                 call.getParams().forEach(this::visitExpr);
+                // 查找函数符号
                 call.setSymbol(symbols.getFunction(call.getIdentifier().value()));
                 if (call.getSymbol() == null) {
                     errors.add(ErrorType.UndefinedReference, call.getIdentifier().location());
                     return;
                 }
+                // 检查参数个数和类型
                 if (call.getParams().size() != call.getSymbol().getParameters().size()) {
                     errors.add(ErrorType.MismatchedParameterCount, call.getIdentifier().location());
                 } else {
+
                     if (IntStream.range(0, call.getParams().size()).anyMatch(
                         i ->
                             !call.getSymbol().getParameters().get(i).getType()
+                                // 递归找到最终的类型！
                                 .compatible(call.getParams().get(i).calculateType())
                     )) {
                         errors.add(ErrorType.MismatchedParameterType, call.getIdentifier().location());
