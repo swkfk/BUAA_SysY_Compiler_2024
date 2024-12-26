@@ -6,6 +6,9 @@ import top.swkfk.compiler.helpers.ArrayInitialString;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * Mips 全局变量，生成在 .data 段
+ */
 final public class MipsGlobalVariable {
     private final SymbolType type;
     private final String tag;
@@ -41,17 +44,22 @@ final public class MipsGlobalVariable {
     public String toMips() {
         StringBuilder sb = new StringBuilder();
         sb.append(tag).append(": ");
+        // 下面，生成全局变量的初始化数据
         if (initializerList != null) {
+            // 数组或普通变量初始化
             if (type.getFinalBaseType().is("i32")) {
                 sb.append(".word ");
             } else {
                 sb.append(".byte ");
             }
+            // 生成初始化数据，每个数字之间用逗号隔开
             sb.append(initializerList.stream().map(String::valueOf).collect(Collectors.joining(", ")));
+            // 字符串，弄个注释，方便查看
             if (type.getFinalBaseType().is("i8")) {
                 sb.append("\t\t## '").append(ArrayInitialString.into(initializerList)).append("'");
             }
         } else if (initializerString != null) {
+            // printf 中的字符串的初始化，注意，字符数组不在这里处理
             sb.append(".asciiz \"").append(initializerString.replace("\n", "\\n")).append("\"");
         } else {
             throw new RuntimeException("Both initializer List/String are null");

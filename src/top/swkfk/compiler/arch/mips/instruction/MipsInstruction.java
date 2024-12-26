@@ -8,6 +8,9 @@ import top.swkfk.compiler.helpers.Comments;
 
 import java.util.Map;
 
+/**
+ * Mips 指令基类，提供对于操作数的操作
+ */
 public abstract class MipsInstruction {
     public final Comments comment = new Comments("    ## ");
 
@@ -34,6 +37,7 @@ public abstract class MipsInstruction {
 
     public void replaceJumpTarget(MipsBlock oldBlock, MipsBlock newBlock) {
         // Do nothing by default.
+        // 只有需要实现跳转的指令才需要重写这个方法
     }
 
     /**

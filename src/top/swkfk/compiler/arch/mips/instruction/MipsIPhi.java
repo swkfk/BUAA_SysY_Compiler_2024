@@ -9,6 +9,9 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Mips 层面的 phi 指令，用于 SSA 表示，这是 remove phi 的对象，实际不应该出现在最终的汇编代码中
+ */
 final public class MipsIPhi extends MipsInstruction {
     private MipsOperand res;
     private final List<MipsOperand> operands;

@@ -65,20 +65,31 @@ final public class MipsFunction extends MipsOperand {
         return sb.toString();
     }
 
+    /**
+     * 填充栈大小
+     */
     public void fillStackSize() {
+        // 在函数出口，最后一个指令（返回语句）之前插入栈大小的调整指令（回收栈）
         new DualLinkedList.Node<MipsInstruction>(
             new MipsIBinary(MipsIBinary.X.addiu, MipsPhysicalRegister.sp, MipsPhysicalRegister.sp, new MipsImmediate(getStackSize()))
         ).insertBefore(exit.getInstructions().getTail());
+        // 在函数入口，第一个调整 $fp 的指令之后插入栈大小的调整指令（扩充栈），即使是 main 函数，也会有 $fp <- $sp 的指令
         entry.addInstructionAfter(
             new MipsIBinary(MipsIBinary.X.addiu, MipsPhysicalRegister.sp, MipsPhysicalRegister.sp, new MipsImmediate(-getStackSize())),
             instruction -> instruction instanceof MipsIBinary && instruction.getOperands()[0] == MipsPhysicalRegister.fp
         );
     }
 
+    /**
+     * 判断函数是否会调用其他函数
+     * @param function 待检查的函数
+     * @return 是否是调用者
+     */
     public static boolean isCaller(MipsFunction function) {
         for (DualLinkedList.Node<MipsBlock> bNode : function.getBlocks()) {
             for (DualLinkedList.Node<MipsInstruction> iNode : bNode.getData().getInstructions()) {
                 MipsInstruction instruction = iNode.getData();
+                // 只有 jal 之类的指令才算调用其他函数
                 if (instruction instanceof MipsIJump jump && jump.isCall()) {
                     return true;
                 }

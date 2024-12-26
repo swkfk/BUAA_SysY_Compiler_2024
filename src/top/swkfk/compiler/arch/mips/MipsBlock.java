@@ -83,6 +83,7 @@ final public class MipsBlock extends MipsOperand {
 
     public void addInstructionAfter(MipsInstruction instruction, Predicate<MipsInstruction> predicate) {
         for (DualLinkedList.Node<MipsInstruction> node : instructions) {
+            // 找到第一个满足条件的指令，插入到其后
             if (predicate.test(node.getData())) {
                 new DualLinkedList.Node<>(instruction).insertAfter(node);
                 return;
@@ -102,12 +103,14 @@ final public class MipsBlock extends MipsOperand {
         sb.append("    # Predecessors: ").append(predecessors).append("\n");
         sb.append("    # Successors:   ").append(successors).append("\n");
         sb.append("  ").append(name).append(":").append("\n");
+        // 对 main 函数的特殊处理，直接使用 syscall 退出
         if (isMainExit()) {
             sb.append("#### exit ####\n");
             sb.append("    li $v0, 10\n");
             sb.append("    syscall\n");
             sb.append("#### origin ####\n");
         }
+        // 依次输出指令
         for (DualLinkedList.Node<MipsInstruction> node : instructions) {
             sb.append(node.getData()).append("\n");
         }

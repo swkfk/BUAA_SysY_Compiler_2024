@@ -6,6 +6,9 @@ import top.swkfk.compiler.arch.mips.operand.MipsVirtualRegister;
 
 import java.util.Map;
 
+/**
+ * 仅仅表示某条指令未实现，实际不应该出现在最终的汇编代码中
+ */
 @SuppressWarnings("SpellCheckingInspection")
 final public class MipsIUnimp extends MipsInstruction {
     @Override

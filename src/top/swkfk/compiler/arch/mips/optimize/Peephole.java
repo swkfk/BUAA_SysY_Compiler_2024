@@ -24,29 +24,39 @@ final public class Peephole implements MipsPass.Physical {
         }
     }
 
+    /**
+     * 判断指令是否可以被删除
+     * @param instruction 指令
+     * @return 是否可以被删除
+     */
     private boolean removable(MipsInstruction instruction) {
         if (instruction instanceof MipsIBinary binary) {
             if (binary.getOperator() == MipsIBinary.X.addiu) {
                 MipsOperand[] operands = binary.getOperands();
                 if (operands[1] instanceof MipsImmediate imm && imm.asInt() == 0) {
+                    // $t0 <- 0 + $t0
                     return operands[0] == operands[2];
                 }
                 if (operands[2] instanceof MipsImmediate imm && imm.asInt() == 0) {
+                    // $t0 <- $t0 + 0
                     return operands[0] == operands[1];
                 }
             }
             if (binary.getOperator() == MipsIBinary.X.addu) {
                 MipsOperand[] operands = binary.getOperands();
                 if (operands[1] == MipsPhysicalRegister.zero) {
+                    // $t0 <- $t0 + $0
                     return operands[0] == operands[2];
                 }
                 if (operands[2] == MipsPhysicalRegister.zero) {
+                    // $t0 <- $0 + $t0
                     return operands[0] == operands[1];
                 }
             }
             if (binary.getOperator() == MipsIBinary.X.subu) {
                 MipsOperand[] operands = binary.getOperands();
                 if (operands[2] == MipsPhysicalRegister.zero) {
+                    // $t0 <- $t0 - $0
                     return operands[0] == operands[1];
                 }
             }
