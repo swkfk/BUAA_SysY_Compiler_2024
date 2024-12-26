@@ -1,7 +1,6 @@
 package top.swkfk.compiler.llvm;
 
 import top.swkfk.compiler.Configure;
-import top.swkfk.compiler.frontend.symbol.SymbolFunction;
 import top.swkfk.compiler.llvm.value.Function;
 import top.swkfk.compiler.llvm.value.GlobalVariable;
 
@@ -83,6 +82,14 @@ final public class IrModule {
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
+        }
+        return this;
+    }
+
+    @SuppressWarnings("unused")
+    public IrModule runPass(Pass pass, boolean enable) {
+        if (enable) {
+            return runPass(pass);
         }
         return this;
     }
