@@ -1,5 +1,8 @@
 package top.swkfk.compiler;
 
+/**
+ * 作业配置，通过修改 {@link Hw} 来切换作业，并生成对应作业的默认输出文件名，方便测评。
+ */
 final public class HomeworkConfig {
     public enum Hw {
         Lexer, Syntax, Semantic, CodegenI, CodegenII

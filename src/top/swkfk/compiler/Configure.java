@@ -1,5 +1,35 @@
 package top.swkfk.compiler;
 
+/**
+ * 运行参数配置，格式为：
+ * <pre>
+ *   java -jar Compiler.jar [-o &lt;output&gt;] [{-debug &lt;option&gt;}] [-error &lt;error-file&gt;]
+ *   [-target mips] [-no-opt | -opt] [-dump &lt;dump-file&gt;] [-dump-vir &lt;dump-file&gt;] [source]
+ * </pre>
+ * 解释如下：
+ * <ul>
+ *     <li>{@code -o &lt;output&gt;}：指定输出文件，默认为每个作业的要求文件名。</li>
+ *     <li>{@code -debug &lt;option&gt;}：开启调试选项，输出调试信息。可选项有：
+ *     <ul>
+ *         <li>{@code tokens}：显示词法分析结果。</li>
+ *         <li>{@code errors}：显示错误信息。</li>
+ *         <li>{@code symbols}：显示符号表。</li>
+ *         <li>{@code pass-debug}：显示 Pass 的调试信息。</li>
+ *         <li>{@code pass-verbose}：每个 Pass 后均输出中间代码。</li>
+ *         <li>{@code opt-llvm}：额外输出优化后的中间代码。</li>
+ *         <li>{@code .data}：输出 Mips 数据段信息。</li>
+ *         <li>{@code vir}：输出使用虚拟寄存器的 MIPS 代码。</li>
+ *     </ul>
+ *     </li>
+ *     <li>{@code -error &lt;error-file&gt;}：指定错误信息输出文件，默认为 {@code error.txt}。</li>
+ *     <li>{@code -target mips}：指定后端指令集，目前只支持 'mips'</li>
+ *     <li>{@code -no-opt | -opt}：是否开启优化，默认开启。</li>
+ *     <li>{@code -dump &lt;dump-file&gt;}：指定输出优化后的中间代码的文件，默认为 {@code llvm_ir.txt}。</li>
+ *     <li>{@code -dump-vir &lt;dump-file&gt;}：指定输出虚拟 MIPS 代码的文件，默认为 {@code virtual_mips.txt}。</li>
+ *     <li>{@code source}：源代码文件，默认为 {@code testfile.txt}。</li>
+ * </ul>
+ */
+@SuppressWarnings("SpellCheckingInspection")
 final public class Configure {
     public enum Arch {
         mips
